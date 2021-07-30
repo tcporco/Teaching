@@ -1,0 +1,337 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in TB Surveillance, Part 6}
+
+\subsection*{Goals}
+The specific goals for this review segment are:
+\begin{enumerate}
+\item Understand the first-order Poisson integer autoregression model
+\end{enumerate}
+
+\section*{Poisson integer autoregression}
+Suppose that we take a Poisson count $X_i$ with mean
+$\lambda_i$, thin it by keeping a
+fraction $\theta$ at random, and then add another independent
+Poisson, called $U_i$, to get $X_{i+1}$:
+\[
+X_{i+1} = X_i \circ \theta + U_i
+\]
+Let the mean of $U_i$ be called $\mu$; assume all the $U_i$'s are
+independent of each other and of $X_i$'s.
+
+Since $X_i$ is Poisson, binomially thinning it gives another
+Poisson, with rate $\lambda_i \theta$.  Adding an independent
+Poisson to this gives another Poisson, so $X_{i+1}$ is
+Poisson with rate $\lambda_i \theta + \mu$.  We can call
+this rate $\lambda_{i+1}$.  So now
+\begin{equation}
+\label{eq:recur}
+\lambda_{i+1} = \lambda_i \theta + \mu 
+\end{equation}
+for $i=0, 1, \ldots$.
+This process is called the first-order Poisson integer autoregression.
+Each $X_i$ is a Poisson random variable, and the means obey
+$\lambda_{i+1} = \lambda_i \theta + \mu$.
+
+Equation~(\ref{eq:recur}) is called a {\it difference equation}.
+We can solve it by starting at the beginning, for $i=0$:
+\[
+\lambda_1 = \lambda_0 \theta + \mu .
+\]
+Then,
+\[
+\lambda_2 = \lambda_1 \theta + \mu = (\lambda_0 \theta + \mu) \theta + \mu = \lambda_0 \theta^2 + \mu \theta + \mu .
+\]
+Similarly, 
+\[
+\lambda_3 = \lambda_2 \theta + \mu = \lambda_0 \theta^3 + \mu(1+\theta+\theta^2) .
+\]
+In general, 
+\[
+\lambda_i = \lambda_0 \theta^i + \mu (1 + \theta + \cdots + \theta^{i-1}) = \lambda_0 \theta^i + \mu \sum_{k=0}^{i-1} \theta^k .
+\]
+How do we really know this is right?  Let's take this and 
+substitute it into Equation~(\ref{eq:recur}), and see if it always
+works.  Starting with the left hand side, 
+\begin{eqnarray*}
+\lambda_i \theta + \mu & = & \theta \lambda_0 \theta^{i} + \theta \mu (1+ \theta + \cdots + \theta^{i-1}) + \mu \\
+& = & \lambda_0 \theta^{i+1} + \mu  ( \theta + \theta^2 + \cdots + \theta^{i}) + \mu \\
+& = & \lambda_0 \theta^{i+1} + \mu  (1+ \theta + \theta^2 + \cdots + \theta^{i})  \\
+\end{eqnarray*}
+But this is the solution for $i+1$.
+
+We can write the solution as 
+\[
+\lambda_i = \lambda_0 \theta^{i} + \mu \frac{1-\theta^i}{1-\theta} .
+\]
+For large $i$, $\theta^i$ approaches zero.  So after a long time, we
+have the Poisson mean approaching a constant value, 
+\begin{equation}
+\label{eq:equil}
+\bar{\lambda} = \frac{\mu}{1-\theta} .
+\end{equation}
+Does this make sense? If $\theta$ is zero, we're throwing away
+the old values entirely, and we just have a Poisson with mean $\mu$.
+If $\theta$ were 1, we get nonsense; we aren't really throwing 
+anything away, and so there is no long term fixed average.  It's
+not surprising that the formula does not work.  Later we will see
+that Equation~(\ref{eq:equil}) can be interpreted as ``prevalence
+equals incidence times duration''.
+
+% check
+It turns out that the correlation between $X_i$ and $X_{i+1}$ is
+just $\theta$.  If $\theta=0$ and we keep no memory at all, then
+the series is uncorrelated (as it had better be, since it is then
+just a series of independent Poisson variables).  
+
+\renewcommand{\baselinestretch}{1.2} \small
+How do we get the correlation of $X_i$ and $X_{i+1}$?  We divide the 
+covariance by the square root of the product of the variances.  We
+already know the variance of $X_i$ to be $\lambda$, and since 
+$X_i \circ \theta$ is Poisson with mean $\lambda \theta$, its
+variance is $\lambda \theta$ too.
+
+But how do we get the covariance?  Recall that in general
+\[
+\mbox{\rm cov}(X,Y) = E[(X-EX)(Y-EY)] = EXY - (EX)(EY) ,
+\]
+so
+\[
+\mbox{\rm cov}(X_i,X_{i+1}) = E[X_i\,(X_i \circ \theta)] - \lambda^2 \theta .
+\]
+So let's work on $E[X_i\,(X_i \circ \theta)]$.  We could work this
+out directly from the definition, but there is a better way.
+
+It turns out that in general,
+\[
+E[X\,E[Y|X]] = E[XY] .
+\]
+Why is this?  
+\begin{eqnarray*}
+E[X E[Y|X]] & = & \sum_x x E[Y|x] P(X=x)  \\
+& = & \sum_x x P(X=x) \sum_y y P(Y=y|X=x) \\
+& = & \sum_x \sum_y x y P(X=x) P(Y=y|X=x) \\
+& = & \sum_x \sum_y x y P(X=x,Y=y) \\
+& = & E[XY] .\\
+\end{eqnarray*}
+Using this principle, 
+\[
+E[X_i\,(X_i \circ \theta)] = E[X_i E[X_{i+1}|X_i]] = E[X_i \theta X_i] = \theta E[X_i^2] .
+\]
+But we already know that for a Poisson variable with mean $\lambda$,
+$E[X_i^2]=\lambda(1+\lambda)$.
+So
+\[
+E[X_i\,(X_i \circ \theta)] = \theta \lambda (1+\lambda) .
+\]
+Finally,
+\[
+\mbox{\rm cov}(X_i,X_{i+1}) = \theta \lambda (1+\lambda) - \lambda^2 \theta = \theta \lambda .
+\]
+Dividing by the variance ($\lambda$), the correlation must be $\theta$.
+The Poisson integer autoregression has been proposed as a useful model for
+error terms in count data.  Unfortunately, it has the drawback that it
+cannot ever represent a negative correlation between successive counts, since
+$\theta\geq0$.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+Let's take a look at some examples.
+To begin with, suppose that we have a series of independent
+Poisson random variables with mean $\lambda = 1$.  The probability
+of a zero count is $e^{-1}$, which is about 37\%.  Let's take a look
+at a series of these (Figure~\ref{fig:ts1}).
+\begin{figure}
+\caption{\label{fig:ts1}Independent Poisson time series, $\lambda=1$.}
+  \centering
+<<fig=true>>=
+barplot( rpois(100,lambda=1),names.arg=1:100 )
+@
+\end{figure}
+
+Let's take a look at a plot with $\lambda = 4$ (Figure~\ref{fig:ts2}).
+\begin{figure}
+\caption{\label{fig:ts2}Independent Poisson time series, $\lambda=4$.}
+  \centering
+<<fig=true>>=
+barplot( rpois(100,lambda=4),names.arg=1:100 )
+@
+\end{figure}
+
+Let's take a look at one with more rare events, say $\lambda=0.25$
+(Figure~\ref{fig:ts3}):
+\begin{figure}
+\caption{\label{fig:ts3}Independent Poisson time series, $\lambda=1/4$.}
+  \centering
+<<fig=true>>=
+barplot( rpois(100,lambda=1/4),names.arg=1:100 )
+@
+\end{figure}
+For small $\lambda$, it becomes extremely rare to get two events
+in the same interval.  The series of counts consists mostly of
+zeroes, with a few ones, and it similar to a sequence of Bernoulli
+trials.  For very small $\lambda$, we can approximate 
+$e^{-\lambda}$ by $1-\lambda$, and to first order $P(X=0)=1-\lambda$
+and $P(X=1)=\lambda$.
+
+Now, let's look at a Poisson autoregressive sequence with 
+$\theta=0.99$; we want the mean to be 1 asymptotically, so we will arrange to
+find the value of $\mu$ to achieve this.  Here, we'll start the series
+off at its asymptotic mean.
+<<>>=
+rpoinar <- function(len,asymean,theta,start=rpois(1,lambda=asymean)) {
+  mu <- asymean*(1-theta)
+  v1 <- rpois(len,lambda=mu)
+  ans <- rep(NA,len)
+  ans[1] <- start
+  for (ii in 2:len) {
+    ans[ii] <- rbinom(1,size=ans[ii-1],prob=theta) + v1[ii]
+  }
+  ans
+}
+@
+\begin{figure}
+\caption{\label{fig:ts4}Poisson integer AR(1) time series, $\theta=0.99$, asymptotic mean 1.}
+  \centering
+<<fig=true>>=
+barplot( rpoinar(2000,asymean=1,theta=0.99),names.arg=1:2000 )
+@
+\end{figure}
+This looks markedly different.  Now you tend to get long runs of counts that
+climb above zero and occasionally fall back to zero, together with spells
+with a zero count.
+
+Let's look at some with a larger asymptotic mean.  Now we don't see any
+excursions all the way to zero counts (Figure~\ref{fig:ts5}).
+\begin{figure}
+\caption{\label{fig:ts5}Poisson integer AR(1) time series, $\theta=0.99$, asymptotic mean 10.}
+  \centering
+<<fig=true>>=
+barplot( rpoinar(2000,asymean=10,theta=0.99),names.arg=1:2000 )
+@
+\end{figure}
+
+Sometimes the ``transient'' behavior is of considerable interest.
+Suppose that the long-term mean is, say, 500, but we begin at a much
+larger level, such as 4000 (Figure~\ref{fig:ts6}).  Remembering that on average,
+the mean of the $i$th count is related to the next by $\lambda_{i+1}=\lambda_i \theta + \mu$, we see that it is not going to be possible to easily change
+both a long term trend (rate of decline) and the variability around it using
+this model by itself.
+\begin{figure}
+\caption{\label{fig:ts6}Transient behavior in the Poisson integer AR(1) time series, $\theta=0.96$, asymptotic mean 500, initial value 4000.}
+  \centering
+<<fig=true>>=
+plot(1:6, rpoinar(6,asymean=500,theta=0.96,start=rpois(1,lambda=4000)) )
+@
+\end{figure}
+Compare this with a sequence of Poisson variables with a mean that declines
+according to $\lambda_{i+1}=\lambda_i \theta + \mu$ (Figure~\ref{fig:ts7}).
+\begin{figure}
+\caption{\label{fig:ts7}.}
+  \centering
+<<fig=true>>=
+plot(1:6, rpois(6,lambda=3500*0.96^(0:19) + 500))
+@
+\end{figure}
+Why are these so different?  They are both sequences of Poisson random
+variables with the same means at each time point.  
+The answer lies in the dependence; the autoregressive sequence is not 
+independent.
+
+Here is another look at several of the autoregressive sequences at once, with
+the mean in dark black (Figure~\ref{fig:ts8}).  Notice that when the sequence
+starts out above the line, it tends to stay that way the whole time we watch
+it.  
+\begin{figure}
+\caption{\label{fig:ts8}.}
+  \centering
+<<fig=true>>=
+plot(1:6,3500*0.96^(0:5)+500 ,type="l",lwd=2)
+points(1:6, rpoinar(6,asymean=500,theta=0.96,start=rpois(1,lambda=4000)), col="violet",type="l")
+points(1:6, rpoinar(6,asymean=500,theta=0.96,start=rpois(1,lambda=4000)), col="blue",type="l")
+points(1:6, rpoinar(6,asymean=500,theta=0.96,start=rpois(1,lambda=4000)), col="red",type="l")
+@
+\end{figure}
+
+\renewcommand{\baselinestretch}{1.2} \small
+Let $X_0$ be our random starting value.  In general,
+\[
+\mbox{\rm var}(X_i) = E[\mbox{\rm var}(X_i|X_0)] + \mbox{\rm var}(E[X_i|X_0]) 
+\]
+decomposes the total variance into a component explained by $X_0$ and a
+component not explained by $X_0$.
+
+Let's assume that $X_0=x$, some particular value.  Then let's write
+$U_1$ to be a binomial with $x$ trials at success probability $\theta$
+per trial, and $V_1$ to be an independent Poisson random variable with mean 
+$\mu$; $X_1=U_1+V_1$.  Then $X_2$ is the sum of a binomial with $X_1$
+trials at $\theta$ success probability per trial, and an independent
+Poisson with mean $\mu$ also.  The sum of independent binomials with
+$U_1$ trials and $V_1$ trials (and $\theta$ per trial) is a binomial with
+$X_1$ trials ($\theta$ per trial).  But $U_1$ itself was (independently) binomial also, so
+we can simply state that $X_2$ is the sum of a binomial with $x$ trials and
+success probability $\theta^2$ per trial, a binomial with $V_1$ trials and
+success probability $\theta$ per trial, and a Poisson with mean $\mu$.
+Since $V_1$ is Poisson with mean $\mu$ itself, a binomial with $V_1$ trials
+and success probability $\theta$ gives a Poisson with mean $\mu \theta$.
+The sum of the two independent Poisson variables allows us to finally
+realize $X_2$ as the sum of a binomial with $x$ trials and probability $\theta^2$, and an independent Poisson with mean $\mu (1+\theta)$.  Continuing this
+reasoning shows that in general $X_i$ is the sum of a binomial with 
+$x$ trials and success probability $\theta^i$, and a Poisson with mean
+$\mu (1+\theta+\cdots+\theta^{i-1}) = \mu \frac{1-\theta^i}{1-\theta}$.
+Thus,
+\[
+E[X_i|X_0] = X_0 \theta^i + \mu \frac{1-\theta^i}{1-\theta} .
+\]
+Thus,
+\[
+\mbox{\rm var}(E[X_i|X_0]) = \theta^{2i} \mbox{\rm var}(X_0) .
+\]
+The conditional variance of $X_i$ given $X_0$ is the variance of the
+binomial with $x$ trials and probability $\theta^i$, plus the variance of
+the Poisson with mean $\mu (1+\theta+\cdots+\theta^{i-1})$. So,
+\[
+\mbox{\rm var}(X_i|X_0) = X_0 \theta^i (1-\theta^i) + \mu \frac{1-\theta^i}{1-\theta} .
+\]
+Taking expectations,
+\[
+E[\mbox{\rm var}(X_i|X_0)] = E[X_0] \theta^i (1-\theta^i) + \mu \frac{1-\theta^i}{1-\theta} .
+\]
+Finally, 
+\[
+\mbox{\rm var}(X_i) = \mbox{\rm var}(E[X_i|X_0]) + E[\mbox{\rm var}(X_i|X_0)] 
+\]
+gives the total variance.
+
+In the long run, as $i$ becomes very large, the first term becomes zero.  
+Eventually the initial condition $X_0$ is forgotten and explains none of the
+variance.  But in the short run, it can be the dominant term.  In our
+example, $X_0$ was Poisson with mean 4000, $\theta$ was 0.96, and $\mu$
+was 20 (for an asymptotic value of $20/(1-0.96)=500$).  At time 5, the
+count is Poisson with mean $3500 \times 0.96^5+20 \times (1+0.96+\cdots+0.96^4)=2946.118$.  So the variance is 2946.118.  The first term is $4000 \times 0.96^10$, which is 2659.331; at time 5, the initial value explains about 80\%
+of the variance.  Notice that the variance is itself falling over time
+along with the mean.
+
+{\bf Exercise.~~}Suppose $X_0$ is Poisson; what is the distribution of 
+$X_i$? What is the variance? Does this agree with the result we just computed?
+
+\vfill
+\end{document}

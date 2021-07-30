@@ -1,0 +1,1019 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in TB Surveillance, Part 2}
+
+\subsection*{Goals}
+The specific goals for this review segment are:
+\begin{enumerate}
+\item Understand the binomial distribution
+\item Understand simple combinations and permutations
+\end{enumerate}
+
+\newcounter{exercount}
+\setcounter{exercount}{1}
+
+\section*{The Binomial Distribution}
+The distribution of the count of successes in $N$ independent
+Bernoulli trials, each with success probability $p$, is called the
+{\it Binomial} distribution.  Let us denote the number of successes
+by $X$.  If we undertake $N$ such trials, we have performed a 
+random experiment whose value is $X$.  We would like to know the 
+probability that the {\it random variable} $X$ takes various values.
+Of course, $X$ cannot be less than zero, but $X$ could be zero if we
+never saw a success on any trial.  Similarly, $X$ can never be 
+greater than $N$, but it could be $N$ if every trial was a success.
+So the sample space is $\Omega = \{0, 1, \ldots, N-1, N\}$.
+
+Suppose a fair die is rolled 3 times, independently.  The number of
+times we see a 5-spot is a binomial distribution.
+Consider each roll of the die to be a Bernoulli
+trial, with success being rolling a 5.  Since the die is fair, the
+success probability is 1/6.  In four throws, we could have gotten
+either no fives, or 1, 2, or 3 occurrences of the 5-spot.
+We have a binomial distribution with 3 trials and probability 1/6 per
+trial.
+
+We would like to calculate the probability distribution of $X$, when
+$X$ follows a binomial distribution.  To begin with, what is the
+probability of getting only successes, i.e. $P(X=N)$?  The chance of
+success on the first trial is $p$, on the second trial is $p$, and
+so forth.  The chance of success on all $N$ trials must be, using
+the crucial assumption of independence, $p \times p \times \ldots \times p$ ($N$ times), or $p^N$.
+
+What is the chance of getting no successes?  Here, we can observe that
+the chance of getting a failure on any given trial is $(1-p)$, and that
+there are $N$ such independent trials, so the chance of getting no
+successes is $(1-p)^N$.
+
+We can be a little more formal by letting $U_1$ be a random variable
+for the first Bernoulli trial.  Here, $U_1$ is zero if the first 
+trial is a failure, and one if the first trial is a success.  We can
+let $U_2$ represent the second trial, and so forth, with $U_i$ 
+representing the $i$-th trial.  Here, $X=\sum_{i=1}^N U_i$.
+Since the event that $X=N$ is the same as the event that
+$(U_1=1) \cap (U_2=1) \cap \ldots \cap (U_N=1)$, the assumption of
+independence gave us
+\[
+P((U_1=1) \cap (U_2=1) \cap \cdots \cap (U_N=1)) = 
+ P(U_1=1) \times P(U_2=1) \times \cdots \times P(U_N=1) = p^N .
+\]
+The same argument works for the case where $P(X=0)$, since if the
+count is zero, every trial must have been a failure.
+
+If we want the probability that exactly one success occurred ($P(X=1)$),
+it is more difficult.  Now, knowing the count does not determine 
+every trial.  Before, knowing that the count was 0 told us the result
+of {\it every trial} (every trial was a failure); knowing the count
+was $N$ also told us the result of every trial (every trial a success).
+But if all we know is that there was one and only one success, we don't
+know which trial was the success.  If we knew which trial was a success,
+then we would know every other trial was a failure, but all we know
+is that there was one success, somewhere.
+
+Suppose we are playing the die rolling game, and asking what the chance
+is of getting {\it exactly one} five-spot in three rolls.  On each
+roll, we either get a five-spot (a {\it success}), or we don't.  With
+just three rolls, we can just make a list of all the possibilities:
+they are SSS, SSF, SFS, FSS, SFF, FSF, FFS, and FFF.  Here, for instance,
+SSF means we got a success on the first roll, a success on the second,
+and a failure on the third.  Now, if the outcome was SSS, we got
+three successes, and not one.  The only outcomes that correspond to
+{\it one} success are SFF, FSF, and FFS.  If the result of the die
+rolling is one of these three possibilities, we got exactly one
+success, and if we got one success, we know that the result of the three
+tosses was one of these three.  So, we need to compute the probability
+that the result was SFF, FSF, or FFS.
+
+Remember that SFF represents the combined outcome of all three trials.
+It indicates that we got a success the first time, and a failure the
+next two times, or the event that $(U_1=1) \cap (U_2=0) \cap (U_3=0)$.
+Note that FSF is a completly different combined outcome of all
+three trials.  If the result was FSF, then it could not have been SFF;
+we are combining all the trials at once; FSF and SFF cannot both 
+occur.  In fact, SFF, FSF, and FFS are disjoint outcomes.  They
+represent three different results of the die experiment.  The overall
+result is the same only if you get the same on each throw; if you
+were trying to match the author, title, and year of a book in a 
+search, it would not be enough to just have the same author and year,
+for instance---you might need to match them all to really have the
+same book.
+
+Remember that we needed to compute the probability that the result
+was SFF, FSF, or FFS, i.e. the {\it union}.  But now we know that 
+SFF, FSF, and FFS are disjoint, so the probability of the union 
+is the sum of the probabilities:
+\[ 
+P(\{SFF,FSF,FFS\}) = P(SFF) + P(FSF) + P(FFS) .
+\]
+If we were being more formal, we could write
+\begin{eqnarray*}
+P(((U_1=1) \cap (U_2=0) \cap (U_3=0)) \cup
+((U_1=0) \cap (U_2=1) \cap (U_3=0)) \cup
+((U_1=0) \cap (U_2=0) \cap (U_3=1))) & = & \\
+\quad P((U_1=1) \cap (U_2=0) \cap (U_3=0)) +
+P((U_1=0) \cap (U_2=1) \cap (U_3=0)) +
+P((U_1=0) \cap (U_2=0) \cap (U_3=1)) & & \\
+\end{eqnarray*}
+
+Let's think now about the probability of the outcome SFF.  The
+chance of a success the first time is $p$, of a failure the
+second time is $1-p$, and of a failure the third time is $1-p$ also.
+So the probability of this outcome is $p(1-p)^2$, again using the
+crucial assumption of independence.
+Similarly, the probability of the outcome FSF is $(1-p)p(1-p)$,
+or also $p(1-p)^2$, as is the probability of FFS.  So the probability
+of getting SFF, FSF, or FFS is $p(1-p)^2 + p(1-p)^2 + p(1-p)^2$, or
+$3p(1-p)^2$.  
+
+The same method shows that the chance of getting exactly two successes
+in three trials (or exactly one failure!) is $3p^2(1-p)$.
+
+{\it Example.~~}Fifty-one individuals are exposed to a needlestick
+injury with Hepatitis C virus-contaminated blood.  Suppose the 
+risk of transmission is 0.03, independent for all individuals.  
+What is the probability that everyone
+becomes infected?  Thinking of infection as ``success'', we can use
+the same reasoning as above to find this probability to be
+$0.03^{51}$.  This is about $2.2 \times 10^{-78}$, crudely, about the 
+order of the chance that we would both randomly pick the same 
+elementary particle out of the observable universe.  Now, what is the
+chance no one is infected?  Again, using the same logic as for the
+simple die example, we have a probability of 0.97 that any particular
+person is not infected, and $0.97^{51}$ for all not to be infected.  This
+is approximately 21\%; there is about a one in five chance you won't
+see any infections at all.
+
+Continuing this example, what is the chance you will see {\it exactly
+one} infection in these individuals?  We do not wish to write out
+all 51 ways to get exactly one infection.  We know the chance that
+the first individual will be infected and no one else will be
+infected is going to be $p(1-p)^{51-1}$, or about 0.0065.  The chance
+that only the second individual will be infected  is 
+$(1-p)p(1-p)^{49}=p(1-p)^{51-1}$, or 0.0065 also.  Since there are
+51 ways to choose the person who will be infected, the probability
+of exactly one infection must be $51 \times p^1 (1-p)^{51-1}$, which
+is about 0.33.  So you have about a one in three chance of seeing
+exactly one infection in the 51 injuries.
+
+Now, what is the chance of seeing exactly two infections in 51
+cases?  We can use the same method, in principle.  For instance,
+the chance that the first and second individuals, and no others, 
+were infected (assuming independence) is $p \times p \times (1-p)^{51-2}$, or about 0.000202.  The chance that only the first and third were 
+infected is the same, as is the chance that only the first and fourth,
+and so forth, including such possibilities as only the second and
+third, second and fourth, third and seventeenth, thirty-second and
+forty-fifth, and so on.  How many of these possibilities are there?
+If we knew how many of these pairs there were, we could just multiply
+this number by $p^2 (1-p)^{51-2}$, and we would have the result
+we want.
+
+The number of ways to choose two objects out of 51 is denoted 
+${51 \choose 2}$.  In general, the number of ways to choose $x$
+objects out of $N$ is written ${N \choose x}$, pronounced ``N choose x''.  We need to know what this is.  It turns out that
+\[
+{N \choose x} = \frac{N!}{x! (N-x)!} ,
+\]
+as we'll show later.  Here, $N!$ (``N factorial'') means $N \times (N-1) \times \cdots \times 3 \times 2 \times 1$.  For
+instance, $5!=5 \times 4 \times 3 \times 2 \times 1 = 120$.
+\begin{table}
+\caption{\label{tbl:fact}Selected values of $N!$}
+\begin{tabular}{rr}
+$N$ & $N!$ \\ \hline
+1 & 1 \\
+2 & 2 \\
+3 & 6 \\
+4 & 24 \\
+5 & 120 \\
+6 & 720 \\
+7 & 5040 \\
+8 & 40320 \\
+9 & 362880 \\
+10 & 3628800 \\
+11 & 39916800 \\
+12 & 479001600 \\ \hline
+20 & 2432902008176640000 \\ \hline
+\end{tabular}
+\end{table}
+Factorials have a way of getting really big much faster than you might
+think; for instance,
+\[
+40! = 815915283247897734345611269596115894272000000000 .
+\]
+And
+\begin{verbatim}
+100! = 93326215443944152681699238856266700490715968264381621
+       46859296389521759999322991560894146397615651828625369
+       7920827223758251185210916864000000000000000000000000 ,
+\end{verbatim}
+a number far larger than the number of particles in the known
+universe.
+
+We can get a better understanding of the factorial function by
+showing that $N!$ is the number of ordered arrangements ({\it permutations}) of $N$ distinguishable objects.  For instance, suppose four patients
+A, B, C, and D arrive at a clinic in a random order.  We could have
+the order ABCD, or ABDC, or BDAC, etc.  How many such orderings?
+We have four choices for the first arriver; suppose the first arriver
+is A.  Then the second arriver must be B, C, or D (three choices);
+if the second arriver is C (say), then we have two choices for the
+third (B or D).  Once the third arrival has happened, we know who has
+to be last.  This same logic works no matter what the choices are;
+we have 4 choices for the first arriver, and no matter what choice is
+made, we always have 3 choices the next time.  And no matter who the
+first two are, we always have two choices for the third person, so there
+are $4 \times 3 \times 2 \times 1 = 4!$ orderings.
+
+One way to see that this has to work for any $N$ is to suppose that
+the number of orderings for some $n$ is $n!$.  Let's look at the
+number of orderings for $(n+1)!$.  We have $(n+1)$ choices for the
+first position, and after that we have $n$ items to fill the last
+$n$ slots (which we assumed could be done $n!$ ways).  We can be sure
+that we count each arrangement and count only once this way, so the
+total number of orderings is $(n+1) \times n! = (n+1)!$.  In other
+words, if the number of permutations of $n$ is $n!$, then the number
+of permutations of $(n+1)$ items is $(n+1)!$.  Since we already know
+that this works for some particular $n$, say $n=1$, we can be sure
+it holds for every $n$ above this.  This method is called 
+{\it mathematical induction}.
+
+Now, how many ways are there to permute zero objects?  It turns out
+that it is convenient to say that there is only one way, and
+by convention, 0! is equal to one.
+
+We have shown that the number of ways to permute all $N$ 
+distinguishable objects is $N!$.  Since we chose all the objects
+to be in the ordering, this is the number of permutations of 
+$N$ objects taken $N$ at a time.  
+
+Suppose that we only take the $N$ objects $x$ at a time.  For
+instance, suppose you are trying to solve the puzzle of how many 
+four letter words can be made with the letters ADEIMT (i.e., 
+taking four at a
+time to make words).  You might begin by listing all the possible
+ordered choices of four letters from this set, beginning with
+\verb+adei+, \verb+adem+, \verb+adet+, and so forth.  How many such
+choices are there?  There are six choices for the first letter, 
+for each such choice there are always five more for the second 
+letter, four more for the third, and three more for the fourth, giving
+$6 \times 5 \times 4 \times 3 = 360$ possible orderings.  
+
+\renewcommand{\baselinestretch}{1.2} \small
+Of course, not all the 360 letter sequences are words; I count only
+25 English words, including {\it aide}, {\it diet}, {\it emit},
+{\it time} and {\it tide} (which wait for no man), {\it mead}
+(a fermented beverage {\it made} from honey, not a bad {\it idea}), 
+and even {\it adit} (a horizontal mine entrance).  We get more if
+you allow proper names, such as {\it Edam} (a city in Holland, and the
+type of cheese made there) or abbreviations such as EDTA (ethylene
+diamine tetra-acetic acid, a chelating agent) or ADEM (Alabama
+Department of Environmental Management), and even more if you allow
+other languages, so that we could count {\it adet} (custom or
+manners in Albanian) and {\it tead} (torch in Turkish).
+Those of you familiar with R will understand the following program
+to generate all possible strings of a given length from a set:
+<<>>=
+perms <- function(v,taken=length(v)) {
+  if (taken>length(v)) {
+    stop("can't take more than length")
+  }
+  if (taken<=0) {
+    stop("can't take zero or negative")
+  }
+  if (taken==1) {
+    v
+  } else {
+    as.vector(sapply(1:length(v),function(i){paste(v[i],perms(v[-i],taken=taken-1),sep="")}))
+  }
+}
+wds <- perms(c("a","d","e","i","m","t"),4)
+@
+We could then type \verb+wds+ at the prompt to see the entire list
+of 360.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+More generally, the number of permutations of $N$ objects taken $x$ at
+a time can be shown to be 
+$N \times (N-1) \cdots \times (N-x+2) \times (N-x+1)$.  If we
+multiply and divide by $(N-x)!$, we can turn this into $N!/(N-x)!$,
+a cleaner formula to write down.  Remember, however, that a cleaner
+or more elegant formula does not necessarily make a better computation;
+if you want the number of permutations of 100 items taken 3 at a
+time, you can just compute $100 \times 99 \times 98 = 970200$,
+rather than the beastly $100!/97!$.  What makes an elegant formula does
+not necessarily make an efficient computation.
+
+What if we were not interested in the number of permutations, but rather
+just the number of unordered choices?  For instance, in selecting
+ordered arrangements of four letters from the set ADEIMT, we wind up 
+with 24 possibilities that just include A, D, E, and I:
+
+\scriptsize
+<<>>=
+adei<-perms(c("a","d","e","i"),4)
+adei
+@
+\normalsize
+
+All 24 of these were in the 360 total choices from ADEIMT.  For 
+every possible group of four letters (every {\it combination}, or
+unordered choice), we wind up counting it 24 times.  We count it
+24 times, because there are $4!=24$ permutations of four objects.  So
+if we just want the number of combinations of $N$ things taken
+$x$ at a time, we can divide the number of permutations of $N$ things
+taken $x$ at a time by the number of permutations of the $x$ things
+we chose (the number of times we counted each combination).  
+So we divide $N!/(N-x)!$ by $x!$, and we get
+\[
+{N \choose x} = \frac{N!}{(N-x)!x!} .
+\]
+
+{\it Example.~~}How many combinations of 100 things taken 3 at a time
+are there?  We already know there are $100 \times 99 \times 98$
+permutations of 100 things taken 3 at a time, so we divide this by
+$3!$ permutations of the 3 things we took, so we get 161700.  As before,
+we certainly don't want to actually compute 100! and 97!.
+
+The fact that when counting combinations and permutations, astronomical
+numbers frequently arise even from fairly small sets is sometimes
+called {\it combinatorial explosion}.  For instance, in one version
+of the California lottery (a version that was replaced by a newer 
+version), six numbers were chosen 
+from 51.  Each player would select 6 numbers, and the state government
+would choose another six; if you selected the same 6 numbers, you would
+split the pot with every other similarly fortunate player, and could
+keep what was left after federal and state taxes.  How many ways are
+there to select 6 numbers out of 51?  Remember---here the order does
+not matter, only combinations matter.  There are 18009460 such
+choices, and if each is equally likely, you had a 1/18009460 chance
+of winning.  To improve our understanding of how small this probability
+is, observe that a United States Federal Reserve Note is 
+6.14 inches long.  If we laid 18,009,460 of them end to end along a
+highway, they would stretch from the CDHS Complex in Richmond, CA, 
+all the way to Tucson, Arizona and back.  Winning the old lottery was
+like picking the right one of these dollar bills, at random.  (In the
+current California lottery, you pick 5 numbers out of 47 (1,533,939
+possibilities) and also one out of 27 ``mega numbers'', for a total of 
+41,416,353 possible outcomes.  This yields an individual probability
+of winning of approximately $2.4 \times 10^{-8}$, and stretches our
+path of dollar bills all the way to {\it Possum Grape, Arkansas} and
+back.)
+
+Those of you who are familiar with the R statistics package can
+compute the number of combinations using the command \verb+choose+:
+<<>>=
+choose(51,6)
+choose(47,5)
+@
+
+At last, we can return to the question of what the probability of
+getting two infections out of our group of 51 needlestick injuries,
+assuming independence, and that each person had a 3\% risk.  Since
+there are ${51 \choose 2}$ ways to pick two people out of the 51, 
+and a probability of $p^2 (1-p)^{51-2}$ for each such combination,
+the probability is ${51 \choose 2} p^2 (1-p)^{51-2}$, or about 0.258.
+
+In general, the probability of $X=x$ successes in $N$ independent 
+Bernoulli trials, each with success probability $p$, is 
+\[
+P(X=x) = {N \choose x} p^x (1-p)^{N-x} .
+\]
+The distribution of $X$ is known as the {\it binomial distribution}.
+
+In R, you can compute binomial probabilities using \verb+dbinom+:
+<<>>=
+dbinom(2,prob=0.03,size=51)
+@
+The success probability per trial $p$ is indicated by the argument 
+\verb+prob+, and the number of trials $N$ indicated by the argument
+\verb+size+.
+
+Does this make sense for $X=0$ or $X=N$?  Let's use the formula to
+compute the probability of zero successes in 51 trials with success
+probability 0.03.  Here, 
+\[
+P(X=0) = {N \choose 0} p^0 (1-p)^{51} .
+\]
+What is ${N \choose 0}$?  We have $N!/((N-0)!0!)$, and since $0!=1$
+by convention, $N!/N!=1$.  So $P(X=0)=1 \times 1 \times (1-p)^{51}$,
+the same answer we got before.  The formula gives the same answer
+for $X=N$ as well.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+A person has ten unprotected partnerships with persons 
+with HIV infection. Assume the probability of transmission is 0.1, and
+that the transmission is independent between partnerships. What is the
+probability the person becomes infected?  Suppose that the 
+probability of infection per partnership is reduced by 60\%; how
+much reduction in the individual's risk of infection occurs? 
+Adapted from Grant et al, 1987, Porco et al 2004.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Let $\beta$ be the per-partnership probability of transmission from an 
+HIV-infected person, and
+let $p$ be the probability a randomly chosen person is infected.  Let $n$ be
+the number of partners a person has.  Assume that the probability of
+transmission and the probability of being infected are independent.  What is
+the probability that a person with $n$ partners will become infected?
+Assume $\beta=0.1$, $p=0.2$, and plot the results as $n$ ranges from 1 to 20.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+As above, let $\beta$ denote the probability of transmission of HIV during
+a partnership with an HIV-infected person.  Let $n_1$ be the number of
+high-risk partners, and let $p_1$ be the prevalence among high-risk partners;
+let $n_1$ be the number of low-risk partners and $p_2$ be the prevalence among
+low-risk partners.  What is the probability of infection?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Let $\beta$  be the probability of transmission of HIV during a partnership
+with an infected person, assuming no protection was used at any time.
+Let $\beta \theta$ be the probability of such transmission assuming protection
+was reported to be consistently used.  Assume that the prevalence of infection 
+among all partners was $p$ and that the use of protection was independent of
+the infection status of the partner.  (a) Give a simple verbal explanation
+of the meaning of $\theta$.  (b) Let $n_1$ be the number of partners for which
+no protection was used, and let $n_2$ be the number of partners for which
+protection was consistently used.  What is the probability of infection?
+(c) Suppose the person reports $n$ total partners.  Now assume that protection
+is used with probability $q$.  What is the probability of infection?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Let $\beta_1$ be the probability of transmission of HIV from a partner in
+the acute phase of infection, and $\beta_2$ be the probability of transmission
+from a partner in the chronic phase of infection.  (a) Assume that the
+acute phase lasts 3 months and that the chronic phase lasts 10 years, untreated.
+Suppose the probability that a partner is acutely infected is simply the
+fraction of time a person spends acutely infected.  What is the numerical
+value?  (b) Why might this be an underestimate? overestimate? (c) Given
+$n$ reported partners, what is the infection probability overall, given these
+assumptions?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that the probability of infection during a sex act with an HIV-positive
+person is $b$.  (a) If there are $m$ independent acts during a partnership,
+show that the probability of infection is $1-(1-b)^m$.  (b) Assume now that the
+number of acts $M$ in a given partnership is random, and that the distribution
+is $P(M=m) = q(1-q)^{(m-1)}$ for $m=1, 2, \cdots$, which we will later see is a geometric distribution (where $0<q<1$).  Prove the expected number of acts per partner is $1/q$. (c)
+Prove that the probability of infection per partnership is $\frac{b}{b+q(1-b)}$.
+(d) Express this in terms of the mean number of acts per partnership.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Consider HIV transmission due to receptive oral and receptive anal intercourse
+(ROI, RAI),
+with {\it per act} probabilities $b_1$ and $b_2$, respectively.  Assume
+that there are $m_1$ and $m_2$ acts of each, respectively.  (a) What is the
+infection probability per partnership conditional on $m_1$ and $m_2$? (b)
+Suppose no other acts are to be considered.  Suppose briefly that the
+distribution of the number $M_1$ of acts of ROI was
+$P(M_1 = m_1) = q_1 (1-q_1)^{m_1}$ for $m_1=0, 1, \cdots$ and that the
+distribution of the number $M_2$ of acts of RAI was
+$P(M_2 = m_2) = q_2 (1-q_2)^{m_2}$ for $m_2=0, 1, \cdots$, and finally that
+these distributions were independent.  (As we have seen, these are geometric
+distributions. Note $0<q_1<1$ and $0<q_2<1$).  What would $P(M_1=0,M_2=0)$ be?  (c) Since a person must
+have at least one sex act to be considered a partner, let
+the joint distribution of the number of acts of ROI and RAI be defined
+by $(q_1 (1-q_1)^{m_1} \times q_2 (1-q_2)^{m_2}) / (1-q_1 q_2)$ for
+any pair of integers $m_1$ and $m_2$ such that $m_1$ and $m_2$ are not
+both zero.  Prove that the sum of these probabilities adds up to 1.
+(d) Prove that the number of ROI acts is no longer independent of the number
+of RAI acts, given the joint distribution in (c).  (Note: very simple---no
+computation needed.)
+(e) What is the expected number of ROI acts per partnership assuming the
+joint distribution in (c)? RAI acts per partnership?  
+(f) What is the probability of infection for a partnership in which only ROI
+is reported? (g) What is the probability of infection for a partnership
+in which only RAI is reported? (h) What is the probability of infection for
+a partnership in which both RAI and ROI are reported?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that an individual reports $n$ sex partners within the last six
+months.  Assume the prevalence
+is $p$, the infection probability is $\beta$, and that the partnerships 
+are distributed randomly over time.  Assume the person was not infected
+five months ago; what is the probability that the person
+was newly infected during the last {\it five} months?  Such problems may arise when
+analyzing longitudinal data.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that two carriers of the sickle cell gene
+have four children.  Denote the genotype of a sickle-cell
+carrier as $Aa$, where $A$ denotes the normal hemoglobin allele, and
+$a$ the sickle cell allele.  Each child receives one allele randomly
+from the father and one randomly from the mother.  Thus, the probability
+of being homozygous for the sickle cell gene (and thus of having
+sickle cell disease) is $1/2 \times 1/2$, or 1/4.  What is the 
+probability that none of the four children will have sickle cell
+disease?  That at least one of the children will have the disease?
+That all will have the disease?  
+
+The binomial distribution also forms the basis of a simple and useful
+statistical test, called the {\it sign test}, which we'll talk about
+in the future.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Consider again the set of letters ADEIMT.  What is
+the number of combinations (unordered selections) of four letters
+chosen from this set?
+
+Consider again the collection ADEIMT.  One way to think about the 
+number of combinations chosen from this set is to first of all count
+the number that have a T (say) in them, and the number that don't.
+How many combinations are there with T?  You have five remaining
+letters from which you can make the three remaining choices; there are
+${5 \choose 3}$ ways to accomplish this.  How many combinations are
+there that have no T in them?  There are five letters (ADEIM) from 
+which all four choices must be made; there are ${5 \choose 4}$ ways
+to do this.  This suggests the next exercise.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Verify that
+${6 \choose 4} = {5 \choose 3} + {5 \choose 4}$.  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show that in general,
+\[
+{N \choose k} = {N-1 \choose k-1} + {N-1 \choose k} .
+\]
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show that in general,
+\[
+\sum_{x=0}^N {N \choose x} = 2^N .
+\]
+
+\renewcommand{\baselinestretch}{1.2} \small
+The binomial theorem of Newton says that
+\[
+(a+b)^N = \sum_{i=0}^N {N \choose i} a^i b^(N-i) .
+\]
+The similarity of this formula to the binomial distribution's 
+probability formula is the reason the binomial distribution is called
+the binomial distribution in the first place.  To see why it works,
+imagine expanding out $(a+b)^3$:
+\begin{eqnarray*}
+(a+b)^3 & = & (a+b)(a+b)(a+b) \\
+& = & aaa + aab + aba + abb + baa + bab + bba + bbb \\
+& = & a^3 + a^2b + a^2b + ab^2 + a^2b + ab^2 + ab^2 + b^3 \\
+& = & a^3 + 3a^2b + 3 ab^2 + b^3 \\
+& = & a^3 + 3a^2b + 3 ab^2 + b^3 \\
+\end{eqnarray*}
+Every term has order 3, because there are 3 terms and we picked a
+factor out of each.  Because multiplication is associative and
+commutative, it does not matter what order we write the product
+in, but it does matter how many $a$'s and $b$'s there are.  Suppose
+there are 2 $a$'s.  How many ways are there to choose two of the
+three factors to pick the $a$'s from?  Since ${3 \choose 2}=3$,
+we know the coefficient of $a^2b$ must be 3.  In general, the
+same argument suggests that the coefficient of $a^ib^{N-i}$ must
+be ${N \choose i}$.
+
+To prove the theorem, you can use mathematical induction.  First,
+note that the theorem works for some $N$, say $N=1$.  Here, we
+have $(a+b)^1 = a^0b^{1-0} + a^1b^{1-1}=a+b$.  This is the {\it
+base case}.  Then, for the induction step, we need to show that
+if the result is true for some $N$, it is also true for the next
+one, $N+1$.  So let's assume for some $N$,
+\[
+(a+b)^N = \sum{i=0}^N {N \choose i} a^i b^{N-i} .
+\] 
+Then
+\[
+(a+b)^{N+1} = (a+b) (a+b)^N  = 
+(a+b) \sum{i=0}^N {N \choose i} a^i b^{N-i} .
+\]
+Expanding the sum, 
+\begin{eqnarray*}
+(a+b)^{N+1} & = & a \sum{i=0}^N {N \choose i} a^i b^{N-i} + b \sum{i=0}^N {N \choose i} a^i b^{N-i} \\
+ & = &  \sum{i=0}^N {N \choose i} a^{i+1} b^{N-i} +  \sum{i=0}^N {N \choose i} a^i b^{N-i+1} \\
+\end{eqnarray*}
+In the first term, we can let $j=i+1$ and sum from $1$ to $N+1$:
+\begin{eqnarray*}
+(a+b)^{N+1} & = & \sum{j=1}^{N+1} {N \choose j-1} a^{j} b^{N+1-j} +  \sum{i=0}^N {N \choose i} a^i b^{N-i+1} \\
+ & = & {N \choose N} a^{N+1}b^0 \sum{j=1}^{N} {N \choose j-1} a^{j} b^{N+1-i} +  \sum{i=1}^N {N \choose i} a^i b^{N-i+1} + {N \choose 0} a^0 b^{N+1} \\
+ & = & {N \choose N} a^{N+1}b^0 \sum{i=1}^{N} \left({N \choose j-1} + {N \choose j} \right) a^{j} b^{N+1-i} +  {N \choose 0} a^0 b^{N+1} \\
+\end{eqnarray*}
+Now, ${N \choose j-1} + {N \choose j} = {N+1 \choose j}$ as we 
+showed in an exercise above.  So
+\begin{eqnarray*}
+(a+b)^{N+1} & = & {N \choose N} a^{N+1}b^0 \sum{i=1}^{N} \left({N \choose j-1} + {N \choose j} \right) a^{j} b^{N+1-i} +  {N \choose 0} a^0 b^{N+1} \\
+ & = & {N \choose N} a^{N+1}b^0 \sum{i=1}^{N} {N+1 \choose j} a^{j} b^{N+1-i} +  {N \choose 0} a^0 b^{N+1} \\
+ & = &  \sum{i=0}^{N+1} {N+1 \choose j} a^{j} b^{N+1-i}  \\
+\end{eqnarray*} 
+So the result works for $N+1$, and this shows that the binomial theorem
+is true for all $N$.
+
+If $b=1$, then we have this useful fact:
+\[
+(a+1)^N = \sum_{i=0}^N {N \choose i} a^i .
+\]
+
+The sum of two independent binomial random variables with the same
+success probability is a binomial random variable also.  More
+specifically, suppose that $X$ is binomial with $N$ trials and
+success probability $p$, and $Y$ is binomial with $M$ trials and
+the same success probability $p$.  It turns out that $X+Y$ is
+the count of successes in $M+N$ independent trials with the
+same success probability $p$, and it must have a binomial distribution.
+
+Let's determine the distribution of $X+Y$, i.e. the probability that
+$X+Y$ takes various values, which we'll call $s$.  How is it possible
+for $X+Y$ to be $s$?  If $X=0$ and $Y=s$, then $X+Y=s$.  But also,
+if $X=1$ and $Y=s-1$, $X+Y=s$, and so forth.  So
+\begin{eqnarray*}
+P(X+Y=s) & = & P(X=0,Y=s) + P(X=1,Y=s-1) + P(X=2,Y=s-2) + \cdots + P(X=s-1,Y=1) + \\
+ & & \quad + P(X=s,Y=0) .
+\end{eqnarray*}
+This works for any $s$ between 0 and $N+M$.  Sometimes these 
+probabilities are zero; for instance, $P(Y=N+M)=0$ when $N>0$ since
+you can't possibly have more successes on $Y$ than trials.  A little
+experimentation shows that
+really, $i$ has to start from 0 or $s-M$, whichever is greater, and
+has to end at $s$ or $N$, whichever is smaller.
+
+We can rewrite this
+\[
+P(X+Y=s) = \sum_{i=\max (0,s-M)}^{\min (s,N)} P(X=i,Y=s-i) .
+\]
+But $X$ and $Y$ are independent, so
+\[
+P(X+Y=s) = \sum_{i=\max (0,s-M)}^{\min (s,N)} P(X=i) P(Y=s-i) .
+\]
+Then, using the binomial formula,
+\[
+P(X+Y=s) = \sum_{i=\max (0,s-M)}^{\min (s,N)} {N \choose i} p^i (1-p)^{N-i} {M \choose s-i} p^{s-i} (1-p)^{M-(s-i)} .
+\]
+Simplifying, we have
+\[
+P(X+Y=s) = \sum_{i=\max (0,s-M)}^{\min (s,N)} {N \choose i} {M \choose s-i} p^{s} (1-p)^{N+M-s} = p^s (1-p)^{N+M-s} \sum_{i=\max (0,s-M)}^{\min (s,N)} {N \choose i} {M \choose s-i} .
+\]
+
+So we have to show
+\[
+\sum_{i=\max (0,s-M)}^{\min (s,N)} {N \choose i} {M \choose s-i} = {N+M \choose s} .
+\]
+Knuth (1997) suggests a very slick proof, based on the fact that
+$(a+b)^{M+N} = (a+b)^M (a+b)^N$.  Using the binomial theorem with
+$b=1$, 
+\[
+\sum_{i=0}^{M+N} {M+N \choose i} a^i =
+\sum_{i=0}^{M} {M \choose i} a^i  \times
+\sum_{j=0}^{N} {N \choose j} a^j  =
+\sum_{i=0}^M \sum_{j=0}^N {M \choose i} {N \choose j} a^{i+j} .
+\] 
+This has to be true for any $a$, so it must be true term by term.
+So if we pick a term from the left, say the term with the $s$-th
+power, the coefficient is ${M+N \choose k}$.  If we collect all the
+terms on the right that involve $a^s$ and factor out $a^s$, we
+have the coefficient $\sum_k {M \choose k} {N \choose s-k}$ (where
+we used $k$ as the dummy index of summation to keep from confusing it
+with the terms on the right). 
+Equating coefficients (and switching back to $i$) gives us the result 
+we wanted to show.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+Having just shown that
+\begin{equation}
+\sum_{i} {M \choose i} {N \choose s-i} = {M+N \choose s} ,
+\end{equation}
+what does this equation mean?  Let's do an example, and
+assume that we have a collection of objects $ABCdefg$.  We know there 
+are ${7 \choose 4}=35$ combinations, shown in the table.
+\begin{table}
+\begin{tabular}{ccccccc}
+ABCd & ABCe & ABCf & ABCg & ABde & ABdf & ABdg \\
+ABef & ABeg & ABfg & ACde & ACdf & ACdg & ACef \\
+ACeg & ACfg & Adef & Adeg & Adfg & Aefg & BCde \\
+BCdf & BCdg & BCef & BCeg & BCfg & Bdef & Bdeg \\
+Bdfg & Befg & Cdef & Cdeg & Cdfg & Cefg & defg \\
+\end{tabular}
+\end{table}
+Now, we have 3 capital letters and 4 lower case letters.  
+Let's see how many combinations there are with zero, one, two, three,
+and four capitals.  Starting with zero capitals, there is only one
+way to pick no capitals from 3 (since ${3 \choose 0}=1$), and also
+only one way to pick the other four letters from the four lower
+case letters (since ${4 \choose 4}=1$).  So we have one such
+combination (and we see it in the table as \verb+defg+).  Now, how
+many combinations with one capital?  We have ${3 \choose 1}=3$
+ways to pick the capital letter (A, B, or C), and for each choice,
+we have ${4 \choose 3}=4$ ways to pick the lower case letters, 
+(def, deg, dfg, and efg).  This gives us $3 \times 4 = 12$ of these
+combinations that have one single capital letter.  How about two
+capital letters?  We have ${3 \choose 2}=3$ choices for the pair of
+capitals, and ${4 \choose 2}=6$ for the pair of lower case letters,
+for $3 \times 6=18$ combinations all together.  How about three
+capitals?  We have only ${3 \choose 3}=1$ way to pick the capitals,
+but ${4 \choose 1}$ ways to pick the lower cases, so we have
+$1 \times 4 = 4$ more combinations.  There is no way to pick four
+capitals out of three, so we have no more combinations.  Adding these
+all up, we have $1+12+18+4=35$.
+
+Suppose you have two kinds of 
+individuals, say $M$ infected and $N$ uninfected, and that we choose
+a combination of size $s$ from this group.  We know there are 
+${M+N \choose s}$ combinations.  But another way to look at it is
+to ask first how many combinations there are with say no infected
+people; all the people must be uninfected.  So we have a certain
+number of ways to choose $s$ people from the uninfected group,
+${N \choose s}$ (which might well be zero, if $s>N$).  Then we can
+ask how many combinations there are with just one infected person; 
+we have ${M \choose 1}$ ways to pick the infected person and for 
+every one of these ways we have ${N \choose s-1}$ choices for the
+uninfected people.  If we want combinations with $i$ infected
+people, we have ${M \choose i}$ ways to pick the infected person and
+for every one of those ways we have ${N \choose s-i}$ ways to pick
+the uninfected people.  If we add up the number of combinations with
+no infected people, with one, with two, and so forth, we just the
+total number of combinations.  
+
+Here are some exercises involving combinatorial problems.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that instead of forming permutations by
+choosing without replacement, we look at choosing with replacement.
+How many ways are there to form a sequence of 4 items choosing
+from 2 with replacement?  In general, show that there are $n^k$
+ordered sequences from choosing $n$ items $k$ times with replacement.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Partnership networks arise when considering the
+transmission of sexually transmitted diseases.  Consider $N$ individuals (where for simplicty assume $N$ is even).  How many different ways are there
+to pair up these individuals (ignoring gender or other factors)?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Assume $N$ males and $N$ females.  How many ways are
+there to pair these up, one male to one female?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Assume $N$ individuals in a partnership network.  How
+many networks are there assuming that individuals may have zero, one,
+or two partners?
+
+%include the random mixing problem, need Stirling's formula
+\renewcommand{\baselinestretch}{1.2} \small
+Combinatorial problems also arise in considering disease transmission.
+Suppose there are four cases of tuberculosis that
+constitute a cluster (say ABCD).  
+Assuming that (1) there are no other unknown
+cases in the cluster, (2) one case initiated the cluster, and (3) 
+each case acquired the disease from exactly one other individual in the 
+cluster.  How many possible transmission patterns are there?
+
+Suppose that what happened was simply that an initial case transmitted
+infection to the others who formed the cluster.  There are four
+such possibilities: A transmitted infection to B, C, and D; B
+transmitted infection to A, C, and D; C transmitted infection to 
+A, B, and D; or D transmitted infection to A, B, and C.  
+
+It is also possible, though, that the initial case transmitted infection
+to two people, with the last case resulting from secondary 
+transmission.  We could have had A infecting B and C, and then B
+infecting D, or C infecting D (two more possibilities).  Or A 
+could have infected B and D, with B infecting C, or D infecting C 
+(two more), or finally A could have infected C and D, with C infecting
+B or D infecting B (a further two).  So there are six possible
+transmission patterns starting from A.  Since we could have started
+with B, C, or D, there must be $6 \times 4$ such patterns.
+
+But it is also possible that the initial case transmitted infection to
+only one person.  So we could have had A infect B, C, or D.  Suppose
+A infects B.  Then B could have infected C and D, C who infected D, 
+or D who infected C.  So we have a further three possibilities
+starting with A infecting B.  But A could have infected C or D; we have
+$3 \times 3=9$ such trees starting from A.  But as before, we could
+have begun with B, C, or D just as well, yielding $9 \times 4$ 
+further patterns.
+
+So there are $4 + 24 + 36 = 64$ patterns of disease transmission in
+a cluster of four cases.  Of course, not all will be equally likely;
+we will discuss in the future ways to begin to understand the 
+probability that each such tree will occur.
+
+But suppose there are say five patients in a cluster.  How many 
+transmission patterns are there?  Or for $n$ patients?  It turns out
+there is a wonderful technique due to H. Pr{\"u}fer for counting such 
+patterns (Cameron, 1994).  
+For the moment, let's neglect the fact that the trees 
+have a {\it root} (the initial case) and an {\it orientation} (a 
+direction of transmission) and just examine how many connection 
+patterns there are.
+
+It turns out that every disease transmission pattern with $n$ people
+in it can be represented by a sequence of $n-2$ numbers, called a
+{\it Pr{\"u}fer code}.  It's conventional to use numbers, so we'll
+number the people instead of using letters.  Suppose we have 
+a transmission pattern with person 3 connected to 1, 2, and 7, with
+person 1 connected also to 4, and person 2 connected also to 5 and 6
+(see the picture).\newline
+\setlength{\unitlength}{1mm}
+\begin{picture}(75,50)
+\put(20,20){\circle{7.0}\makebox(0,0){4}}
+  \put(23.5,20){\line(1,0){7}}
+\put(34,20){\circle{7.0}\makebox(0,0){1}}
+  \put(37.5,20){\line(1,0){7}}
+\put(48,20){\circle{7.0}\makebox(0,0){3}}
+  \put(48,23.5){\line(0,1){7}}
+  \put(51.5,20){\line(1,0){7}}
+\put(48,34){\circle{7.0}\makebox(0,0){7}}
+\put(62,20){\circle{7.0}\makebox(0,0){2}}
+  \put(62,23.5){\line(0,1){7}}
+  \put(65.5,20){\line(1,0){7}}
+\put(62,34){\circle{7.0}\makebox(0,0){5}}
+\put(76,20){\circle{7.0}\makebox(0,0){6}}
+\end{picture}
+\newline
+We're just saying this is how the patients are connected, and
+ignoring the direction of transmission for the moment.
+
+First, we'll determine the Pr{\"u}fer code for this transmission
+pattern.  The key is to look at the people who only connect to one
+other person.  Of all these people, who has the smallest number?  
+There is always such a person; in the example pattern, this person is
+number 4.  Now, write down {\it who they are connected to} (person 1)
+and remove them.  Now, the smallest number connected to only one
+other person is 1; write down who they are connected to (3) and
+remove the 1 from the graph.  After this, we have 5 as the smallest
+person connected to only one person (2); after removing 5, the 6 is
+the smallest and they're connected to 2 also.  At this point, the 
+smallest number connected to only one person is the 2, and we write
+that they're connected to the 3.  Once the two is removed, we have
+only 3 and 7 left, and we can stop.  Look at the sequence we wrote
+down: 13223.  This is the Pr{\"u}fer code for the connection pattern.
+There is nothing special about our transmission pattern; you can
+write down a single unique Pr{\"u}fer code for each pattern---the key
+is that there are never any cycles in the transmission pattern!
+
+How do you get from a Pr{\"u}fer code to a transmission pattern?
+Start with the code and a working list of all the people.  If there are
+$n$ people, the code is of length $n-2$.  Write down the code and
+the working list; we're going to move through the code, crossing each
+element off, and crossing people off of the working list as we go.
+Start with that first number in the code.  Look at the working list
+of people, and at everybody whose number does not appear in the 
+code anywhere.  In our example, we're starting with the code
+13223, and the working list $\{1,2,3,4,5,6,7\}$.  Since 1, 2, and 3
+are in the code, the smallest number in the working list that isn't
+in the code is 4, so we connect people 1 and 4, and make a new, shorter
+working code and working list: 3223 and $\{1,2,3,5,6,7\}$.  Now the
+smallest number in the working list but not the working code is 1,
+so we connect persons 3 and 1, and cross off to get
+223 and $\{2,3,5,6,7\}$.  Five is the smallest number in the list but
+not the working code, so we connect 2 and 5, and move on to 
+23 and $\{2,3,6,7\}$; next, we connect 2 and 6, moving on to 
+just 3 and $\{2,3,7\}$.  The smallest number in the list not in the
+working code is 2, so we connect people 2 and 3, and have no more
+working code; our list is now $\{3,7\}$.  To finish up, we connect
+people 3 and 7, and we've gotten back to our original transmission
+pattern!
+
+So Pr{\"u}fer's discovery was that every {\it labeled tree} with $n$
+people could be represented by a sequence of $n-2$ numbers chosen
+{\it with replacement} from $1, 2, \ldots, n$, and that every such
+sequence leads to a tree!  This makes it possible now to count the
+trees; there are $n^{n-2}$ such trees.  This is known as 
+{\it Cayley's formula}, after the mathematician who discovered it
+using a different technique.
+
+Finally, suppose we take such a pattern; if there are 7 people, 
+there were 7 possible index cases.  So to find the number of possible
+disease transmission patterns, we have to multiply Cayley's formula
+by one more factor of $n$, representing the different choices of
+who was the index case.  Therefore, there are $n^{n-1}$ different
+transmission patterns for a cluster of size $n$.  So there are 
+625 different patterns for size 5, 7776 for size 6, 117649 for size 
+7, 2097152 for size 8, 43046721 for size 9, and exactly one billion 
+for a cluster of size 10.  This result is a small
+first step towards understanding transmission and clustering.
+
+Interestingly, for disease transmission patterns (oriented
+labeled trees), it is straightforward to modify the Pr{\"u}fer
+code to yield an alternative coding with a useful interpretation.
+Let's look at a few examples.\newline
+\setlength{\unitlength}{1mm}
+\begin{picture}(90,104)
+\put(28,28){\circle{7.0}\makebox(0,0){A}}
+\put(28,14){\circle{7.0}\makebox(0,0){C}}
+  \put(28,24.5){\vector(0,-1){7}}
+  \put(25.5252,25.5252){\vector(-1,-1){9.0503}}
+  \put(30.47485,25.5252){\vector(1,-1){9.0503}}
+\put(14,14){\circle{7.0}\makebox(0,0){B}}
+\put(42,14){\circle{7.0}\makebox(0,0){D}}
+
+\put(28,98){\circle{7.0}\makebox(0,0){B}}
+  \put(28,94.5){\vector(0,-1){7}}
+\put(28,84){\circle{7.0}\makebox(0,0){A}}
+  \put(28,80.5){\vector(0,-1){7}}
+\put(28,70){\circle{7.0}\makebox(0,0){C}}
+  \put(28,66.5){\vector(0,-1){7}}
+\put(28,56){\circle{7.0}\makebox(0,0){D}}
+
+\put(70,98){\circle{7.0}\makebox(0,0){C}}
+  \put(70,94.5){\vector(0,-1){7}}
+\put(70,84){\circle{7.0}\makebox(0,0){D}}
+  \put(70,80.5){\vector(0,-1){7}}
+  \put(72.47485,81.52515){\vector(1,-1){9.0503}}
+\put(70,70){\circle{7.0}\makebox(0,0){A}}
+\put(84,70){\circle{7.0}\makebox(0,0){B}}
+
+\put(70,42){\circle{7.0}\makebox(0,0){D}}
+  \put(72.47485,39.52515){\vector(1,-1){9.0503}}
+  \put(70,38.5){\vector(0,-1){7}}
+\put(70,28){\circle{7.0}\makebox(0,0){B}}
+  \put(70,24.5){\vector(0,-1){7}}
+\put(84,28){\circle{7.0}\makebox(0,0){C}}
+\put(70,14){\circle{7.0}\makebox(0,0){A}}
+\end{picture}
+\newline
+The diagram shows four examples of transmission patterns, with the
+initial case at the top, and arrows pointing in the direction of 
+transmission.  To get our modified coding, we will proceed as
+follows.  Let us begin with the diagram at the upper {\it right}.
+Here, persons A and B transmitted the disease to no one else; they
+were at the end of the transmission chain.  Of these people at the
+end of the chain, A has the smallest index (A comes before B).  
+Person A got the disease from person D, so let's write down D as
+the first thing in the coding, and remove person A from the diagram.  
+Now there is only one person at the end of a transmission chain (person B),
+and they got it from D also.  So we write down D again, and remove B.
+Now we again have only one chain-ender, person D, who got the disease
+from C; we write down C, remove D from the diagram, and we are 
+finished.  The modified code for this transmission diagram is DDC.
+
+For the lower right, the initial chain-enders are A and C; A comes
+before C.  So we note that A got it from B, and remove A.  Now the
+chain enders are B and C; B got it from D, so we write down D and
+remove B.  Finally C is the only chain-ender, and C got the
+disease from D, so we write down D again.  The final code is
+BDD.  
+
+For the upper left, the code is CAB; for the lower left, the code
+is simply AAA.  
+
+What is the reverse algorithm, i.e. the
+algorithm to convert the modified code back to a transmission 
+pattern?  This again is a simple modification of Pr{\"u}fer's 
+algorithm.  Here, if our code is of length $n$, there will be
+$n+1$ individuals in the network.  Start with a working list of
+people, as before, and begin with the coding.  We're going to work
+through the code, one letter at a time, and cross each off as we
+go.  Find the smallest value in the working list who is not in the 
+code (excluding people who have been crossed off); this person
+got infected by the person indicated by the first item in the 
+coding.  Now cross off this person from the working list and cross off
+the first item in the code.  Continue this procedure until there is 
+only one person in the working list, and they will be the initial
+case.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+What transmission pattern corresponds to CCC? BAA? CDC?
+CAA? DDB? DBA?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Prove or show a counterexample: the depth of the
+tree (the maximum number of transmissions in a chain) equals the
+number of different letters in the modified code.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+{\bf References}\newline
+Cameron, P. J. 1994. {\it Combinatorics} Cambridge University Press.
+
+\vfill
+
+\end{document}
+

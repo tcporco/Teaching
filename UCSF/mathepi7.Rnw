@@ -1,0 +1,427 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Mathematical epidemiology, Part 7}
+
+\subsection*{Goals}
+The specific goals for this segment are:
+\begin{enumerate}
+\item Discuss geometric decay
+\item Discuss the geometric waiting time distribution
+\item Discuss the difference between state space and individual based models
+\item Discuss the binomial death process with constant inflow 
+\end{enumerate}
+
+\section*{Geometric decay}
+Suppose that we wish to consider a population of $X$ individuals
+at time 0.  We denote this number by $X(0)$.  Suppose that the risk
+of death for each individual in some time period, say one month, is 
+$p$, or equivalently, the probability of survival is $s=1-p$.  Assuming 
+that all the death events are independent, we can model the 
+number of individuals at the end of this time period, say $X(1)$,
+by
+\[
+X(1) \sim \mbox{\rm Binom}(X(0), s) ,
+\]
+where this means that $X(1)$ is a binomial random variable with
+$X(0)$ trials and a success probability $s$ per trial.  This
+tells us that the {\it expected} number of individuals at time
+1, $E(X(1))=N(1)$, must equal $X(0)s$.
+
+Observe that we can also model the number of deaths, $Y(1)$ say, during
+interval 1 (from time 0 to time 1) as a binomial
+random variable, with $X(0)$ trials and a death probability of
+$p=1-s$ per unit time.  Of course, $X(1)$ and $Y(1)$ are not at 
+all independent ($P(X(1)=x, Y(1)=y) \neq P(X(1)=x) P(Y(1)=y)$).
+
+Now, given any $X(i-1)$, we know that the distribution of $X(i)$
+{\it conditional} on $X(i-1)$ is binomial with $X(i-1)$ trials and
+survival probability $s$.  So we can write
+\[
+E[X(i)|X(i-1)] = X(i-1)s .
+\]
+Then,
+\[
+E[E[X(i)|X(i-1)]] = E[X(i-1)s] ,
+\]
+so that
+\[
+E[X(i)] = sE[X(i-1)] ,
+\]
+or $N(i)=sN(i-1)$.  
+
+Incidentally, note that $N(i)=sN(i-1)$ and $N(i+1)=sN(i)$ represent
+exactly the same relationship.  The only difference is that $i$
+ranges over $1,2,3,\ldots$ for the first version, and $0,1,2,\ldots$
+for the second.
+
+The solution to $N(i)=sN(i-1)$ is $N(i)=s^i N(0)$.  Of course,
+$N(0)=X(0)$, since $X(0)$ is just a constant.  We can rephrase this
+as
+\[
+E[X(i)] = s^i X(0) 
+\]
+for this simple model.  By assumption here, $0\leq s \leq 1$; if $s<1$,
+in the long run as $i$ gets large, $E[X(i)]$ gets closer and closer 
+to zero.  If $s=1$ exactly, then the expected value of $X(i)$ does not
+change.  We could also write this $E[X(i)] = X(0) (1-p)^i$.
+
+
+Let's look at a simple simulation of this process.
+<<>>=
+binomial.death.process <- function(x0,surv,endtime,verbose=FALSE) {
+  if (endtime<0) {
+    cat("endtime=");cat(endtime);cat("\n")
+    stop("error--bad endtime in binomial.death.process")
+  }
+  if (surv<0 | surv>1) {
+    cat("surv=");cat(surv);cat("\n")
+    stop("error--bad surv in binomial.death.process")
+  }
+  if (x0<0) {
+    cat("x0=");cat(x0);cat("\n")
+    stop("error--bad initial condition x0 in binomial.death.process")
+  }
+  ans <- rep(NA,floor(endtime)+1)
+  ans[1] <- x0
+  for (ii in 2:(endtime+1)) {
+    if (verbose) {cat("ii=");cat(ii);cat("\n");}
+    ans[ii] <- rbinom(1,size=ans[ii-1],prob=surv)
+  }
+  ans
+}
+@
+Note that we've checked the inputs to our \verb+binomial.death.process+
+function.  This is always a good idea; it won't catch all mistakes.
+But every mistake you catch helps, and it makes sense to use the 
+program itself to help you debug and test it.  In a complex program,
+you may wish for certain very frequently called functions to not
+constantly be checking everything; functions very frequently called
+may not need error checking.  Sometimes you may wish to have several
+layers of error checking you can turn on or off depending on inputs
+to the program; more about these and related matters later in the 
+course.  Also, observe that we did not use a single letter \verb+i+
+as a variable name; this can be irritating to search for using a 
+text editor.
+
+Let's use our function:
+\begin{figure}
+\caption{\label{fig:bindeath1}Binomial death process, with $X(0)=100$, $s=0.9$.}
+  \centering
+<<fig=true>>=
+x0 <- 100
+endtime <- 20
+times <- 0:20
+surv <- 0.9
+plot(times,binomial.death.process(x0,surv,endtime),xlab="Time",ylab="Surviving individuals",ylim=c(0,100))
+@
+\end{figure}
+
+Let's add several such plots to a single graph:
+\begin{figure}
+\caption{\label{fig:bindeath1a}Eight realizations of the binomial death process, with $X(0)=100$, $s=0.9$.}
+  \centering
+<<fig=true>>=
+x0 <- 100
+endtime <- 20
+times <- 0:20
+surv <- 0.9
+colors <- c("blue","violet","red","orange","green","gray","cyan")
+plot(times,binomial.death.process(x0,surv,endtime),xlab="Time",ylab="Surviving individuals",ylim=c(0,100),type="l")
+for (ii in 1:length(colors)) {
+  points(times,binomial.death.process(x0,surv,endtime),type="l",col=colors[ii])
+}
+@
+\end{figure}
+R has many advanced features in its graphical functions, very few of which
+we will explore in this class.  We will, however, show how to generate
+publication quality graphics using the basic features of R.
+
+Note that we used a vector of color names to give each line in a different
+color.  R has hundreds of color names; my version has 657 names, including
+such things as \verb+springgreen+, \verb+steelblue+, and so forth.
+
+One thing that is often useful in practice is to build up a complex graph
+by writing a function to generate it, and modifying the function as needed.
+<<>>=
+plot.binomial.death.process <- function(x0,surv,endtime,nscenarios,colors=c("black","red","blue","green","orange","springgreen","steelblue","violet","gray")) {
+  times <- 0:endtime
+  plot(times,times,xlab="Time",ylab="Surviving individuals",ylim=c(0,100),type="n")
+  if (nscenarios > length(colors)) {
+    colors0 <- c(colors,sample(setdiff(colors(),colors)))
+    colors <- colors0
+  }  
+  for (ii in 1:nscenarios) {
+    points(times,binomial.death.process(x0,surv,endtime),type="l",col=colors[ii])
+  }
+}
+@
+With this particular function, notice that the actual simulation, as well as
+the plot, are done together.  Not only that, the actual colors used on the
+graph can change each time.  For many purposes, you would want to separate
+these things, generating the results once, and then having a separate plot
+function.
+\begin{figure}
+\caption{\label{fig:bindeath1b}Another ten realizations of the binomial death process, with $X(0)=100$, $s=0.9$.}
+  \centering
+<<fig=true>>=
+plot.binomial.death.process(100,0.9,20,10)
+@
+\end{figure}
+
+Since we're interested in multiple scenarios, we can use the vector capabilities
+of R to generate all the scenarios at once, returning them as a matrix.  We'll
+have every column represent a scenario and every row a time:
+<<>>=
+binomial.death.process.ii <- function(x0,surv,endtime,nscenarios,verbose=FALSE) {
+  if (endtime<0) {
+    cat("endtime=");cat(endtime);cat("\n")
+    stop("error--bad endtime in binomial.death.process.ii")
+  }
+  if (surv<0 | surv>1) {
+    cat("surv=");cat(surv);cat("\n")
+    stop("error--bad surv in binomial.death.process.ii")
+  }
+  if (x0<0) {
+    cat("x0=");cat(x0);cat("\n")
+    stop("error--bad initial condition x0 in binomial.death.process.ii")
+  }
+  ans <- matrix(NA,nrow=floor(endtime)+1,ncol=nscenarios)
+  ans[1,] <- rep(x0,nscenarios)
+  for (ii in 2:(endtime+1)) {
+    if (verbose) {cat("ii=");cat(ii);cat("\n");}
+    ans[ii,] <- rbinom(nscenarios,size=ans[ii-1,],prob=surv)
+  }
+  ans
+}
+@
+
+We can approach the binomial death process another way.  Suppose we ask
+how long before an individual dies?  In other words, how long must we wait
+until the first failure?  The probability that the first failure occurs 
+during the first interval is just $p=1-s$, the death probability.  The
+probability that the first failure occurs during the second interval is
+$(1-p)p$; we used the multiplication rule to multiply the probability of
+living through the first interval, $1-p$, by the probability of dying in
+the second interval (if you were alive to start with).  The probability of
+the first failure occurring in the third interval is $(1-p)^2 p$, and in
+general, the probability of the first failure in interval $i$ is
+$(1-p)^{i-1} p$.
+
+Let's find the expected time of failure.  Let $T$ be the interval
+the death (first failure) occurs in.  Then $ET = \sum_{t=1}^{\infty} t P(T=t)$.  This is
+\[
+ET = \sum_{t=1}^{\infty} p(1-p)^{t-1} t = p \sum_{t=1}^{\infty} (1-p)^{t-1} t  = (1-s) \sum_{t=1}^{\infty} t s^{t-1} .
+\]
+(Remember $s=1-p$.)  A standard technique for this is called
+{\it parametric differentiation}, which is worth seeing once.
+Since
+\[
+\sum_{t=0}^{\infty} s^t = \frac{1}{1-s} ,
+\]
+we can differentiate both sides (the series converges absolutely):
+\[
+\frac{d}{ds} \sum_{t=0}^{\infty} s^t = \frac{1}{(1-s)^2} ,
+\]
+so that
+\[
+\sum_{t=0}^{\infty} t s^{t-1} = \frac{1}{(1-s)^2} .
+\]
+So
+\[
+ET = (1-s) \frac{1}{(1-s)^2} = \frac{1}{1-s} = \frac{1}{p} .
+\]
+The waiting time to death is one over the probability of death each
+time interval.
+
+What is the chance someone alive at the beginning would be alive
+at time $i$? Intuitively, it must be $s^i$, the chance of surviving
+$i$ intervals.  The geometric distribution produces the same
+answer:
+\begin{eqnarray*}
+P(T > i)  & = &  1 - P(T \leq i) \\
+  & = &  1 - \big( (1-s) + (1-s)s + (1-s)s^2 + \cdots + (1-s)s^{i-1} \big) \\
+  & = &  1 - (1-s) \frac{1-s^i}{1-s} \\
+  & = &  s^i . \\
+\end{eqnarray*}
+
+Notice that the probability of a person, who starts at time zero,
+dying in interval $i$ is $(1-p)^{i-1} p$.  This gets smaller and smaller;
+fewer and fewer people die at later and later times, since there are
+fewer and fewer living to begin with at later and later times.  The
+probability of death in each interval (conditional on being alive at
+the beginning), never changes, however (this is called the {\it
+memoryless} property of the geometric distribution).  Of course, 
+real-life lifetime distributions for human lifetimes, recovery times
+from infection, and so on, are rarely memoryless geometric distributions.
+
+The geometric distribution possesses an important property known
+as {\it memorylessness}.  Remember that starting from the beginning,
+the probability of death in the interval $j$ is
+\[
+P(T=j) = s^{j-1}(1-s) .
+\]
+But suppose you have lived to interval $i$ already; what is the
+chance you'll live {\it another} $j$ intervals?  This is the
+conditional probability $P(T=i+j|T>i)$, $j>0$.
+\[
+P(T=i+j|T>i) = \frac{P(T=i+j, T>i)}{P(T>i)} = \frac{P(T=i+j)}{P(T>i)}.
+\]
+Remember $T=i+j \cap T>i$ is the same thing as $T=i+j$; $T$ can't
+be equal to $i+j$ unless it's greater than $i$ anyway. So
+\[
+P(T=i+j|T>i) = \frac{s^{i+j-1}(1-s)}{s^i} = s^{j-1}(1-s).
+\]
+What this shows is that $P(T=i+j|T>i)=P(T=j)$.  Given that you've made
+it to time $i$, the lifetime distribution is actually the same, going
+forward.  This is the memorylessness property:
+\[
+P(T=i+j|T>i) = P(T=j).
+\]
+It turns out that for integer distributions, any memoryless 
+distribution must be geometric.  
+
+Suppose we have $X(0)$ people at the beginning.  Since the probability
+of dying in interval $i$ is $(1-p)^{i-1} p$, the expected number 
+dying in that interval is just $X(0) (1-p)^{i-1} p$.  Since the
+expected number at the beginning of the interval is $X(0) (1-p)^{i-1}$,
+the geometric formula agrees with the binomial solution.  
+
+Let's use this approach to simulation.  Now, let's simulate the same
+binomial death process at an individual level.  We will first determine
+a death time for 100 individuals:
+<<>>=
+rgeom(100,prob=0.1)
+@
+To simulate the process using this method, we will first determine
+the death times, and then tabulate them to determine how many deaths
+in each time period:
+<<>>=
+binomial.death.process.iii <- function(x0,surv) {
+  death.times <- rgeom(x0,prob=1-surv)
+  tabulation <- table(death.times)
+  event.times <- as.numeric(names(tabulation))
+  len<-max(event.times)+1
+  deaths.each.time <- rep(0,len)
+  deaths.each.time[1+event.times] <- tabulation
+  ans[1] <- x0
+  for (ii in 2:len) {
+    ans[ii] <- ans[ii-1]-deaths.each.time[ii-1]
+  }
+  ans
+}
+@
+Unlike our previous function, this one does not stop at a particular 
+\verb+endtime+.  Our exercise will be to verify that this procedure yields
+the same results as the previous version of the function.  We can see that
+we can either use a state space approach to the model at the population
+level, as in the first version, or an individual based simulation, as in the
+second.  The second approach requires fewer random numbers in this case, 
+one for each person, rather than one at each time point for each person.  
+Individual based simulation is most useful when the state space of the 
+population model is very large (unlike our model).
+
+What is the variance of the binomial death process at various times?
+Consider the number of individuals at time $i$, $X_i$.  These
+individuals have been subjected to mortality for $i$ periods.  What
+is the chance an individual alive at the beginning would still
+be alive at time $i$?  The only way to still be alive is to have
+survived $i$ intervals, and this happens with probability $s^i$.
+So we can think of surviving to time $i$ as one big Bernoulli trial
+with success probability $s^i$.  The expected value is, of course,
+$X_0 s^i$, as we knew, and the variance is $X_0 s^i (1-s^i)$.  Observe
+that as $i$ gets large, the variance goes to zero. 
+
+Let us return to the binomial death process.  Suppose now that we have
+$b$ individuals entering the population every time period.  We could
+describe the distribution of $X(i)$, given $X(i-1)$, as the constant
+value $b$ added to a binomial with $X(i-1)$ trials and success probability
+(survival probability) $s$ per trial.  This leads to the recurrence
+\[
+E[X(i)] = b + E[X(i-1)] s .
+\]
+From here, we can show that
+\[
+E[X(i)] = X(0) s^i + b \sum_{i=0}^{i-1} s^i .
+\]
+It can be shown that $\sum_{i=0}^{i-1} = \frac{1-s^i}{1-s}$, so that as
+$i$ becomes large, 
+\[
+E[X(\infty)] = b \frac{1}{1-s} .
+\]
+In the long run, the number of individuals is the number entering each time
+times how long they survive on average.  
+
+If we think of this as an disease model, then $b$ corresponds to the 
+incidence rate, and $E[X(\infty)]$ is the expected long-run prevalence.  
+And $1/(1-s)$ is the expected duration of the condition.
+We find that the prevalence equals the incidence times the duration of
+the condition, a familiar epidemiological result.  Many so-called 
+{\it immigration-death} models yield results with the same interpretation.
+{\it Computer exercise.~~}Simulate the process.  Show that the averages at
+each time point do in fact converge to the result given.  Experiment with
+different $b$, $s$ with the same long-run expected value.  How do the time
+series differ?
+
+Now, let us suppose that each case, or individual, gives rise to new cases.
+Suppose that for every case at time $i$, we have $a$ cases at time $i+1$.
+We have
+\[
+N(i+1) = a N(i) .
+\]
+The solution is $N(i) = N(0) a^i$.  Now, $a>1$ is possible.  If $0<a<1$, 
+we again have geometric decay of the numbers to zero.  If $a>1$, we have
+unbounded growth.
+
+Suppose we wish to consider two processes, such as death from two
+causes.  We must now think carefully about how to formulate the
+model.  Suppose that the probability of death from cause 1, say
+background mortality, is $p_1$, in the absence of cause 2.  And
+suppose the probability of death from cause 2, which might be
+some specific condition of interest such as HIV disease, is $p_2$
+in the absence of background mortality.  Suppose that the conditions
+behave independently.  Then we could suppose that the probability
+of surviving is $(1-p_1)(1-p_2)$, the probability of dying from
+condition 1 but not condition 2 is $p_1(1-p_2)$, dying from
+condition 2 but not condition 1 is $p_2(1-p_1)$, but now what?
+Naively, we could consider the probability of dying from each 
+condition to be $p_1p_2$, but this makes no sense---you can only die
+once!
+
+If we think about this in a different way, we could suppose that
+the causes happen sequentially.  The probability of dying from
+condition 1 is $p_1$, and of surviving condition 1 is $1-p_1$.
+Of those that survive condition 1, the probability of dying from
+condition 2 is $p_2$, so the overall chance of dying from condition
+2 is $(1-p_1)p_2$.  The chance of surviving both conditions is
+$(1-p_1)(1-p_2)$, and we have $p_1 + (1-p_1)p_2 + (1-p_1)(1-p_2)=1$,
+as it should.  We could also have chosen condition 2 to happen first.
+There are many solutions; in general, we could assume the
+probability of surviving to be $(1-p_1)(1-p_2)$, the probability of
+dying of cause 1 to be $p_1(1-p_2)+p_1p_2 F(p_1,p_2)$, and the
+probability of dying of cause 2 to be $p_2(1-p_1)+p_1p_2(1-F(p_1,p_2))$.
+\newline
+{\bf Exercise.~~}What would the probabilities have been of dying of
+condition 1, condition 2, or surviving, if the risk of condition 2
+is assumed first?
+
+\vfill
+\end{document}
+

@@ -1,0 +1,729 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+<<echo=FALSE,results='hide'>>=
+opts_chunk$set(fig.path='f2/')
+@
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+
+\section*{Lecture 2}
+Version 1.1---modified 25 Jan 2018, time 0847
+
+Note: the homework will not change, but further edits may be made to improve readability or fix errors.
+
+\section*{Likelihood}
+Before we go much further, let's look at likelihood.  This is the probability of the data given various parameters.  If you
+pick bad parameters, the data is much less likely than if you pick good parameters.  For example, we know that the chance of
+getting 3 infections out of 51 injuries is
+\[
+P(X=3) = {51 \choose 3} p^3 (1-p)^{48} .
+\]
+<<>>=
+xs <- seq(0,1,by=1/1024)
+plot(xs,dbinom(3,size=51,prob=xs),type="l")
+@
+Let's find out for what value of $p$ this likelihood is the largest.  The trick will be to find where the hilltop
+is flat.  It turns out to be much easier to work with the log of the likelihood; since the log is monotone ($x > y$
+implies $\log x > \log y$), we can just find where that is maximized:
+\[
+\ell = \log {51 \choose 3} + 3 \log p + 48 \log (1-p) .
+\]
+\[
+\frac{d\ell}{dp} = \frac{3}{p}  - \frac{48}{1-p} = 0
+\]
+\[
+\frac{3}{p}  - \frac{48}{1-p} .
+\]
+In fact this works for any $0<x<N$, so why not write it in general:
+\[
+\frac{x}{p}  - \frac{N-x}{1-p} .
+\]
+Solving this gives $p=x/N$ when $0<x<N$; when $x=0$ or $x=N$ this doesn't work, but you get a 
+solution on the boundary anyway.  If $x=0$ the most likely value for $p$ is 0, etc.
+
+\stepcounter{exno}
+
+\section*{Quick review}
+Remember that the expected value of a function of a random variable is
+\[
+E[g(X)] = \sum_x g(x) P(X=x) .
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno} Consider a Bernoulli random variable $X$ with success
+probability $p$.  Suppose that we consider the following function: for every value $X$ takes, let
+the transformed value be minus the log of the probability, basically the loglikelihood (with a minus
+sign, since the log of a probability is negative).  Write the expected value of this transformed
+variable.
+\ding{122}\vskip 6pt
+
+\section*{More on conditional independence}
+Last time we reviewed the definition of conditional independence.  Events $A$ and $B$ are conditionally
+independent given $C$ if $P(AB|C) = P(A|C) P(B|C)$.  We showed that if this is true, $P(A|BC) = P(A|C)$ (knowing
+B doesn't help once we already know C), and $P(B|AC)=P(B|C)$ (A doesn't help with B, once you know C).  An 
+example you see in the literature sometimes: it could be that crime ($A$) and ice cream sales ($B$) are
+conditionally independent given temperature ($C$) in some city.  
+
+When you have a lot of random variables in some analysis, sometimes conditional independence relationships
+of this sort are available through reasoning, and can be used to simplify the problem.  The idea is to
+represent known dependencies graphically, and assume conditional independence unless specified otherwise.
+For example, we might write:
+
+% i got this code off stackoverflow.com 
+\begin{center}
+\begin {tikzpicture}[-latex,auto,node distance=4 cm and 5cm,on grid,semithick,state/.style={circle,top color=white,bottom color=processblue!20,draw,processblue,text=blue,minimum width=1 cm}]
+\node[state] (C) {$C$};
+\node[state] (A) [below left=of C] {$A$};
+\node[state] (B) [below right=of C] {$B$};
+%\path (A) edge [loop left] node[left] {$1/4$} (A);
+\path (C) edge [bend left =0] node[below =0.15 cm] {} (A);
+%\path (A) edge [bend right = -15] node[below =0.15 cm] {$1/2$} (C);
+%\path (A) edge [bend left =25] node[above] {$1/4$} (B);
+%\path (B) edge [bend left =15] node[below =0.15 cm] {$1/2$} (A);
+\path (C) edge [bend left =0] node[below =0.15 cm] {} (B);
+%\path (B) edge [bend right = -25] node[below =0.15 cm] {$1/2$} (C);
+\end{tikzpicture}
+\end{center}
+
+This graph is meant to indicate that while we know C influences A and C influences B, $A$ and $B$ are conditionally independent given $C$, since we have
+not indicated any relationship.
+
+Now, we can always write
+\[
+P(ABC) = P(A|BC)P(BC) = P(A|BC)P(B|C)P(C) .
+\]
+This is just plain true, all the time.  But now that we assume that A and B are conditionally independent given C, we can just
+turn $P(A|BC)=P(A|C)$.  So we get
+\[
+P(ABC) = P(C) P(A|C) P(B|C).
+\]
+
+We are representing independence relationships between random variables using a graphical method in which each random
+variable is a node in a {\it directed acyclic graph}.  To talk about this, we need some formalism.  A {\it directed graph}
+is a set of {\it nodes}, and a set of {\it edges} which are ordered pairs of nodes.  We represent an edge by
+an arrow from one node to another; if there is an arrow from node A to node B, we say A is a {\it parent} of B and that
+B is a {\it child} of A.  We say there is a {\it directed path} (but usually we just say {\it path}) from node A to node E
+(say) if either A is a parent of node E, or there is a node B such that A is the parent of B and there is a path from B to E.
+(This is a typical example of a recursive definition.)  If there is a path from A to E, then A is an {\it ancestor} of E
+and E is a {\it descendant} of A.  If we order the nodes of a directed graph so that descendants always follow ancestors,
+the ordering is called {\it topological} and we are said to have {\it topologically sorted} the nodes according to the graph.
+
+%show you can always topologically sort the nodes 
+
+The idea will be that any node is assumed to be conditionally independent of all non-descendants given its parents.  In 
+general we will
+have nodes and their descendants related, but otherwise, we assume that once we have conditioned on parents we have taken care
+of all the dependencies there are; if we haven't included it explicitly, it is not there.  A graphical representation of
+a joint distribution in this form is called a {\it Bayes network}.  Bayes networks are a very large topic that we can barely
+scratch the surface of.
+
+Let's do another one.
+\begin{center}
+\begin {tikzpicture}[-latex,auto,node distance=4 cm and 5cm,on grid,semithick,state/.style={circle,top color=white,bottom color=processblue!20,draw,processblue,text=blue,minimum width=1 cm}]
+\node[state] (X0) {$X_0$};
+\node[state] (X1) [right=of X0] {$X_1$};
+\node[state] (X2) [right=of X1] {$X_2$};
+\path (X0) edge [bend left =0] node[below =0 cm] {} (X1);
+\path (X1) edge [bend left =0] node[below =0 cm] {} (X2);
+\end{tikzpicture}
+\end{center}
+Here, we mean to say that $X_0$ directly influences $X_1$, and $X_1$ directly influences $X_2$.  But equally importantly, we
+mean to say that $X_0$ and $X_2$ are conditionally independent given $X_1$.  We never drew any arrow from $X_0$ to $X_2$.
+
+If we topologically sort the vertices, we would write $X_0$, $X_1$, and $X_2$, in that order.  Let's go through in reverse, writing 
+down the joint distribution as a product:
+\[
+P(X_0,X_1,X_2) = P(X_2|X_0,X_1) P(X_0,X_1)
+\]
+That is just the definition of conditional probability.
+
+Then, the next variable in line is $X_1$, so let's apply the definition again:
+\[
+P(X_0,X_1,X_2) = P(X_2|X_0,X_1) P(X_1|X_0) P(X_0)
+\]
+This is just plain always true; it's just the definitions.  And it would have been true if we had used any order of the 
+variables too.  But using the order we did allows us to apply the conditional independence assumptions in a very nice way---because
+none of the descendants of a variable ever appear after a vertical bar.  We have assumed that we are conditionally
+independent of all non-descendants given the parents, so we just drop the nondescendants from after the bar.  For the example we are
+working on, we will have $P(X_2|X_0,X_1)=P(X_2|X_1)$.  So now
+\[
+P(X_0,X_1,X_2) = P(X_0) P(X_1|X_0) P(X_2|X_1) .
+\]
+A set of variables whose graph can be represented $X_0 \rightarrow X_1 \rightarrow X_2 \rightarrow \cdots \rightarrow X_n$
+is called a {\it Markov chain}, and the reasoning we just used gives us
+\[
+P(X_0,X_1,X_2,\ldots,X_n) = P(X_0) P(X_1|X_0) P(X_2|X_1) \cdots P(X_n|X_{n-1}) .
+\]
+We will usually be thinking of the subscript as representing time.  For instance, $X_0$ might be the prevalence of trachoma
+in a village at the beginning of a study, $X_1$ the prevalence at time 1, and $X_2$ at time 2.
+This equation will continue to be used even when we (soon) go over to consider the $X_i$'s to be vectors.
+
+Let's do another one.
+\begin{center}
+\begin {tikzpicture}[-latex,auto,node distance=4 cm and 5cm,on grid,semithick,state/.style={circle,top color=white,bottom color=processblue!20,draw,processblue,text=blue,minimum width=1 cm}]
+\node[state] (X0) {$X_0$};
+\node[state] (Y0) [above=of X0] {$Y_0$};
+\node[state] (X1) [right=of X0] {$X_1$};
+\node[state] (Y1) [above=of X1] {$Y_1$};
+\node[state] (X2) [right=of X1] {$X_2$};
+\node[state] (Y2) [above=of X2] {$Y_2$};
+\path (X0) edge [bend left =0] node[below =0.15 cm] {} (Y0);
+\path (X0) edge [bend left =0] node[below =0 cm] {} (X1);
+\path (X1) edge [bend left =0] node[below =0 cm] {} (X2);
+\path (X1) edge [bend left =0] node[below =0 cm] {} (Y1);
+\path (X2) edge [bend left =0] node[below =0 cm] {} (Y2);
+\end{tikzpicture}
+\end{center}
+
+Here, imagine that $X_i$ is still the prevalence of trachoma at time $i$, but now $Y_i$ is an imperfect measurement or observation,
+or any other variable that is influenced by $X_i$.  Let's topologically sort the variables: $X_0, Y_0, X_1, Y_1, X_2, Y_2$.
+Applying the chain rule in the same way:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_0,Y_0,X_1,Y_1,X_2) P(X_0,Y_0,X_1,Y_1,X_2)
+\]
+Now, apply conditional independence: 
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_0,Y_0,X_1,Y_1,X_2)
+\]
+Let's take the next one in the topological order:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_0,Y_0,X_1,Y_1) P(X_0,Y_0,X_1,Y_1)
+\]
+The only parent of $X_2$ is $X_1$, so applying conditional independence again:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_1) P(X_0,Y_0,X_1,Y_1)
+\]
+Another round:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_1) P(Y_1|X_0,Y_0,X_1) P(X_0,Y_0,X_1)
+\]
+The only parent of $Y_1$ is $X_1$:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_1) P(Y_1|X_1) P(X_0,Y_0,X_1)
+\]
+Continuing:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_1) P(Y_1|X_1) P(X_1|X_0,Y_0) P(X_0,Y_0)
+\]
+The only parent of $X_1$ is $X_0$:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_1) P(Y_1|X_1) P(X_1|X_0) P(X_0,Y_0)
+\]
+Finally:
+\[
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(Y_2|X_2) P(X_2|X_1) P(Y_1|X_1) P(X_1|X_0) P(Y_0|X_0)P(Y_0)
+\]
+We can rearrange this to give
+\begin{equation}
+P(X_0,Y_0,X_1,Y_1,X_2,Y_2) = P(X_0) P(X_1|X_0) P(X_2|X_1) P(Y_0|X_0) P(Y_1|X_1) P(Y_2|X_2)
+\end{equation}
+The first part of this gives the distribution of the values $X$, and then given that, the latter part tells 
+the distribution of the $Y$'s given the $X$'s.  Models of this form are known as {\it hidden Markov} models, and they
+are used all over the place in applications, including medicine and public health.  We will see this equation again
+later in the semester.  %%%!!! cite Zucchini
+
+{\bf Exercise \theexno.}\stepcounter{exno} The topological sort is not unique.  Write down a different topologically
+sorted ordering of the variables, and apply the same chain rule.  Did it make any difference? \ding{122}\vskip 6pt
+
+The general chain rule for a Bayes net over variables $X_1$, $X_2$, $\ldots$, $X_n$ is
+\[
+P(X_1,X_2,\ldots,X_n) = \prod_{i=1}^n P(X_i|\mbox{\rm parents}(X_i)) .
+\]
+The general proof is given in various books, but is essentially just the general version of the steps we've gone
+through.
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+\begin{center}
+\begin {tikzpicture}[-latex,auto,node distance=4 cm and 5cm,on grid,semithick,state/.style={circle,top color=white,bottom color=processblue!20,draw,processblue,text=blue,minimum width=1 cm}]
+\node[state] (A) {$A$};
+\node[state] (B) [right=of A] {$B$};
+\node[state] (C) [right=of B] {$C$};
+\node[state] (D) [right=of C] {$D$};
+\node[state] (E) [above=of C] {$E$};
+\path (A) edge [bend left =0] node[below =0 cm] {} (B);
+\path (B) edge [bend left =0] node[below =0 cm] {} (C);
+\path (C) edge [bend left =0] node[below =0 cm] {} (D);
+\path (A) edge [bend left =35] node[above =0.2 cm] {} (C);
+\path (E) edge [bend left =0] node[below =0 cm] {} (B);
+\path (E) edge [bend left =0] node[below =0 cm] {} (D);
+\end{tikzpicture}
+\end{center}
+The graph above is called a {\it Verma graph}.  Use the chain rule for Bayes nets to write the full joint distribution in
+terms of conditional probabilities. \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+\begin{center}
+\begin {tikzpicture}[-latex,auto,node distance=4 cm and 5cm,on grid,semithick,state/.style={circle,top color=white,bottom color=processblue!20,draw,processblue,text=blue,minimum width=1 cm}]
+\node[state] (A) {$A$};
+\node[state] (B) [right=of A] {$B$};
+\node[state] (C) [below right= 2 cm and 2.5 cm of A] {$C$};
+\node[state] (D) [below=of A] {$D$};
+\node[state] (E) [below=of B] {$E$};
+\path (A) edge [bend left =0] node[below =0 cm] {} (D);
+\path (B) edge [bend left =0] node[below =0 cm] {} (E);
+\path (D) edge [bend left =0] node[below =0 cm] {} (E);
+\path (A) edge [bend left =0] node[below =0 cm] {} (C);
+\path (B) edge [bend left =0] node[above =0 cm] {} (C);
+\path (C) edge [bend left =0] node[below =0 cm] {} (D);
+\path (C) edge [bend left =0] node[below =0 cm] {} (E);
+\end{tikzpicture}
+\end{center}
+Use the chain rule for Bayes nets to write the full joint distribution in
+terms of conditional probabilities. \ding{122} \vskip 6pt
+
+\subsection*{A simple Markov model}
+Let's now look at a simple Markov chain.  We return to the needle reuse example from last time (not the
+needlestick injury example; that is completely different.)
+To review, we supposed a needle is being---improperly!---reused between patients, contrary to acceptable policy.  
+The prevalence of infection in the patient pool is $p$ and the needle is
+used on a random patient.  We are tracking the status of the needle just 
+{\it before} it is used on a patient.  The cycle is that the needle is
+used on someone (possibly becoming newly infected), and then subjected to
+the inadequate decontamination policy.  (I note again, for clarity, that this
+is not correct procedure---needles should not be reused on patients.)  In
+Lecture 1, we found this equation: 
+\begin{equation}
+\label{eq:recurneedle}
+y_{\tau+1} = (1-b)\big(p+y_{\tau}(1-p)\big) ,
+\end{equation}
+where $y_{\tau} = P(Y_{\tau}=1)$ is the chance of contamination at time $\tau$,
+$p$ is the chance of use on an infected patient, and $b$ is the chance the
+decontamination procedure would succeed.
+(Of course, when we say {\it contaminated} here, we are referring only to the fact of posing an infection risk
+with respect to a specific infectious agent we are modeling.)
+
+Let us work out the solution of Equation~(\ref{eq:recurneedle}).  Begin
+assuming $y_0=0$ (it starts out uncontaminated).  We will use Equation~(\ref{eq:recurneedle}) with $\tau=0$ to get
+\[
+y_{0+1} = (1-b)\big(p+y_{0}(1-p)\big) 
+\]
+or $y_1=(1-b)p$ (as we actually saw last time).  It turns out it will
+save us some clutter if we write $A=p(1-b)$ and $C=(1-p)(1-b)$.  This 
+makes Equation~(\ref{eq:recurneedle}) into
+\begin{equation}
+\label{eq:needlerecurac}
+y_{\tau+1} = A + Cy_{\tau}.
+\end{equation}
+So we know $y_1=A+Cy_0=A$.  Now let us use the equation with $\tau=1$:
+\[
+y_{1+1}=A+Cy_1 
+\]
+or
+\[
+y_2=A+C(A) = A+AC.
+\]
+Let us now use $\tau=2$:
+\[
+y_3=A+C(y_2) = A+C(A+AC) = A+AC+AC^2 .
+\]
+In general, imagine the pattern
+continues and therefore assume for any $t$,
+\begin{equation}
+\label{eq:needleansatz}
+y_{t}=A+AC+\cdots+AC^{t-1} .
+\end{equation}
+What would happen?
+\[
+y_{t+1}=A+Cy_t 
+\]
+by the equation, so substituting in
+\[
+y_{t+1}=A+C(A+AC+\cdots+AC^{t-1}) = A+AC + \cdots AC^{t+1-1} .
+\]
+This shows that if the formula Equation~(\ref{eq:needleansatz}) holds for 
+some $t$, it holds for the next one $t-1$.  We know it holds for $t=2$ say,
+so by {\it mathematical induction} it holds for every time $\tau$.
+
+Actually let's let $\tau \rightarrow \infty$, letting the number of uses
+become larger and larger.  This is physically unrealistic; real needles wear
+out, for example.  But let us see what happens to the model.  We would
+get something like $A+AC+AC^2+AC^3+\cdots = A(1+C+C^2+C^3+\cdots$
+for the contamination probability in the far future.
+
+We will use the formula for the {\it geometric series} to write
+$1+C+C^2+C^3+\cdots = \frac{1}{1-C}$, and we are OK as long as $C<1$.
+So we believe the far future contamination probability should stabilize
+at 
+\begin{equation}
+\label{eq:bary}
+\bar{y} = \frac{p(1-b)}{1-(1-p)(1-b)} .
+\end{equation}
+Does this make sense?  Suppose $b=1$ and contamination were perfect.  Then
+this result becomes $\bar{y}=0$; if you always decontaminate perfectly,
+the needle is never contaminated before use.  What about $p=1$ and everyone
+is infected?  Then $\bar{y}=1-b$, so that the contamination probability
+reflects how good the last round of decontamination was.  What about $b=0$?
+Then $\bar{y} = p/p = 1$ provided $p>0$.  Here, the equation is telling you
+that if you can't decontaminate (and there are infectives), sooner or later the
+needle will be used on an infected person and become contaminated (and since
+it stays that way, in the long run the needle is contaminated).  What
+about $p=0$?  Here $\bar{y}=0$ of course.  When one arrives at an
+analytic formula, one should examine special cases to check the formula and
+gain insight from it.
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Return to Equation~(ref{eq:needlerecurac}) with $A$ and $C$ as above, but
+now let $y_0$ be any arbitrary value $0 \leq y_0 \leq 1$.  Substitute in and
+proceed as above to find $y_{\tau}$ for any time.  Check that your formula
+matches the formula we just derived provided that $y_0=0$.  Then find
+the long term value $\bar{y}$ when $\tau \rightarrow \infty$.
+\ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Let $y_0=\bar{y}$ as given in Equation~(\label{eq:bary}).  Substitute into 
+Equation~(\ref{eq:needlerecur}), and find $y_1$.  How much did the
+contamination probability change?
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+{\it Detailed balance.} 
+Consider the above example, with $y_0=\bar{y}$.  Imagine a huge ensemble
+of needles, of size $N$ with $N$ so large that chance can be ignored.  How
+many contaminated needles are there at time 0?  How many uncontaminated
+needles?  Calculate the number of uncontaminated needles at time 0 that become
+contaminated by the next step.  Then take the number of contaminated
+needles at time 0 that become uncontaminated by time 1.  Show these are
+the same in this example.
+ 
+\section*{Conditional Expectation}
+
+The conditional expectation of $Y$ given a particular value of $X=x$ is
+\[
+E[Y|X=x] = \sum_y y P(Y=y|X=x) .
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno} Suppose that in a certain region, the prevalence $Q$ of infection is 
+either 10\%, 20\%, or 40\% in a district, and that the probabilities are 40\%, 50\%, and 10\%, respectively.  (In other words,
+forty percent of the districts have a prevelance of 10\%, fifty percent have a prevalence of 20\%, and ten percent have
+a prevalence of 40\%.) In each district, suppose you sample $N$ children
+and estimate the number $X$ with the infection.  Assume simple random sampling; given the prevalence, the number of
+infected children in the sample is going to be assumed binomial (the districts are much larger than the sample size). 
+
+\begin{tabular}{c|c|c}
+Prevalence $\pi$ & $P(Q=\pi)$ & $E[X|Q=\pi]$ \\ \hline
+0.1 & 0.4 & \\
+0.2 & 0.5 & \\
+0.4 & 0.1 & \\
+\end{tabular}
+
+The quantity $E[X|Q]$ is a random variable taking what values with what probabilities?  Find the expected value of the
+random variable $E[X|Q]$.  \ding{122} \vskip 6pt
+
+We will show something that gets called ``Adam's Theorem'', supposedly because it's been around forever:
+\[
+E[ E[Y|X] ] = E[Y] .
+\]
+So 
+\[
+E[ E[Y|X] ] = E[ \sum_y y P(Y=y|X=x) ] = \sum_x \sum_y y P(Y=y|X=x) P(X=x) 
+\]
+\[
+E[ E[Y|X] ] = \sum_x \sum_y y P(Y=y,X=x) = \sum_y y \sum_x P(Y=y,X=x) = \sum_y y P(Y=y) = E[Y] .
+\]
+
+Here is a different example.  Suppose we do the following: reach out to people known to have latent tuberculosis infection,
+offering them therapy.  We have a variable $A$ indicating whether or not the person accepted the therapy.  We have
+a second variable $C$ for whether or not the person had complications from therapy.  
+
+We will assume that each outcome is associated with certain costs and probabilities, as shown in this table
+\begin{tabular}{ccc}
+Acceptance $A=a$ & Complications $C=c$ & Cost \\ \hline
+0 & 0 &  \$2 \\
+0 & 1 &  Impossible \\
+1 & 0 &  \$2 + \$200 \\
+1 & 1 &  \$2 + \$200 + \$500 \\
+\end{tabular}
+
+
+We assume that everyone we reach out too costs us $2$ per person in administrative overhead or postage.
+Assume that the therapy itself costs \$200, and that the cost of complications (if they occur) is \$500.
+Of course, we
+didn't have to carry the \$2 outreach cost through the whole computation; we could have done everything and added it
+on at the end.  
+In the literature, such analyses are often represented as {\it decision trees}:
+\tikzstyle{bag} = [rectangle, text width=4em, text centered, draw]
+\tikzstyle{decision} = [rectangle, minimum height=8pt, minimum width=8pt, draw, inner sep=0pt]
+\tikzstyle{choice} = [circle, minimum width=8pt, draw, inner sep=0pt]
+\tikzstyle{end} = [regular polygon, regular polygon sides=3, minimum width=8pt, draw, inner sep=0pt,shape border rotate=90]
+\begin{tikzpicture}[grow=right,child anchor=west]
+%\tiny
+\node[bag]{Approach patients}
+child {
+    node[choice]{}
+    child {
+       node[bag]{Does not accept}
+       child {
+          node[end]{}
+        }
+    }
+    child {
+        node[bag]{Accepts}
+            child{
+                node[choice]{}
+                child {
+                    node[bag]{Complications}
+                    child {
+                        node[end]{}
+                    }
+                }
+                child {
+                    node[bag]{No complications}
+                    child {
+                        node[end]{}
+                    }
+                }
+            }
+        }
+    };
+\end{tikzpicture}
+It's much simpler usually to work with conditional probabilities in the tree form.  For instance, we may know
+that 40\% will refuse the therapy, and we may know that of people who accept it, 10\% will develop complications. (Note:
+these are illustrative numbers only.)  We might decide to compute the conditional expectation of the cost $Y$
+given acceptance of therapy: $E[Y|A=1]=0.9 \times 202 + 0.1 \times 702 = 252$.  And we can compute the conditional expectation
+of the cost given refusal, which formally is $E[Y|A=0]=1 \times 2=2$.  That tree above would be replaced (conceptually)
+by a simpler one:
+\begin{tikzpicture}[grow=right,child anchor=west]
+%\tiny
+\node[bag]{Approach patients}
+child {
+    node[choice]{}
+    child {
+       node[bag]{Does not accept}
+       child {
+          node[end]{}
+       }
+    }
+    child {
+        node[bag]{Accepts}
+        child {
+          node[end]{}
+        }
+    }
+};
+\end{tikzpicture}
+We would then compute the expected cost of the policy by computing $0.4 \times 2 + 0.6 \times 252=152$.  
+This process is sometimes called ``folding back the tree'' and it's not hard to see that it is nothing more
+than an application of the law of iterated expectation/``Adam's Theorem''.  In cost-effectiveness analysis, software
+usually automates it.
+
+{\bf Optional exercise.} Suppose that an intracameral injection of a certain antibiotic costs $C$ on average.
+Suppose the probability of endophthalmitis when it is not used is $p$, and when it is not is $(1-e)p$, $0\leq e \leq 1$.  Here
+$e$ is the efficacy.  Suppose the cost of endophthalmitis is $X$.  What is the expected cost break-even point for the efficacy of 
+the antibiotic?  (When does the expected cost of the therapy equal the expected cost of no therapy?) \ding{122}\vskip 6pt
+
+\section*{Conditional variance}
+The conditional variance $var(Y|X)$ is defined as the expected squared difference from the conditional mean.
+Let me have a some toy random variables.  For instance, $X$ is a binary factor, and say $Y$ is some measurement like the
+cost.\newline
+\begin{tabular}{cccc}
+$X$ & $Y$ & $P(X=x,Y=y)$ \\\hline
+0 &   10  & 0.16 \\
+0 &  100  & 0.04 \\
+1 &   10  & 0.72 \\
+1 &  110  & 0.08 \\
+\end{tabular}
+\newline
+We can look just at the conditional distribution of $Y$ given $X=0$.\newline
+\begin{tabular}{ccc}
+$x$ & $Y$ & $P(Y=y|X=0)$ \\\hline
+0   &  10 & 0.16/0.2 = 0.8 \\
+0   & 100 & 0.04/0.2 = 0.2 \\
+\end{tabular}
+\newline
+So with $X$ frozen at $0$, $Y$ is a random variable with the given distribution.  Its expectation value is
+10 times the chance of 10 plus 100 times the chance of 100: $10 \times 0.8 + 100 \times 0.2=28$.  We can compute its
+second moment too: the sum of each squared value times the chance of the value you're squaring: $10^2 \times 0.8 + 100^2 \times 0.2$
+which is 2080.  The variance here, which will be the {\it conditional variance} of $Y$ given $X=0$ is the conditional
+second moment minus the conditional expectation, or 2080-$28^2$, or 1296.  
+We can also write this as
+\[
+\mbox{\rm var}(Y|X=x) = E[ (Y - E[Y|X=x])^2 | X=x ]
+\]
+\[
+\mbox{\rm var}(Y|X=x) = E[ Y^{\color{red}2} {\color{red}-2} Y E[Y|X=x] {\color{red}+} (E[Y|X=x])^{\color{red}2} | X=x ]
+\]
+\[
+\mbox{\rm var}(Y|X=x) = {\color{red}E}[ Y^2|X=x] -2{\color{red}E}[ Y E[Y|X=x]|X=x ] + {\color{red}E}[(E[Y|X=x])^2 | X=x ]
+\]
+\[
+\mbox{\rm var}(Y|X=x) = E[ Y^2|X=x] -2E[ Y E[Y|X=x]|X=x ] + E[(E[Y|X=x])^2 | X=x ]
+\]
+Now: when $X=x$, $E[Y|X=x]$ is {\it just some number}; it's a constant, so {\color{red}outside} the expectation it goes.  For
+the same reason, the {\color{green}squared} conditional expectation goes {\color{green}outside} too (but then nothing is
+left under the expectation sign; the expectation of a constant is just the constant.)
+\[
+\mbox{\rm var}(Y|X=x) = E[ Y^2|X=x] -2 {\color{red}E[Y|X=x]} E[ Y|X=x ] + {\color{green}(E[Y|X=x])^2}
+\]
+Then combine the last two terms:
+\[
+\mbox{\rm var}(Y|X=x) = E[ Y^2|X=x] - (E[Y|X=x])^2
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno} Show the conditional variance of $Y$ given $X=1$ is 900 in our example. \ding{122}\vskip 6pt
+
+We can write
+\[
+\mbox{\rm var}(Y|X) = E[Y^2|X] - (E[Y|X])^2 .
+\]
+Here, we are now talking about a relation between random variables.
+
+So we can think of $E[Y|X]$ as a {\it transform of $X$}, and in the same way, the conditional variance
+of $Y$ given $X$ as another transform of $X$.  Whenever $X$ takes one of its values, as it does with whatever probability
+it is supposed to, we take instead a smoothed version of $Y$---one smoothed over that value of $X$.
+\newline
+\begin{tabular}{ccccc}
+$x$ & $P(X=x)$  & $E[Y|X=x]$ & $\mbox{\rm var}(Y|X=x)$ & $(E[Y|X=x])^2$ \\\hline
+0   & 0.2 & 28 & 1296 & 784 \\
+1   & 0.8 & 20 & 900  & 400 \\
+\end{tabular}
+\newline
+Now: if the conditional expectation of $Y$ given $X$ is just a random variable (a transform of $X$, of $X$, of $X$, of $X$!), 
+what is its expectation?  We already know $E[E[Y|X]]=E[Y]$; this is 28*0.2 + 20*0.8 = 21.6.
+Let's compute its variance.  We can take the fourth column of the table and compute the second moment: 
+$784\times 0.2 + 400 \times 0.8 = 476.8$.  So the variance {\it of the 
+conditional expectation of $Y$ given $X$} is the second moment minus the square of the mean, which comes
+out to be 10.24 here.
+
+And while we're at it, the conditional variance of $Y$ given $X$ is a random variable, and it's also a transform 
+of $X$.  What is its expectation?  The sum of the values times the chance of each.  Thus, $E[\mbox{\var}(Y|X)]$ is
+$1296 \times 0.2 + 900 \times 0.8 = 979.2$.
+
+The variance of $Y$ is now going to be the second moment (1456) minus the square of {\it its} mean: 466.56, for
+989.44.  Now, lets add up the expectation of the conditional variance (979.2) to the variance of the conditional
+expectation: 10.24, and get 989.44.  
+
+The variance of $Y$ is the variance of the conditional expectation of Y given X, plus the expectation of the conditional
+variance of Y given X.
+
+Now, let's prove this in general.  We had
+\[
+\mbox{\rm var}(Y|X) = E[Y^2|X] - (E[Y|X])^2
+\]
+This is a relationship between random variables.  Let's take the expectation of both sides:
+\[
+E[\mbox{\rm var}(Y|X)] = E[E[Y^2|X]] - E[(E[Y|X])^2]
+\]
+Use Adam's Law:
+\[
+E[\mbox{\rm var}(Y|X)] = E[Y^2] - E[(E[Y|X])^2]
+\]
+
+What about
+\[
+\mbox{\rm var}(E[Y|X]) ?
+\]
+That's the variance of a random variable, specifically $E[Y|X]$.  The variance is the second moment minus the square of 
+the mean.  
+\[
+\mbox{\rm var}(E[Y|X]) = E[(E[Y|X])^2] - (E[E[Y|X]])^2
+\]
+On the right, the expectations are all under the squared sign, and we know $E[E[Y|X]]=E[Y]$.
+\[
+\mbox{\rm var}(E[Y|X]) = E[(E[Y|X])^2] - (E[Y])^2
+\]
+
+So if we add
+\[
+E[\mbox{\rm var}(Y|X)] + \mbox{\rm var}(E[Y|X]) = E[Y^2] - E[(E[Y|X])^2] + E[(E[Y|X])^2] - (E[Y])^2
+\]
+The middle terms cancel.
+\[
+E[\mbox{\rm var}(Y|X)] + \mbox{\rm var}(E[Y|X]) = E[Y^2] - (E[Y])^2
+\]
+On the right---for $Y$, the second moment minus the square of the mean.
+\[
+\mbox{\rm var}(Y) = E[\mbox{\rm var}(Y|X)] + \mbox{\rm var}(E[Y|X]) 
+\]
+The first part of this is the part ``UNexplained'' by $X$; the second term is the part ``explained'' by $X$.
+We can think of this formula as partitioning the variance of $Y$ into these two components.  Notice this has
+nothing to do with the normal distribution or any kind of parameterization at all. 
+
+Consider the following optional worked example.  
+Suppose that in some country the prevalence of infection is $\pi$.  For each
+district, however, suppose the prevalence has mean $\pi$ but variance $\sigma^2$.  Suppose we pick $M$ districts
+and $N$ people per district, with $N$ much less than the district population.  Assume the districts are all the same size.
+Let $X_i$ be the number of positive people in our sample from district $i$, $i=1,\ldots,M$.  Let $\hat{p}$
+be $\frac{\sum_{X_i}}{NM}$.  Assume districts are independently
+sampled and people are independently sampled within the district.  Find the mean and variance of $\hat{p}$.\newline
+{\it Solution.}  
+\[
+E[\hat{p}] = E[\frac{1}{MN}\sum_i^MX_i] = \frac{1}{MN}\sum_i^ME[X_i]
+\]
+Then:
+\[
+E[X_i] = E[E[X_i|W_i]]
+\]
+where $W_i$ is the unobserved true prevalence in the village.  Once we have the true prevalence, the number of
+positives in our sample is binomial with $W_i$ as the probability and $N$ as the number of trials.  So $E[X_i|W_i]=NW_i$.
+\[
+E[X_i] = E[E[X_i|W_i]] = E[NW_i] = NE[W_i] = N\pi .
+\]
+So
+\[
+E[\hat{p}] = \frac{1}{MN}\sum_i^MN\pi = \frac{MN}{MN}\pi = \pi .
+\]
+
+For the variance, 
+\[
+\mbox{\rm var}[\hat{p}] = \mbox{\rm var}(\frac{1}{MN}\sum_i^MX_i) = \frac{1}{M^2N^2}\sum_i^M\mbox{\rm var}(X_i) = \frac{1}{MN^2}\mbox{\rm var}(X_i)
+\]
+Then
+\[
+\mbox{\rm var}(X_i) = \mbox{\rm var}(E[X_i|W_i]) + E[\mbox{\var}(X_i|W_i)] .
+\]
+We know $E[X_i|W_i]=NW_i$ from before.  And given $W_i$ and the binomial, we have $\mbox{\var}(X_i|W_i)=NW_i(1-W_i)$.
+\[
+\mbox{\rm var}(X_i) = \mbox{\rm var}(NW_i) + E[NW_i(1-W_i)] .
+\]
+\[
+\mbox{\rm var}(X_i) = N^2 \mbox{\rm var}(W_i) + NE[W_i(1-W_i)] = N^2 \sigma^2 + NE[W_i]-NE[W_i^2]
+\]
+\[
+\mbox{\rm var}(X_i) = N^2 \sigma^2 + N\pi-N (\sigma^2 + \pi^2)
+\]
+\[
+\mbox{\rm var}(X_i) = N(N-1) \sigma^2 + N\pi(1 - \pi)
+\]
+Finally,
+\[
+\mbox{\rm var}[\hat{p}] = \frac{N(N-1)\sigma^2 + N\pi(1-\pi)}{MN^2} = \frac{\pi(1-\pi) + (N-1)\sigma^2}{MN}.
+\]
+If this were just a straight binomial sample, with no extra between village variability, then this variance would
+just be $\pi(1-\pi)/MN$.  The extra term in the numerator, $(N-1)\sigma^2$, is called the {\it variance inflation factor}.
+Notice the village size $N$ actually hurts you in the numerator even though it helps you in the denominator.  Getting
+more villages is pure benefit, since making $M$ bigger increases the denominator at no cost to your numerator.
+
+%\section*{Transformations}
+%Suppose we have some random variable, $X$ say, and that we know its probability function $p(X=x)$.  
+
+{\bf Exercise \theexno.}\stepcounter{exno} How long did this assignment take you?  \ding{122} \vskip 6pt
+
+\vfill
+
+\end{document}

@@ -1,0 +1,546 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+Travis C. Porco, instructor
+
+\section*{Lecture 1}
+Version 1.22---modified 1 Feb 2019, time 0850.
+
+\section{Scope and Role of Modeling}
+
+In the most general sense, we may consider modeling
+as an effort to understand one aspect of the world by its similarity
+to something else.  For instance, researchers may develop animal
+models of the pathogenesis of various disease agents.  Studying the
+disease process in the animal model may then lead to insights that
+can be developed further.  To be useful, the animal model
+must resemble the disease in humans in ways the researchers consider
+to be important.  To be believable, the results from animal models
+must be tested.
+
+Another type of model is the statistical model, which attempts to
+describe relevant aspects of data or a data generation process.  Such
+models frequently do not attempt to describe the mechanism yielding the
+data, but rather form a basis for determining, for instance, if an
+estimated difference between a treatment and control group could
+have plausibly resulted from chance.  Statistical models based on
+real data play an important and vital role in all areas of 
+epidemiology and lead to essential insights.  However, when such
+models are not based on a representation of the underlying 
+medical or epidemiologic processes, such models may not be generalizable 
+beyond the circumstances under which the data were collected.
+
+While statistical models play a fundamental role in research, 
+including research in analytical epidemiology, models based on 
+representing the mechanism of disease transmission have played a
+role in epidemiology for decades.  Some of the earliest mathematical
+models were developed by Sir Ronald Ross, who showed that mosquitoes
+were vectors of the malaria plasmodium.  Ross wished to describe the
+factors responsible for spread and dissemination of the plasmodium
+in a quantitative way, and published papers describing what was 
+called {\it a priori pathometry}.
+
+Mathematical models are attempts to gain insight into the processes
+of disease transmission and persistence using mathematical 
+representations of the mechanisms of disease transmission.  
+Models may be used to address a variety of theoretical and
+practical questions; these applications may include forecasting
+for planning, designing interventions, or simply improving our
+understanding.  For instance, modelers may wish to estimate the
+number of hospital beds needed to prepare for SARS, or to estimate
+how many deaths of hospitalizations might result from pandemic
+influenza.  Modelers may wish to determine whether quarantine is
+warranted during an influenza outbreak, or whether ring vaccination
+would be sufficient to control bioterrorist smallpox.  As examples
+of improving understanding, modelers may wish to estimate the 
+contribution of superspreaders to the invasion of a pathogen into
+a new region, estimate the best tradeoff of virulence and
+transmissibility a pathogen should seek if public health control
+measures change, or to determine how the mortality rate may
+affect the number of people who are ultimately infected by a
+pathogen.  In general, the most important strength of mathematical
+models of the disease process is the ability to explore counterfactual
+scenarios or conditions for which no data is available, for instance,
+to examine the consequences of untested control strategies
+or the spread of a novel pathogen.  
+
+Mathematical 
+models are most credible when the mathematical analogy which 
+constitutes the representation are clear and plausible---when
+the model representation resembles the epidemic in ways the 
+researchers consider most important.  Understanding what the most
+important features of a disease transmission process are leads 
+modelers at times into vigorous debate, frequently manifesting a
+tension between the need for insight through elegant simplicity on
+the one hand, and realism through increased detail on the other.
+Finally, note that as is the case with other types of models in
+science, the insights gained from modeling must ultimately
+be tested in some way.
+
+Broadly speaking, modelers often examine simplified or stylized
+representations of a system in the hopes of gaining {\it
+insight through simplicity}.  For example, Ronald Ross used
+simple models to argue that vector control could be useful
+in malaria mitigation---you do not have to get rid of every
+mosquito, just get rid of enough mosquitoes so that each case
+on average yields fewer than 1 new cases.  Alternatively,
+modelers often seek {\it realism through detail}---attempting
+to represent knowledge about a system ``more accurately'' in the
+hopes of improving model reliability.
+
+But what do these concepts really mean?  How do you know if
+your model is really insightful?  Simple models can be done by
+talented people, communicated with elegant figures, explained
+by plausible stories, supported by advanced mathematics---and
+still be wrong and misleading.  And complex models can be
+hard to fully explore and explain, can contain software bugs,
+and can still be oversimplified and unrealistic.  So in this
+class we will return to two recurring
+themes: first, the value of structural sensitivity
+analysis---comparing simple models to more complex or to alternative
+models and asking what we even mean by representing knowledge.  
+Second, we will discuss the crucial importance of forecasting in testing
+models; ultimately, all models which yield
+forecasts which are consistent with the data must be considered.
+
+\section{Course contents}
+In this course, you will receive a broad overview of the
+application of mathematical models in epidemiology, focusing
+primarily on infectious diseases.  I will review selected key
+aspects of probability theory, and we will explore binomial
+risk models, branching process models, and simple Markov
+models. We will look at epidemic detection and time series
+methods, and finally look briefly at agent-based models,
+networks, and more complex compartmental models.
+
+Let us now get down to brass tacks, beginning with probability
+concepts we will need.
+
+\section{Independence}
+
+Suppose we consider the association of a test E with a disease D.  The concept of {\it sensitivity}
+should be familiar: it is the probability of testing positive given the disease.  We write
+\[
+s = P(E|D) .
+\]
+In this case, we let $D$ stand for the event that the person under consideration has the disease.  
+
+To go further, we need to talk a bit about probability.
+
+Formal probability theory is built on top of a formalism of set theory, and events are defined to be
+members of a certain class of subsets of the {\it sample space}.  We won't go into this into much
+detail.  However, it is often useful to know the definition of a few set theoretic concepts, such as
+union, intersection, complement, and disjoint.  We will also not go into formal detail into what
+exactly is meant by a random variable, but will be content with the intuitive sense of it.
+
+The properties of probability are meant to reflect properties of relative frequency.  Suppose an 
+experiment can succeed or fail, and we perform it a number $N$ of times, and count the number $N_S$
+of successes.  The relative frequency is $f_S=N_S/N$.  If the experiment succeeds every time,
+the relative frequency is 1; if it fails every time, 0.  Probability can be interpreted as a long
+run limit of relative frequencies, and so probability must always be in the range 0 thru 1.  
+
+Suppose you roll a die.  The sample space is $\Omega = \{1, 2, 3, 4, 5, 6\}$.  
+In this simple problem, every
+possible subset of $\Omega$ can have a probability assigned to it.  So we can ask what the probability
+of $A=\{1,3\}$ is, or what the probability of $B=\{2,5\}$ is.  \stepcounter{exno}
+
+{\bf Exercise \theexno.}\stepcounter{exno} What is $P(\Omega) = P(\{1,2,3,4,5,6\})$?  \ding{122} \vskip 6pt
+
+A crucial axiom of probability is
+called {\it additivity}: if two sets don't have any elements in common, then the probability of the 
+union is the sum of the probabilities.  These are called disjoint unions.
+
+For a fair die, all elementary
+outcomes (elements of the sample space) have the same probability, and we can see that that probability
+has to be 1/6, since $P(\{1\})=P(\{2\})=\cdots=P(\{6\})$ and $P(\{1\})+\cdots+P(\{6\})=1$.
+
+{\bf Exercise \theexno.}\stepcounter{exno} Let $D$ be the event that a person has a disease, and $\bar{D}$ be the event that the person
+does not have the disease.  Show $P(D)+P(\bar{D})=1$.  \ding{122} \vskip 6pt
+
+We could consider $D$ to be a random variable taking the value 1 when the person has the disease
+and 0 when they do not; then $D$ would be an {\it indicator variable}.  Similarly, we could let $E$
+be an indicator of whether or not the person tested positive.  Then we could write $s=P(E=1|D=1)$.
+
+Similarly, the definition of {\it specificity} is
+\[
+f = P(\bar{E}|\bar{D})
+\]
+the probability you test negative given you don't have the disease.  Here we let $\bar{E}$ be the event
+the person does not have the disease.  If we were using indicator variables, we would write $f=P(E=0|D=0)$.
+
+We will be stern in our usage of the vertical bar, though in the literature people can be somewhat lax about it.
+When we use it, it will always refer to conditioning on a random variable or event or something; it should not
+be used to mean simply a functional dependence.  In elementary probability, we have this definition:
+\[
+P(E|D) = \frac{ P(E \cap D) } {P(D)} 
+\]
+(provided $P(D)>0$).
+
+{\bf Optional exercise.} Imagine that we consider a long run of people coming into the clinic, and for each person,
+we know their true disease status and their test result.  If each person's results are considered an 
+``experiment'' in the probabilitistic sense, what is the sample space?  Let $f_{E|D}$ be the relative
+frequency of positive tests among those who really have the disease, let $f_{E \cap D}$ be the relative
+frequency of people who have both positive test results and true disease (out of all experiments), and
+let $f_D$ be the fraction of people with disease.  Show $f_{E|D}=f_{E\cap D}f_D$.  Argue in favor of
+the definition of conditional probability given above, based on long run limiting relative frequency.
+ \ding{122} \vskip 6pt
+
+Consider the event of a positive test, $E$.  If you have a positive test, you either have the disease or
+you do not; we can write formally $E = E \cap D \cup E \cap \bar{D}$.  In other words, we broke up
+the event of a positive test into two {\it mutually exclusive and exhaustive} events, the first being
+$E \cap D$, and the second being $E \cap \bar{D}$.  By additivity,
+\[
+P(E) = P(E \cap D) + P(E \cap \bar{D}) .
+\]
+
+Since 
+\[
+P(E \cap D) = P(D) P(E|D)
+\]
+and similarly
+\[
+P(E \cap \bar{D}) = P(\bar{D}) P(E|\bar{D}) ,
+\]
+\[
+P(E) = P(D)P(E|D) + P(\bar{D})P(E | \bar{D}) .
+\]
+This is an example of the so-called {\it law of total probability}, and we'll see it again and again.
+
+{\bf Exercise \theexno.}\stepcounter{exno}  Let $P(D)$ be the prevalence $\pi$.  Let $\theta=P(E)$, the fraction testing positive.  Show
+\[
+\theta = \pi s + (1-\pi)(1-f) ,
+\]
+where $s$ is the sensitivity and $f$ is the specificity.  Suppose the fraction testing positive is known from
+a survey to be 0.001.  What is an implied bound on the specificity in this population?
+ \ding{122} \vskip 6pt
+
+Note that we can write
+\[
+P(E \cap D) = P(E|D) P(D)
+\]
+and
+\[
+P(E \cap D) = P(D \cap E) = P(D|E) P(E) .
+\]
+Thus
+\[
+P(D|E) P(E) = P(E|D) P(D) ,
+\]
+so
+\[
+P(D|E) = \frac{P(E|D) P(D)}{P(E)} ,
+\]
+a result known as Bayes' Theorem.
+
+{\bf Optional exercise}. Let the prevalence $P(D)=\pi=0.01$, the sensitivity be $s=P(E|D)=0.99$, and the specificity be
+$f=P(\bar{E}|\bar{D})=0.98$.  What is the predictive value of a positive, $P(D|E)$?
+ \ding{122} \vskip 6pt
+
+For two events $D$ and $E$, we say they are independent if $P(D|E)=P(D)$.  If this is true, then
+\[
+P(D \cap E) = P(D|E) P(E) = P(D) P(E).
+\]
+For two independent events, the probability of both occurring is the product of the probabilities.
+If $P(D|E)=P(D)$, then by Bayes Theorem, we have $P(E|D) = P(D|E) P(E)/P(D) = P(D) P(E) / P(D) = P(E)$, so 
+it goes both ways.
+
+{\bf Exercise \theexno.}\stepcounter{exno} If $D$ is independent of $E$, show $\bar{D}$ is independent of $E$. \ding{122} \vskip 6pt
+
+For more than two events, we have to be more careful.  For three events $A$, $B$, and $C$, these events are
+independent if the chance of every possible intersection is the product of the probabilities: $P(A \cap B) = P(A) P(B)$,
+$P(A \cap C) = P(A) P(C)$, $P(B \cap C) = P(B) P(C)$, and $P(A \cap B \cap C) = P(A) P(B) P(C)$.
+
+{\bf Exercise \theexno.}\stepcounter{exno} Suppose $A$, $B$, and $C$ are binary events, that either happen or they don't.  The sample space
+can be classified in a two by two by two table.  Find a way to assign the probabilities of in this table so that
+A and B are independent, A and C are independent, and B and C are independent, but A, B, and C are not independent.
+(For instance, make $P(A \cap B) = P(A)P(B)$, $P(A \cap C) = P(A) P(C)$, and $P(B \cap C) = P(B)P(C)$, but make sure $P(A\cap B \cap C) \neq P(A) P(B) P(C)$, etc.)
+
+{\bf Exercise \theexno.}\stepcounter{exno} Given a two by two table with cell probabilities $P(AB)= P(A \cap B)$, $P(A\bar{B})$, $P(\bar{A}B)$,
+and $P(\bar{A}\bar{B})$, the {\it odds ratio} is 
+\[
+o = \frac{P(AB) P(\bar{A}\bar{B})}{P(\bar{A}B) P(A\bar{B})} .
+\]
+Show that the odds ratio equals 1 when and only when A and B are independent. \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Given a two by two by two table representing events $A$, $B$, and $C$, show
+\[
+P(A|BC) = \frac{P(AB|C) P(C)}{P(BC)} . 
+\]
+ \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Two events B and C are conditionally independent given A if $P(BC|A) = P(B|A) P(C|A)$.  Assume that B
+is conditionally independent of C given A.  First show given this assumption, $P(B|AC) = P(B|A)$.  Then show that
+\[
+P(A|BC) = \frac{P(B|A) P(A|C)}{P(B|C)} .
+\]
+\vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Suppose a person has a sexual partner and that the probability that the partner is infected with
+HIV is $\pi$.  Suppose that the probability of infection given that the partner is infected is $\beta$.  What is
+the probability of infection in this partnership? \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Show that $P(A \cup B \cup C) \leq P(A) + P(B) + P(C)$.
+Suppose a person has a needlestick injury with blood contaminated with Hepatitis B, Hepatitis C, and HIV; suppose
+the probability of HBV transmission is 0.3 from any needlestick, HCV transmission is 0.03 from any needlestick, 
+and HIV transmission is 0.003 from any needlestick.  Show the total probability of any infection is less than
+or equal to 0.333, no matter what the independence or nonindependence between the infections is. \ding{122} \vskip 6pt
+
+{\bf Worked exercise.} Suppose a needle is being---improperly!---reused between patients, contrary to acceptable policy.  Suppose
+the prevalence of infection in the patient pool is $p$ and the needle is
+used on a random patient.  Suppose that a needle is first rinsed, decontaminating it
+with probability $b$.  Then, if it is used on an infected patient, the needle becomes contaminated.  Find the chance the
+needle is contaminated after $\tau$ rounds, given that it was or was not infected to begin with.\newline
+{\it Solution.}  
+For definiteness, we mean the probability the
+needle is contaminated just prior to use.  
+Let the probability that the needle is contaminated after $\tau$ rounds be denoted $y_{\tau}$.  Thus, at a certain time $\tau$, we refer to the probability
+of contamination as $y_{\tau}$; the needle is used and then rinsed, and we
+wish to compute $y_{\tau+1}$.  We can also call the status of the needle
+$Y(\tau)$, with $y_{\tau}=P(Y(\tau)=1)$.  Here, $Y(\tau)$ is a random variable
+which is 0 if the needle is not contaminated and 1 if it is contaminated.  
+
+Use the law of total probability to write 
+\[
+P(Y(\tau+1)=1) = P(Y(\tau=0))P(Y(\tau+1)=1|Y(\tau)=0) + P(Y(\tau=1))P(Y(\tau+1)=1|Y(\tau)=1) 
+\]
+This is the chance it was not contaminated times the chance it will get contaminated, plus the chance it was already contaminated times the chance it will stay that way.
+
+Let us write 
+\[
+P(Y(\tau+1)=1|Y(\tau)=0)
+\]
+first.  First the needle is used, and becomes contaminated with probability 
+$p$.  Then, if the needle was used on an infected person, it will stay
+contaminated if the decontamination fails.  Decontamination fails with
+probability $1-b$.  This gives us probability $p(1-b)$ that the needle
+will have become contaminated. Otherwise, if it is used on an uninfected
+person, or if it us used on an infected person but successfully decontaminated,
+it is not contaminated before the next use.  We then write
+\[
+P(Y(\tau+1)=1|Y(\tau)=0) = p(1-b) .
+\]
+
+Now, what is 
+\[
+P(Y(\tau+1)=1|Y(\tau)=1) ?
+\]
+Here, we are assuming the needle will stay contaminated regardless of whom it
+is used on, so $p$ is not relevant.  The needle is contaminated if the
+decontamination process fails:
+\[
+P(Y(\tau+1)=1|Y(\tau)=1) = 1-b
+\]
+Putting it all together (using $y_{\tau+1} = P(Y(\tau+1)=1)$):
+\[
+y_{\tau+1} = (1-y_{\tau})p(1-b) + y_{\tau}(1-b),
+\]
+which becomes
+\begin{equation}
+\label{eq:recurneedle}
+y_{\tau+1} = (1-b)\big(p+y_{\tau}(1-p)\big) .
+\end{equation}
+
+This is an equation for the evolving probability of contamination.  If
+we know it at one time, we can find it at the next.
+
+Let us try to show our answer is wrong.  We can look at special cases
+in which we can be sure of the answer some other way.  First, suppose the
+needle starts out clean, $y_{0}=0$.  Then $y_{1}=(1-b)p$, which is
+what we computed for the chance of being contaminated after one step if
+it started out uncontaminated.  Then, if we assume it is contaminated,
+$y_{0}=1$, we get $y_{1}=1-b$, again, as advertised.  What if $p=0$?  Then,
+we get simply 
+\[
+y_{\tau+1}=(1-b)y_{\tau},
+\]
+This is {\it geometric decay} of the initial condition; if $b=0$, the
+initial contamination status never changes, since this is the assumption
+of perfectly worthless decontamination.  Otherwise, the initial contamination
+gradually becomes less and less likely as successive rounds of 
+decontamination are experienced.
+
+Equation~(\ref{eq:recurneedle}) is an example of a linear recurrence, or
+difference equation.  We will discuss it further.
+
+\section{The binomial distribution}
+A random variable that takes on two values, 0 and 1, is called a Bernoulli random variable.  Suppose a Bernoulli
+random variable has probability $p$ of being 1; 1 will conventionally be called a success.  
+
+The count of successes in $N$ independent and identical Bernoulli trials is called the Binomial distribution.  The
+Binomial probability formula is
+\[
+P(X=x) = {N \choose x} p^x (1-p)^{N-x} .
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno}  Suppose two parents are carriers of the sickle gene and that the chance of passing the gene to the
+next generation is 1/2.  What is the probability distribution of the number of children out of 4 who would be born
+homozygous (received the gene from both parents)?  Assume independent and identical risk. \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Suppose a person has $n$ sexual partners chosen at random from a pool of partners in which the prevalence
+is $\pi$ and the risk of transmission given a positive partner is $\beta$.  Show the probability of infection is
+$1-(1-\beta p)^n$.  \ding{122} \vskip 6pt
+
+\section{Expected values}
+The expected value of a random variable is defined as
+\[
+EX = \sum_x x P(X=x) .
+\]
+This is a kind of large number generalization of the sample mean.
+
+{\bf Exercise \theexno.}\stepcounter{exno} Show the expectation of a Bernoulli random variable is $p$.  \ding{122} \vskip 6pt
+
+The expectation of any sum of random variables is always the sum of the expectations.  Let's show this for two.  Let
+$X$ and $Y$ be jointly distributed.  Say these are discrete variables, and that $X$ takes values $x_1, x_2, \ldots$ and
+$Y$ takes values $y_1, y_2, \ldots$.  Then 
+\[
+E[X+Y] = \sum_x \sum_y (x+y)P(X=x,Y=y) = \sum_x \sum_y x P(X=x,Y=y) + \sum_x \sum_y y P(X=x,Y=y)
+\]
+\[
+E[X+Y] = \sum_x x \sum_y P(X=x,Y=y) + \sum_y y \sum_x P(X=x,Y=y)
+\]
+\[
+E[X+Y] = \sum_x x P(X=x) + \sum_y y P(Y=y) = E[X] + E[Y] .
+\]
+In advanced books they do these things carefully to make sure you can sum the series and change the order of summation
+and whatnot.
+
+{\bf Exercise \theexno.}\stepcounter{exno} It has been estimated that the fraction of wild-type tubercle bacilli which harbor a resistance mutation to 
+isoniazid, a first-line drug, is $10^{-6}$, and the fraction that harbor mutations to rifampicin is $10^{-8}$.  Assuming these
+are independent, what is the probability of harboring mutations conferring resistance to both (and by definition being 
+multidrug resistant)?  Assume that a cavitary lesion contains $10^9$ organisms.  What is the expected number with 
+isoniazid mutations? Rifampicin mutations? MDR (both isoniazid and rifampicin mutations)?  \ding{122} \vskip 6pt
+
+Here's another important fact:
+\[
+E[kX] = k E[X]
+\]
+where $k$ is some constant.
+
+Here is another---suppose $X$ and $Y$ are independent.  Then $E[XY]=E[X]E[Y]$.  Why:
+\[
+E[XY] = \sum_x \sum_y xy P(X=x,Y=y) = \sum_x \sum_y x P(X=x) y P(Y=y) = \sum_x x P(X=x) \sum_y y P(Y=y) = E[X] E[Y] .
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno}  Let $X$ and $Y$ be jointly distributed with $P(X=0,Y=0)=0$, $P(X=0,Y=1)=1/2$, $P(X=1,Y=0)=1/2$, $P(X=1,Y=1)=0$.
+Here, $P(X=1)=1/2$ and $P(Y=0)=1/2$, but $P(X=1,Y=0) \neq 1/2 \times 1/2$, so $X$ and $Y$ are NOT independent.  Compute 
+$E[XY]$ from the definition.  What is $E[X] E[Y]$?  \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno}  Since the number of successes in $N$ independent identical Bernoulli trials is the sum of their values,
+every 1 being a success, show that if $X$ is a Binomial with $N$ trials and $p$ successes per trial, $EX=Np$. \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Suppose 51 people receive a needlestick injury with hepatitis C contaminated blood.  Assume independent and identical risk,
+and that 3 individuals were infected as a result.  Compute the probability of this event for $p=0$, $p=0.001$, $p=0.01$,
+$p=3/51$, $p=0.1$, $p=0.5$.  \ding{122} \vskip 6pt
+
+The probability of the data as a function of unknown parameters is called the likelihood.  It can be shown for the 
+Binomial model that the value of the unknown success probability that maximizes the likelihood is the relative 
+frequency $\hat{p}=X/N$.
+
+We can also take the expected value of a function of a random variable.  In general,
+\[
+E[g(X)] = \sum_x g(x) P(X=x).
+\]
+
+An important example is the second moment $E[X^2]$.  Note that the second moment is always bigger than the square of the
+mean:
+\[
+E[X^2] \geq (E[X])^2.
+\]
+It's easier to see this backwards:
+\[
+E[(X-E[X])^2] = E[X^2 - 2X E[X] + (E[X])^2].
+\]
+\[
+E[(X-E[X])^2] = E[X^2] + E[ - 2X E[X]] + E[ (E[X])^2]
+\]
+\[
+E[(X-E[X])^2] = E[X^2] -2 (E[X]) E[X] + (E[X])^2
+\]
+\[
+E[(X-E[X])^2] = E[X^2] - (E[X])^2
+\]
+But the left can't ever be negative; it's an expectation of things that are never negative.  So
+\[
+E[X^2]-(E[X])^2 \geq 0
+\]
+As you probably know, $E[(X-E[X])^2]$ is called the {\it variance}, so we've just shown it has to be nonnegative.
+
+Suppose $X$ and $Y$ are independent.  Then the variance of the sum is the sum of the variances.  But in general
+variances don't add.
+\[
+var[X+Y] = E[(X+Y)^2] - (E[X+Y])^2 = E[X^2 + 2XY + Y^2] - (E[X] + E[Y])^2
+\]
+\[
+var[X+Y] = E[X^2] + 2E[XY] + E[Y^2] - (EX)^2 - 2E[X]E[Y] - (E[Y])^2
+\]
+We assumed independence, so $EXY=EXEY$, which means two terms cancel, leaving us with
+\[
+var[X+Y] = E[X^2] - (E[X])^2 + E[Y^2] - (E[Y])^2 = var[X] + var[Y] .
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno} Show the variance of a Bernoulli random variable is $p(1-p)$.  Use this and the rule for
+summing variances of independent variables to show the variance of a Binomial with $N$ trials and $p$ per trial
+is $var X=Np(1-p)$.  \ding{122} \vskip 6pt 
+
+We need another fact.  What is $\var(k X)$ where $k$ is some constant?  We know 
+\[
+\var(kX) = E[ (kX)^2 ] - (E[kX])^2 ,
+\]
+so
+\[
+\var(kX) = E[ k^2 X^2 ] - (k E[X])^2 = k^2 E[X^2] - k^2 (E[X])^2 = k^2(E[X^2] - (E[X])^2) = k^2 \var(X) .
+\]
+So the variance of a multiple is the square of that multiple times the original variance.
+
+Let's consider the idea of estimating a Binomial probability by using the observed relative frequency.  In other words,
+say we observed a certain number of successes out of $N$ Bernoulli trials, and you want to estimate the unknown $p$, the
+success probability.  
+
+We can think of taking whatever we observe and dividing by $N$, which is just the observed relative frequency.  If we
+imagine repeating the experiment over and over, this relative frequency is a random variable: $\hat{p}=X/N$.  
+
+What is its expected value?  Here, $E[\hat{p}] = E[X/N] = (1/N)E[X]$, since $N$ is a constant.  But $X$ is a Binomial
+random variable.  So, we have $E[\hat{p}] = (1/N)E[X] = (1/N) Np = p$.  The expected value of the estimator $\hat{p}$
+is the thing we are estimating, $p$.  We don't know what $p$ is in any real application of this, but whatever it is,
+the expected value of $\hat{p}$ for some study of size $N$ is $p$.  This is a statistical property called {\it unbiasedness}; the
+relative frequency is an unbiased estimator of the unknown success probability.
+
+What is the variance of $\hat{p}$?  Here, $\var(\hat{p})=\var(X/N) = (1/N)^2 \var(X)$, since $1/N$ is a constant.  Then,
+from the variance of a Binomial, we have $\var(\hat{p})=(1/N)^2 Np(1-p)=p(1-p)/N$.  The standard deviation is just the
+square root of that.
+
+{\bf Exercise \theexno.}\stepcounter{exno} Suppose you believe that a certain drug will work around 30 percent of the time, and you want to
+estimate this to within a standard deviation of plus or minus five percent in absolute terms.  About how large does
+$N$ have to be?  \ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} How long did this assignment take you?  We want future assignments to take about six hours. \ding{122} \vskip 6pt
+
+
+\vfill
+
+\end{document}

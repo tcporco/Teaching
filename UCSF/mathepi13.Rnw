@@ -1,0 +1,1430 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Mathematical epidemiology, Part 13}
+
+\section*{Simple epidemic models, and linear algebra}
+
+The fact that disease does not occur randomly in populations is 
+commonly cited as a justification for epidemiology itself.  Indeed,
+infectious diseases, like noninfectious diseases, do not occur
+randomly, and in developing mathematical models of infectious 
+disease, we will have to consider heterogeneity of risk and 
+heterogeneity in transmission.
+
+Let us consider some very simple linear models of the propagation
+of disease.  Recall that we have already considered exponential 
+growth models.  For instance, suppose that we denote by $Y(u)$
+the number of infectives in generation $u$.  For this lecture,
+we will consider $u=0$ to correspond to the first generation, the
+initial infectives who start the epidemic.  The next generation
+of infectives consists of those individuals who acquire the infection
+directly from the first generation, and the number of such individuals
+is $Y(1)$.  There are succeeding generations; each individual who
+acquires the infection directly from the $Y(1)$ secondary cases
+of the starting generation comprise the third generation, $Y(2)$, and
+so forth.  
+
+It is true that at any particular time, there could be individuals
+in the population in different generations.  In general, for instance,
+you could have some of the initial infectives as well as individuals
+of different generations.  But we are not thinking about the number
+of infectives at different {\it times}, but rather the number of 
+infectives of different {\it infectious generations}.
+
+Our simple linear model is just
+\begin{equation}
+\label{eq:simp1}
+Y(u+1) = a Y(u) ,
+\end{equation}
+with $Y(0)$ given.  This model is linear because the right hand side
+of the equation contains only first powers of the state variable $Y$.
+
+We know that the solutions of Equation~(\ref{eq:simp1}) are
+\begin{equation}
+\label{eq:sol1}
+Y(u) = Y(0) a^u .
+\end{equation}
+Different values of $Y(0)$ give different solutions. 
+
+{\bf Exercise.~~}Determine whether the following equations are linear
+or nonlinear.  (a) $Y(u+1) = a Y(u) (1-Y(u))$ , (b) $Y(u+1) = c + Y(u)$, (c) $Y(u+1) = a^2 Y(u)$, (d) $Y(u+1) = \frac{a}{b(1-b)^3} (1-Y(u))$, (e) $Y(u+1) = k \frac{Y(u)}{Y_0 + Y(u)}$, (f) $Y(u+1) = k (1-e^{-a Y(u)})$ , (g) $Y(u+1) = a-bY(u)$ .
+
+{\bf Exercise.~~}What is the behavior of Equation~(\ref{eq:sol1})
+for $a<-1$, $a=-1$, $-1<a<0$, $a=0$, $0<a<1$, $a=1$, and $a>1$?
+
+We have already seen that the Galton-Watson process provides us with a
+stochastic generalization of Equation~(\ref{eq:simp1}).  Today we will
+look at a different generalization, in particular, to a deterministic
+but multivariate version.
+
+Suppose then that we have two regions, 1 and 2 say.  And let $Y_1(u)$
+be the number of infectives in region 1 at generation $u$, and let
+$Y_2(u)$ be the number of generation-$u$ infectives in region 2.  
+
+The simplest model is just to assume that the two regions don't 
+interact.  Let's take a look at this situation before moving on.
+We could write
+\begin{eqnarray*}
+Y_1(u+1)  & = &  a_{11} Y_1(u) \\
+Y_2(u+1)  & = &  a_{22} Y_2(u) \\
+\end{eqnarray*}
+We already know the solutions; $Y_1(u) = Y_1(0) a_{11}^u$.  
+We could also write this
+\begin{eqnarray*}
+Y_1(u+1)  & = &  a_{11} Y_1(u) + 0 Y_2(u) \\
+Y_2(u+1)  & = &  0 Y_1(u) + a_{22} Y_2(u) \\
+\end{eqnarray*}
+This allows us to use matrix notation:
+\begin{equation}
+\label{eq:sys2}
+\left[ \begin{array}{c}
+       Y_1(u+1) \\
+       Y_2(u+1) \\
+       \end{array} \right] = 
+ \left[ \begin{array}{cc}
+        a_{11} & 0 \\
+        0 & a_{22} \\
+        \end{array} \right] 
+\left[ \begin{array}{c}
+       Y_1(u) \\
+       Y_2(u) \\
+       \end{array} \right]  .
+\end{equation}
+If we let 
+\[
+\mbox{\bf Y}(u) = 
+\left[ \begin{array}{c}
+       Y_1(u) \\
+       Y_2(u) \\
+       \end{array} \right] 
+\]
+and
+\[
+\mbox{\bf A} =
+ \left[ \begin{array}{cc}
+        a_{11} & 0 \\
+        0 & a_{22} \\
+        \end{array} \right] ,
+\]
+we can rewrite Equation~(\ref{eq:sys2}) as
+\begin{equation}
+\label{eq:sys2m}
+\mbox{\bf Y}(u+1) = \mbox{\bf A} \mbox{\bf Y}(u) .
+\end{equation}
+This notation has the great advantage of making clear the similarity
+between this multivariate system and the simpler system $Y(u+1)=aY(u)$
+we examined earlier.  Formally, we can write the solution to 
+Equation~(\ref{eq:sys2m}) as
+\begin{equation}
+\label{eq:sol2m}
+\mbox{\bf Y}(u) = \mbox{\bf A}^u \mbox{\bf Y}(0) .
+\end{equation}
+Notice here that we have to put the factor $\mbox{\bf A}^u$ on the
+left; matrix multiplication is {\it not} commutative.  But since 
+matrix multiplication is associative, we don't have to worry about
+the difference between $\mbox{\bf A}(\mbox{\bf A}\mbox{\bf A})$ and $(\mbox{\bf A}\mbox{\bf A})\mbox{\bf A}$; both are just $\mbox{\bf A}^3$.
+
+Matrix notation and theory are important enough to be worth a bit of
+extra attention at this time.  We will often denote the $i,j$-th
+element of a matrix $\mbox{\bf A}$ by $a_{ij}$, where the first
+subscript refers to the row and the second to the column.
+
+Matrices with a single column are called {\it column vectors}.  We
+often use column vectors to represent the numbers of individuals in
+different classifications in a model.  Above, we used a column vector
+to represent the number of infected individuals in different
+regions.
+
+If $\mbox{\bf A}$ is a matrix, then if you exchange the rows and
+columns, you get $\mbox{\bf A}^T$, the {\it transpose} of $\mbox{\bf A}$.  If $\mbox{\bf B}=\mbox{\bf A}^T$, then $b_{ij}=a_{ji}$.  
+{\bf Exercise.~~}What is the transpose of
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] ?
+\]
+{\bf Exercise.~~}What is the transpose of
+\[
+ \left[ \begin{array}{ccc}
+        3 & 2 & 4 \\
+        1 & 2 & 0 \\
+        \end{array} \right] ?
+\]
+{\bf Exercise.~~}What is the transpose of
+\[
+ \left[ \begin{array}{c}
+        4 \\
+        5 \\
+        \end{array} \right] ?
+\]
+
+Matrix addition is just defined elementwise.  So if $\mbox{\bf C}=\mbox{\bf A}+\mbox{\bf B}$, the $i,j$-th element of $\mbox{\bf C}$ is defined by 
+$c_{ij}=a_{ij}+b_{ij}$.  This works for vectors too.  For instance, 
+we could imagine writing the incidence of infection in three groups
+(number of new cases) as a vector, and adding this
+vector to the number of prevalent cases to get a new cumulative number
+of cases.  
+
+{\bf Exercise.~~}Add by hand:
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        0 & 0 \\
+        0 & 0\\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Add by hand:
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        -3 & -2 \\
+        -1 & -2\\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Show that matrix addition is commutative, i.e. 
+that $\mbox{\bf A}+\mbox{\bf B} =  \mbox{\bf B}+\mbox{\bf A}$.
+
+The second important operation is {\it scalar multiplication}.  To
+multiply a matrix by a scalar (or a scalar by a matrix; the order 
+does not matter), just perform the multiplication elementwise:
+if $\mbox{\bf C} = a \mbox{\bf B}$, then $c_{ij}=a b_{ij}$.
+{\bf Exercise.~~}Multiply by hand:
+\[
+ 10 \times
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+\]
+{\bf Exercise.~~}Multiply by hand:
+\[
+ 4 \times
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] 
+\]
+Does scalar multiplication change the ratio of the vector elements to
+each other?
+{\bf Exercise.~~}What do you have to multiply this vector by to get
+a column vector with ones in it, i.e. $(1,1)^T$?
+\[
+ \left[ \begin{array}{c}
+        -1/2  \\
+        -1/2  \\
+        \end{array} \right] 
+\]
+{\bf Exercise.~~}Multiply this out by hand:
+\[ 4
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + 5
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] 
+\]
+{\bf Exercise.~~}Multiply this out by hand:
+\[ 3
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] + 2
+ \left[ \begin{array}{c}
+        -1  \\
+        1  \\
+        \end{array} \right] 
+\]
+
+{\bf Exercise.~~}Is it possible to multiply the following vector by
+a scalar $k$ and get
+a column vector with ones in it, i.e. $(1,1)^T$?
+\[
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] 
+\]
+{\bf Exercise.~~}Find $a$ and $b$:
+\[ a
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + b
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] = 
+ \left[ \begin{array}{c}
+        4  \\
+        5  \\
+        \end{array} \right] .
+\]
+
+In general, if $\mbox{\bf v}_1$ and $\mbox{\bf v}_2$ are vectors, 
+an expression of the form $a_1 \mbox{\bf v}_1 + a_2 \mbox{\bf v}_2$
+(with $a_1$ and $a_2$ constant scalars) is called a {\it linear
+combination} of $\mbox{\bf v}_1$ and $\mbox{\bf v}_2$.  
+{\bf Exercise.~~}Find all $a$ and $b$:
+\[ a
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + b
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] = 
+ \left[ \begin{array}{c}
+        0  \\
+        0  \\
+        \end{array} \right] .
+\]
+{\bf Exercise.~~}Find all $a$ and $b$:
+\[ a
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + b
+ \left[ \begin{array}{c}
+        2  \\
+        0  \\
+        \end{array} \right] = 
+ \left[ \begin{array}{c}
+        0  \\
+        0  \\
+        \end{array} \right] .
+\]
+{\bf Exercise.~~}Find all $a$ and $b$:
+\[ a
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + b
+ \left[ \begin{array}{c}
+        2  \\
+        0  \\
+        \end{array} \right] = 
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] .
+\]
+
+Note that any vector with two components
+can be written as a linear combination of
+$(1,0)^T$ and $(0,1)^T$:
+\[ a
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + b
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] = 
+ \left[ \begin{array}{c}
+        a  \\
+        b  \\
+        \end{array} \right] .
+\]
+{\bf Exercise.~~}Show that any vector with two components can be
+written as a linear combination of $(1,1)^T$ and $c(1,-1)^T$.
+
+The set of all the linear combinations of a set of vectors is called
+the {\it span} of the set.  We've just shown that $(1,0)^T$ and
+$(0,1)^T$ together span all the possible vectors with two components.
+But $(1,1)^T$ and $(1,-1)^T$ also span all the possible vectors with
+two components.
+
+Let's now think about this set of three vectors: 
+\[
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] ,
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] ,
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] .
+\]
+Does this set span the set of all the vectors with two components?
+Of course it does; we can represent $(a,b)^T$ by
+\[ 
+a
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + b
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] + 0
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] .
+\]
+Of course, notice there are other ways to represent $(a,b)^T$:
+\[ 
+(a-2c)
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + (b-c)
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] + c
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] .
+\]
+There's more than one way to write this sum, since the last vector
+is a linear combination of the other two.  We can always add in
+\[
+(-2c)
+ \left[ \begin{array}{c}
+        1  \\
+        0  \\
+        \end{array} \right] + (-c)
+ \left[ \begin{array}{c}
+        0  \\
+        1  \\
+        \end{array} \right] + c
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        0  \\
+        0  \\
+        \end{array} \right]  
+\]
+without changing the final answer.  This set of vectors is somehow
+redundant, and this leads to the next definitions.  If you have a 
+set of vectors $\mbox{\bf v}_1, \mbox{\bf v}_2, \ldots, \mbox{\bf v}_n$
+such that there is a linear combination (without all the coefficients
+being zero) that vanishes (equals the
+zero vector), then the set is called a {\it linearly dependent} set.
+In other words, there are coefficients $c_1, c_2, \ldots, c_n$ that
+are not all zero, such that $c_1 \mbox{\bf v}_1 + c_2 \mbox{\bf v}_2 +
+\cdots + c_n \mbox{\bf v}_n = 0$.
+
+If the only linear combination that vanishes has all zero coefficients,
+then the set is {\it linearly independent}.  \newline
+{\bf Exercise.~~}Show that $(1,0)^T$ and $(0,1)^T$ are linearly 
+independent.\newline
+{\bf Exercise.~~}Show that $(1,1)^T$ and $(-1,1)^T$ are linearly 
+independent.\newline
+{\bf Exercise.~~}Show that $(1,1)^T$ and $(2,1)^T$ are linearly 
+independent.\newline
+{\bf Exercise.~~}Show that $(1,1)^T$ and $(2,2)^T$ are linearly 
+dependent.\newline
+{\bf Exercise.~~}Show that $(1,0)^T$, $(0,1)^T$, and $(2,1)^T$ form a
+linearly dependent set.\newline
+{\bf Exercise.~~}Show that $(2,1)^T$, and $(-1,1)^T$ form a
+linearly independent set.\newline
+
+A set of linearly independent vectors that span some set (really, space
+or subspace) is called a {\it basis}.  It turns out that every
+basis has the same number of vectors in it, called the dimension of the
+space.  
+
+{\bf Exercise.~~}Find $a$ and $b$ such that 
+\[
+  a \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] + b
+    \left[ \begin{array}{c}
+        -1  \\
+        1  \\
+        \end{array} \right]  = 
+    \left[ \begin{array}{c}
+        4  \\
+        5  \\
+        \end{array} \right] . 
+\]
+
+In general, the definition of matrix multiplication is as follows.
+Suppose $\mbox{\bf C} = \mbox{\bf A}\mbox{\bf B}$.  Then the $i,j$-th
+element of $\mbox{\bf C}$, here denoted $c_{ij}$, is 
+\[
+c_{ij} = \sum_{k} a_{ik} b_{kj} .
+\]
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        4 \\
+        5 \\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        2 \\
+        1 \\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        10 \\
+        5 \\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        1 \\
+        -1 \\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        1 & 0 \\
+        0 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        a \\
+        b \\
+        \end{array} \right]  .
+\]
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        1 & 0 \\
+        0 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        a & b \\
+        c & d \\
+        \end{array} \right]  .
+\]
+The matrix elements where the row and column numbers are the same
+are called the {\it diagonal} elements, and the set of all of them is
+called the {\it diagonal}.
+Notice that multiplying by a matrix with ones on the {\it diagonal}
+and zeros everywhere else
+doesn't change the matrix.  A matrix with ones on the diagonal 
+and zeros everywhere else is called an {\it identity matrix}.
+
+Diagonal matrices have some interesting properties.  Watch what
+happens when a diagonal matrix multiplies a vector:
+\[
+ \left[ \begin{array}{cc}
+        \lambda_1 & 0 \\
+        0 & \lambda_2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        a  \\
+        b  \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        \lambda_1 a + 0 b  \\
+        0 a + \lambda_2 b  \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        \lambda_1 a   \\
+        \lambda_2 b  \\
+        \end{array} \right] . 
+\]
+We multiplied the first component of the vector by the first
+diagonal element, and the second component of the vector by the
+second diagonal element.
+
+{\bf Exercise.~~}Multiply the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        2 & -1 \\
+        1 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        3  \\
+        2  \\
+        \end{array} \right]  .
+\]
+
+Matrix multiplication is distributive in a simple way: 
+\begin{equation}
+\label{eq:mdist}
+\mbox{\bf A}(\mbox{\bf B}+\mbox{\bf C}) = \mbox{\bf AB} + \mbox{\bf AC} .
+\end{equation}
+{\bf Exercise.~~} Verify the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+\left(
+ \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right]  +
+ \left[ \begin{array}{c}
+        2  \\
+        4  \\
+        \end{array} \right]  
+\right) 
+\]
+{\bf Exercise.~~}Prove Equation~(\ref{eq:mdist}).
+
+You can also factor scalar multiplication outside: 
+\begin{equation}
+\label{eq:scaldis}
+\mbox{\bf A}(k\mbox{\bf B}) = k\mbox{\bf AB} .
+\end{equation}
+{\bf Exercise.~~} Verify the following by hand.
+\[
+ \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        8  \\
+        10  \\
+        \end{array} \right]  =
+ 2 \times \left[ \begin{array}{cc}
+        3 & 2 \\
+        1 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        4  \\
+        5  \\
+        \end{array} \right]  =
+\]
+{\bf Exercise.~~}Prove Equation~(\ref{eq:scaldis}).\newline
+{\bf Exercise.~~}Prove that for any linear combination of
+vectors $k_1 \mbox{\bf v}_1 + k_2 \mbox{\bf v}_2$, 
+\[
+\mbox{\bf A}(k_1 \mbox{\bf v}_1 + k_2 \mbox{\bf v}_2) =  
+k_1 \mbox{\bf A} \mbox{\bf v}_1 + k_2\mbox{\bf A} \mbox{\bf v}_2 . 
+\]
+
+It is crucially important to realize that whenever you multiply
+a vector by a matrix, the result is a vector which is a linear
+combination of the columns of the matrix.  The coefficients of the
+linear combination come from the vector.
+{\bf Exercise.~~}Show
+\[
+ \left[ \begin{array}{cc}
+        2 & -1 \\
+        1 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        3  \\
+        2  \\
+        \end{array} \right] = 
+ 3 \left[ \begin{array}{c}
+        2  \\
+        1  \\
+        \end{array} \right] +
+ 2 \left[ \begin{array}{c}
+        -1  \\
+        1  \\
+        \end{array} \right] .
+\]
+{\bf Exercise.~~}Show
+\[
+ \left[ \begin{array}{cc}
+        a_{11} & a_{12} \\
+        a_{21} & a_{22} \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        b_1  \\
+        b_2  \\
+        \end{array} \right] = 
+ b_1 \left[ \begin{array}{c}
+        a_{11}  \\
+        a_{21}  \\
+        \end{array} \right] +
+ b_2 \left[ \begin{array}{c}
+        a_{12}  \\
+        a_{22}  \\
+        \end{array} \right] .
+\]
+So if the columns of a matrix $\mbox{\bf A}$ are linearly independent,
+you can always solve $\mbox{\bf Ax} = \mbox{\bf b} \neq 0$ .  In other words,
+there is always a linear combination with coefficients $\mbox{\bf x}$
+of the columns of $\mbox{\bf A}$ so that you can get some nonzero 
+vector $\mbox{\bf b}$.  On the other hand, if the vector $\mbox{\bf b}$
+is zero, then the only way to get a nonzero solution for $\mbox{\bf x}$
+is if the columns of $\mbox{\bf A}$ are linearly dependent.  
+
+A square matrix whose columns are linearly dependent is called a 
+{\it singular} matrix.  If the columns are linearly independent, the
+matrix is nonsingular.  An important result in linear algebra 
+guarantees that if the columns are linearly independent, so are the
+rows, and if the columns are linearly dependent, then the rows are
+linearly dependent too.
+
+If we think about the scalar equation $ax=b$, we could write the 
+solution as $a^{-1}ax=a^{-1}b$, so that $x=a^{-1}b$, provided that
+$a \neq 0$.  In matrix theory, we have the analog: we can sometimes
+transform $\mbox{\bf Ax}=\mbox{\bf b}$ by multiplying by the
+inverse matrix of $\mbox{\bf A}$, denoted $\mbox{\bf A}^{-1}$.  Then
+$\mbox{\bf A}^{-1} \mbox{\bf Ax} = \mbox{\bf A}^{-1}\mbox{\bf b}$.
+Just as $a^{-1}a=1$ for scalars, the inverse matrix $\mbox{\bf A}^{-1}$
+is defined so that 
+\[
+\mbox{\bf A}^{-1} \mbox{\bf A} = \mbox{\bf A} \mbox{\bf A}^{-1} = \mbox{\bf I} ,
+\]
+where $\mbox{\bf I}$ is the identity matrix of the appropriate size.
+So then, 
+$\mbox{\bf A}^{-1} \mbox{\bf Ax} = \mbox{\bf I}\mbox{\bf x} = \mbox{\bf x}$, so that $\mbox{\bf x} = \mbox{\bf A}^{-1}\mbox{\bf b}$.  But just as
+$a^{-1}$ does not exist if $a=0$, $\mbox{\bf A}^{-1}$ can fail to 
+exist; it fails to exist when $\mbox{\bf Ax}=\mbox{\bf b}$ has no
+nontrivial solution (no solution with nonzero $\mbox{\bf x}$), and this
+happens when $\mbox{\bf A}$ is singular.  In linear algebra books, it
+is proven that whenever $\mbox{\bf A}$ is nonsingular, the inverse
+exists, and whenever the inverse exists, $\mbox{\bf A}$ is nonsingular.
+But for a singular matrix, there is no inverse; the matrix cannot be
+inverted.
+
+In linear algebra textbooks, it is shown that the determinant of a
+square matrix vanishes (equals zero) when, and only when, the matrix
+is singular.  For a two by two matrix,
+the determinant is
+\[
+ \mbox{\rm det} \left[ \begin{array}{cc}
+        a & b  \\
+        c & d  \\
+        \end{array} \right] = ad-bc .
+\]
+This is sometimes written
+\[
+  \left| \begin{array}{cc}
+        a & b  \\
+        c & d  \\
+        \end{array} \right| = ad-bc .
+\]
+{\bf Exercise.~~}Find the determinant of
+\[
+  \left| \begin{array}{cc}
+        3 & 2  \\
+        1 & 2  \\
+        \end{array} \right| .
+\]
+{\bf Exercise.~~}Find the determinant of
+\[
+  \left| \begin{array}{cc}
+        1 & 0  \\
+        0 & 1  \\
+        \end{array} \right| .
+\]
+{\bf Exercise.~~}Find the determinant of
+\[
+  \left| \begin{array}{cc}
+        2 & 4  \\
+        1 & 2  \\
+        \end{array} \right| .
+\]
+{\bf Exercise.~~}Show that for the two by two matrix
+where the second column is a multiple of the first, i.e.
+\[
+  \left[ \begin{array}{cc}
+        a & ka  \\
+        c & kc  \\
+        \end{array} \right] ,
+\]
+the determinant must vanish.
+{\bf Exercise.~~}Show that for the two by two matrix
+\[
+  \left[ \begin{array}{cc}
+        a & b  \\
+        c & d  \\
+        \end{array} \right] ,
+\]
+if the 
+determinant $ad-bc=0$, the second column is a multiple of the first.
+The determinant for a three by three matrix is more complicated:
+\[
+  \left| \begin{array}{ccc}
+        a & b & c  \\
+        d & e & f \\
+        g & h & k \\
+        \end{array} \right|  = aek+bfg+cdh-gec-bdk-afh .
+\]
+For higher order matrices, the formulas are much more complicated, and
+a technique known as expansion by minors can be sometimes used.
+
+With these preliminaries out of the way, we can return to the epidemic
+model.  It turns out that the key to understanding 
+Equation~(\ref{eq:sol2m}) is to realize that sometimes a matrix can 
+act like a scalar.  In fact, we have already seen some examples of this.
+Here is another:
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        3 \\
+        1 \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        18 \\
+        6 \\
+        \end{array} \right]  = 6 \times
+ \left[ \begin{array}{c}
+        3 \\
+        1 \\
+        \end{array} \right] . 
+\]
+This does not in general work.  You can't just multiply any old matrix
+by any old vector and hope to get a scalar multiple of that vector.
+On the other hand, if it works for a vector, it works for all multiples
+of that vector.  Suppose $\mbox{\bf x}$ is a vector, and that
+$\mbox{\bf Ax}=\lambda \mbox{\bf x}$.  Then
+\[
+\mbox{\bf A}(k \mbox{\bf x})=
+k\mbox{\bf A} \mbox{\bf x}=
+k \lambda \mbox{\bf x} = \lambda (k \mbox{\bf x}) .
+\]
+Let's try this, using our example, with a multiple of $(3,1)^T$, 
+say $(6,2)^T$. 
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        6 \\
+        2 \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        5 \times 6 + 3 \times 2 \\
+        1 \times 6 + 3 \times 2 \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        36 \\
+        12 \\
+        \end{array} \right]  = 6 \times
+ \left[ \begin{array}{c}
+        6 \\
+        2 \\
+        \end{array} \right] . 
+\]
+So if we were thinking of the matrix as representing transmission
+of infection within different regions, we see that if the number
+of cases started out in a three-to-one ratio, it would stay that way.
+
+There is another example too, with the same matrix:
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        -1 \\
+        1 \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        5 \times (-1) + 3 \times 1 \\
+        1 \times (-1) + 3 \times 1 \\
+        \end{array} \right]  = 
+ \left[ \begin{array}{c}
+        -2 \\
+        2 \\
+        \end{array} \right]  = 2 \times
+ \left[ \begin{array}{c}
+        -1 \\
+        1 \\
+        \end{array} \right] . 
+\]
+So the matrix $\left[ \begin{array}{cc}
+5 & 3 \\
+1 & 3 \\
+\end{array} \right]$ multiplies $(3,1)^T$ (or any multiple of it) by
+six, and doubles $(-1,1)^T$ (or any multiple of it).
+
+Let's take a look at what happens when we multipy the matrix by 
+$(3,1)^T + (-1,1)^T$, the sum of these two vectors.  This is just
+$(2,2)^T$.  We already know that
+\[
+\mbox{\bf A}(\mbox{\bf x} + \mbox{\bf y}) = 
+\mbox{\bf A}\mbox{\bf x} + 
+\mbox{\bf A}\mbox{\bf y}  
+\]
+for any matrix $\mbox{\bf A}$ and vectors $\mbox{\bf x}$ and 
+$\mbox{\bf y}$.  So
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+\left(
+ \left[ \begin{array}{c}
+        3 \\
+        1 \\
+        \end{array} \right]  +
+ \left[ \begin{array}{c}
+        -1 \\
+        1 \\
+        \end{array} \right]  \right) =
+\left(
+ \left[ \begin{array}{c}
+        18 \\
+        6 \\
+        \end{array} \right]  + 
+ \left[ \begin{array}{c}
+        -2 \\
+        2 \\
+        \end{array} \right] \right) =
+ \left[ \begin{array}{c}
+        16 \\
+        8 \\
+        \end{array} \right] . 
+\]
+And this can be verified directly:
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        2 \\
+        2 \\
+        \end{array} \right]  =
+ \left[ \begin{array}{c}
+        5 \times 2 + 3 \times 2 \\
+        1 \times 2 + 3 \times 2 \\
+        \end{array} \right]  = 
+ \left[ \begin{array}{c}
+        16 \\
+        8 \\
+        \end{array} \right] . 
+\]
+But there is no scalar multiple of $(2,2)^T$ that equals $(16,8)^T$.
+You'd have to multiply the first component by 8, and the second by 
+four, and that just can't be done with any single number. 
+Here, if we think of the matrix as representing disease transmission,
+we can see that the ratio of the number of cases in the different
+regions is changing as the epidemic expands.
+
+Let's see what would happen after ten time periods.  We expect to
+see enormous, possibly unrealistic, case counts.  We can use the
+decomposition of the population to make this simple.  We already
+have 
+\[
+\mbox{\bf A} =
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] ,
+\]
+$\mbox{\bf x}=(3,1)^T$, and $\mbox{\bf y}=(-1,1)^T$.  Then since
+$(2,2)^T = (3,1)^T + (-1,1)^T$, $\mbox{\bf A}^{10}(\mbox{\bf x}+\mbox{\bf y}) = \mbox{\bf A}^{10}\mbox{\bf x}+\mbox{\bf A}^10\mbox{\bf y}$.  What
+makes this great is that if multiplying $\mbox{\bf x}$ by $\mbox{\bf A}$ one time multiplies $\mbox{\bf x}$ by 6, multiplying by $\mbox{\bf A}$ ten
+times multiplies $\mbox{\bf x}$ by 6 ten times.  Similarly, multiplying
+$\mbox{\bf y}$ by $\mbox{\bf A}$ ten times is the same as multiplying
+$\mbox{\bf y}$ by 2 ten times.  So
+\[
+\mbox{\bf A}^{10} (\mbox{\bf x}+\mbox{\bf y}) = 6^{10}\mbox{\bf x} + 2^{10}\mbox{\bf y} .
+\]
+This turns out to be
+\[
+ \left[ \begin{array}{c}
+        3 \times 6^{10} + (-1) \times 2^{10}  \\
+        1 \times 6^{10} + 1 \times 2^{10}  \\
+        \end{array} \right] =
+ \left[ \begin{array}{c}
+         181397504   \\
+         60467200  \\
+        \end{array} \right] .
+\]
+It was quite easy to multiply by $\mbox{\bf A}^{10}$, because we
+had expressed $(2,2)^T$ as a sum of vectors on which the action of
+$\mbox{\bf A}$ was simple.  Also notice that even though the matrix
+is expanding both terms, the $(3,1)^T$ term and the $(-1,1)^T$ term,
+even out to time ten you can see that the term that is growing fastest
+is proportionally much larger than the other; the population looks
+very much like a multiple of $(3,1)^T$ by time ten.  Eventually, only
+the fastest growing term matters.
+
+What we've seen is that if our infection transmission matrix is
+$\mbox{\bf A}$, it makes a lot of sense to express the case counts
+in terms of $(3,1)^T$ and $(-1,1)^T$.  What if we have a case 
+count of $(5,7)^T$?  How can we represent $(5,7)^T$ as a sum of
+$(3,1)^T$ and $(-1,1)^T$?  In other words, we'd like to know $a$ and
+$b$ such that
+\[
+ \left[ \begin{array}{c}
+         5 \\
+         7 \\
+        \end{array} \right] =
+a \times
+ \left[ \begin{array}{c}
+         3 \\
+         1 \\
+        \end{array} \right] +
+b \times
+ \left[ \begin{array}{c}
+         -1 \\
+         1 \\
+        \end{array} \right] .
+\]
+This can be rewritten
+\[
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+         a \\
+         b \\
+        \end{array} \right] =
+ \left[ \begin{array}{c}
+         5 \\
+         7 \\
+        \end{array} \right] .
+\]
+In this case, we know
+\[
+ \left[ \begin{array}{c}
+         a \\
+         b \\
+        \end{array} \right] =
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] ^ {-1}
+ \left[ \begin{array}{c}
+         5 \\
+         7 \\
+        \end{array} \right] .
+\]
+
+So if we wanted to multiply $(5,7)^T$ by $\mbox{\bf A}$, we could
+first compute $(a,b)^T$ as shown.  Remember, $a$ is the coefficient
+of $(3,1)^T$ and $b$ the coefficient of $(-1,1)$.  We know that
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+\left(
+a \times
+ \left[ \begin{array}{c}
+        3 \\
+        1 \\
+        \end{array} \right]  +
+b \times
+ \left[ \begin{array}{c}
+        -1 \\
+        1 \\
+        \end{array} \right]  \right) =
+\left(
+6 a \times
+ \left[ \begin{array}{c}
+        3 \\
+        1 \\
+        \end{array} \right]  + 
+2 b \times
+ \left[ \begin{array}{c}
+        -1 \\
+        1 \\
+        \end{array} \right] \right) =
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        6a \\
+        2b \\
+        \end{array} \right]  .
+\]
+So we could think of first multiplying by a matrix to compute $(a,b)^T$,
+then by a diagonal matrix to get $(6a,2b)^T$, and then by one more
+matrix to get the final answer.  That is,
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        5 \\
+        7 \\
+        \end{array} \right]  =
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        6 & 0 \\
+        0 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] ^ {-1}
+ \left[ \begin{array}{c}
+        5 \\
+        7 \\
+        \end{array} \right] .
+\]
+In fact, there is nothing special about $(5,7)^T$.  You can verify
+directly that
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] =
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        6 & 0 \\
+        0 & 2 \\
+        \end{array} \right] 
+ \left[ \begin{array}{cc}
+        3 & -1 \\
+        1 & 1 \\
+        \end{array} \right] ^ {-1} .
+\]
+All that is going on is that when multiplying all this by a 
+vector, the matrix furthest to the right determines the coefficients
+of expanding the vector as a sum of $(3,1)^T$ and $(-1,1)^T$, 
+the diagonal matrix in the middle scales these appropriately, and
+the final matrix just puts the components back together again.
+
+In general, for any matrix $\mbox{\bf A}$, any nonzero
+vector $\mbox{\bf x}$
+and scalar $\lambda$ for which $\mbox{\bf Ax} = \lambda \mbox{\bf x}$
+is called an {\it eigenvector}, and the value $\lambda$ is an
+{\it eigenvalue} (old books: {\it latent root}).  We've already
+seen that any multiple of an eigenvector is also an eigenvector.  
+So we think of $(3,1)^T$ and $(6,2)^T$ and $(1.5,1)^T$ and so forth
+as really the same eigenvector, just scaled differently, while $(-1,1)^T$ is a different eigenvector.
+We've seen that in general each eigenvector has a different eigenvalue
+associated with it.  If we let $\mbox{\bf E}$ be the matrix whose
+$i$-th column is the $i$-th eigenvector of $\mbox{\bf A}$, and 
+$\Lambda$ be the diagonal matrix whose $i,i$-th entry is the $i$-th
+eigenvalue (the eigenvalue associated with the $i$-th eigenvector),
+then we have seen an example of the fact that
+\begin{equation}
+\label{eq:eigen}
+\mbox{\bf A} = \mbox{\bf E}\Lambda\mbox{\bf E}^{-1} .
+\end{equation}
+This turns out to be true whenever the eigenvectors are linearly
+independent, and is proven in linear algebra textbooks.  Equation~(\ref{eq:eigen}) is sometimes called the {\it eigenvalue decomposition}.  When
+$\mbox{\bf A}$ is written this way, it is said to have been
+{\it diagonalized}.
+
+Look at what happens when we try to raise $\mbox{\bf A}$ to a power, 
+the third, say:
+\begin{eqnarray*}
+\mbox{\bf A}^{3} & = & \mbox{\bf E}\Lambda\mbox{\bf E}^{-1} 
+ \mbox{\bf E}\Lambda \mbox{\bf E}^{-1} 
+ \mbox{\bf E} \Lambda \mbox{\bf E}^{-1} \\
+ & = & \mbox{\bf E} \Lambda (\mbox{\bf E}^{-1} 
+ \mbox{\bf E}) \Lambda (\mbox{\bf E}^{-1} 
+ \mbox{\bf E}) \Lambda \mbox{\bf E}^{-1} = \\
+ & = & \mbox{\bf E} \Lambda \mbox{\bf I}
+  \Lambda \mbox{\bf I}
+  \Lambda \mbox{\bf E}^{-1} = \\
+ & = & \mbox{\bf E} \Lambda^{3} \mbox{\bf E}^{-1} . \\
+\end{eqnarray*}
+This principle applies to any power.
+
+We haven't said anything about how to find the eigenvalues and
+eigenvectors.  Let's look at it:
+\[
+\mbox{\bf Ax} = \lambda \mbox{\bf x} .
+\]
+In two dimensions, we have
+\[
+ \left[ \begin{array}{cc}
+        a_{11} & a_{12} \\
+        a_{21} & a_{22} \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        x_1 \\
+        x_2 \\
+        \end{array} \right] = \lambda
+ \left[ \begin{array}{c}
+        x_1 \\
+        x_2 \\
+        \end{array} \right] =
+ \left[ \begin{array}{c}
+        \lambda x_1 \\
+        \lambda x_2 \\
+        \end{array} \right] .
+\]
+Rearranging this,
+\[
+ \left[ \begin{array}{cc}
+        a_{11} & a_{12} \\
+        a_{21} & a_{22} \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        x_1 \\
+        x_2 \\
+        \end{array} \right] -
+ \left[ \begin{array}{c}
+        \lambda x_1 \\
+        \lambda x_2 \\
+        \end{array} \right] =
+ \left[ \begin{array}{c}
+        0 \\
+        0 \\
+        \end{array} \right] .
+\]
+This whole thing can be rewritten
+\[
+ \left[ \begin{array}{cc}
+        a_{11}-\lambda & a_{12} \\
+        a_{21} & a_{22}-\lambda \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        x_1 \\
+        x_2 \\
+        \end{array} \right] =
+ \left[ \begin{array}{c}
+        0 \\
+        0 \\
+        \end{array} \right] .
+\]
+In general, this can always be written $(\mbox{\bf A}-\lambda \mbox{\bf I})\mbox{\bf x}=0$.
+If we just write $\mbox{\bf B}=\mbox{\bf A}-\lambda \mbox{\bf I}$ for
+a moment, we have $\mbox{\bf Bx}=0$.  In other words, the zero
+vector has to be a linear combination of the columns of this 
+$\mbox{\bf B}$, so $\mbox{\bf B}$ has to be a singular matrix.
+
+For $\mbox{\bf B}$ to be singular, the determinant must vanish. So
+\[
+ \left| \begin{array}{cc}
+        a_{11}-\lambda & a_{12} \\
+        a_{21} & a_{22}-\lambda \\
+        \end{array} \right| = 0 .
+\]
+This gives us the {\it characteristic polynomial}:
+\[
+(a_{11}-\lambda)(a_{22}-\lambda)-a_{12}a_{21}=0.
+\]
+The solutions to this equation are the eigenvalues.  Once we have
+the eigenvalues, we can plug them back in and find the eigenvectors
+up to a multiplier.  
+
+Let's do an example.  Let's look at the matrix
+\[
+ \left[ \begin{array}{cc}
+        5 & 3 \\
+        1 & 3 \\
+        \end{array} \right] .
+\]
+The characteristic equation is
+\[
+ \left| \begin{array}{cc}
+        5-\lambda & 3 \\
+        1 & 3-\lambda \\
+        \end{array} \right| = 0 ,
+\]
+or $(5-\lambda)(3-\lambda)-3=0$.  This reduces to 
+$15-3\lambda-5\lambda+\lambda^2 - 3=0$, or 
+$\lambda^2 - 8 \lambda + 12=0$.  This just factors as
+$(\lambda-6)(\lambda-2)=0$, yielding eigenvalues of 2 and 6 for this
+matrix.  These are the very values we've seen in examples.
+
+How can we find the eigenvectors?  Let's see what happens when
+we try.  Let's begin with the eigenvalue 6:
+\[
+ \left[ \begin{array}{cc}
+        5-6 & 3 \\
+        1 & 3-6 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        x_1 \\
+        x_2 \\
+        \end{array} \right] =
+ \left[ \begin{array}{cc}
+        -1 & 3 \\
+        1 & -3 \\
+        \end{array} \right] 
+ \left[ \begin{array}{c}
+        x_1 \\
+        x_2 \\
+        \end{array} \right] =
+ \left[ \begin{array}{c}
+        0 \\
+        0 \\
+        \end{array} \right] .
+\]
+We have two equations in two unknowns, or do we? The first equation
+is $-x_1+3x_2=0$, giving us $x_1=3x_2$.  The second equation is 
+just a multiple of this same equation (of course, since we 
+chose 6 specifically to make the matrix singular).  All we know
+about this eigenvector is that the first component is triple the
+second one; the eigenvectors are only determined up to a constant
+multiple.\newline
+{\bf Exercise.~~}Determine the other eigenvector of the matrix in
+the same way.
+
+If the eigenvalues are distinct, the eigenvectors must be linearly
+independent (Strang).  If they are linearly independent, then the only way
+to make their sum vanish is to have all zero coefficients.  In the
+two by two case, say we have eigenvalues $\lambda_1$ and $\lambda_2$,
+and corresponding eigenvectors $\mbox{\bf x}_1$ and 
+$\mbox{\bf x}_2$.  Here is a linear combination of them:
+$k_1 \mbox{\bf x}_1 + k_2 \mbox{\bf x}_2$.  What will it take to make
+this vanish?  Suppose $k_1 \mbox{\bf x}_1 + k_2 \mbox{\bf x}_2=0$.  
+Let's operate on this with the matrix: 
+\begin{eqnarray*}
+\mbox{\bf A} (k_1 \mbox{\bf x}_1 + k_2 \mbox{\bf x}_2) & = &
+\mbox{\bf A} k_1 \mbox{\bf x}_1 + \mbox{\bf A}k_2 \mbox{\bf x}_2 \\
+& = & k_1 \mbox{\bf A} \mbox{\bf x}_1 + k_2 \mbox{\bf A} \mbox{\bf x}_2 \\
+& = & k_1 \lambda_1 \mbox{\bf x}_1 + k_2 \lambda_2 \mbox{\bf x}_2 \\
+\end{eqnarray*}
+Of course, this still equals zero.
+On the other hand, $k_1 \mbox{\bf x}_1 = -k_2 \mbox{\bf x}_2$, so
+\begin{eqnarray*}
+\mbox{\bf A} (k_1 \mbox{\bf x}_1 + k_2 \mbox{\bf x}_2) 
+& = & \lambda_1 (-k_2 \mbox{\bf x}_2) + k_2 \lambda_2 \mbox{\bf x}_2 \\
+& = & k_2 \mbox{\bf x}_2 (\lambda_2 - \lambda_1) \\
+\end{eqnarray*}
+This still equals zero.  But by assumption, $\lambda_1 \neq \lambda_2$,
+and so $k_2=0$.  Similarly, $k_1=0$.  So the only linear combination
+that vanishes has all zero coefficients, so the two eigenvectors were
+independent.  This argument can be extended by induction to higher
+dimensions.
+
+On the other hand, you can sometimes have
+linearly independent eigenvectors that have the same eigenvalue.
+For instance, $(0,1)^T$ and $(1,0)^T$ are both eigenvectors of 
+the identity matrix, and both have eigenvalue 1.  It turns out that
+as long as you have $n$ linearly independent eigenvectors, you can
+diagonalize an $n$-by-$n$ matrix.  Unfortunately, there are matrices
+that can't be diagonalized, because there aren't enough linearly
+independent eigenvectors, and also unfortunately, some of these
+correspond to plausible infectious transmission patterns.
+
+Take the following simple matrix, for example.  
+\[
+ \left[ \begin{array}{cc}
+        2 & 1 \\
+        0 & 2 \\
+        \end{array} \right] 
+\]
+If we think of each case in group 1 as giving rise to two cases
+in group 1, and each case in group 2 as giving rise to two cases in
+group 1 and a cases in group 2 as well, we have this matrix.
+In a way, we can determine the future dynamics just by knowing
+what is happening in group 2; group 2 does not depend on group 1.
+Let's write out the dynamics more explicitly:
+\begin{eqnarray*}
+y_1(u+1) & = & 2 y_1(u)+ y_2(u) \\
+y_2(u+1) & = & 2 y_2(u) \\
+\end{eqnarray*}
+We can just write down 
+\[
+y_2(u) = 2^u y_2(0) .
+\]
+
+Now the characteristic polynomial of this
+matrix is just $(2-\lambda)^2$, and so the solutions are 
+$\lambda=2$ and $\lambda=2$.  Regrettably, the only eigenvector is
+$(1,0)^T$.  We cannot diagonalize the matrix.
+
+What is $y_1(u)$?  By inspection, we know that 
+$y_1(1) = 2 y_1(0) + y_2(0)$, and 
+$y_1(2) = 2 y_1(1) + y_2(1) = 2 (2 y_1(0) + y_2(0)) + 2 y_2(0)$.  Then
+$y_1(2) = 4 y_1(0) + 4 y_2(0)$.
+Going further, we know
+$y_1(3) = 2 y_1(2) + y_2(2) = 2 (4 y_1(0) + 4 y_2(0)) + 4 y_2(0)$,
+or $y_1(3) = 8 y_1(0) + 12 y_2(0)$.
+In fact, 
+\[
+ \left[ \begin{array}{cc}
+        2 & 1 \\
+        0 & 2 \\
+        \end{array} \right] ^ u =
+ \left[ \begin{array}{cc}
+        2^u & u 2^{u-1} \\
+        0 & 2^u \\
+        \end{array} \right] .
+\]
+In this particular case, we have $y_1(u)=y_1(0) 2^u + y_2(0) u 2^{u-1}$.
+
+More generally,
+\[
+ \left[ \begin{array}{cc}
+        \lambda & k \\
+        0 & \lambda \\
+        \end{array} \right] ^ u =
+ \left[ \begin{array}{cc}
+        \lambda^u & k u \lambda^{u-1} \\
+        0 & \lambda^u \\
+        \end{array} \right] .
+\]
+You can see here that if $|\lambda|<1$, these solutions are also going
+to converge to zero, and if $|\lambda|>1$, these solutions diverge
+away from zero, producing an epidemic.  The most general representation
+of systems of this sort is in {\it Jordan normal form}, which we
+will omit here.  Suffice it to say that the spectral representation
+we gave above (Equation~(\ref{eq:eigen})) provides us with the solution
+whenever the eigenvectors of the infection transmission matrix
+are linearly independent, and provides insight into why there is
+an epidemic if any eigenvalue exceeds one in magnitude, and no epidemic if all the eigenvalues are less than one in magnitude.  This last fact holds
+even when not all the eigenvalues are linearly independent; the
+general solution involves the Jordan normal form, and the flavor of
+this is provided by the previous example.
+
+So when considering infection transmission matrices and linear
+models, when all the eigenvalues are less than one in magnitude,
+the case counts diminish to zero as time progresses.  If any
+eigenvalue exceeds one in magnitude, the case counts diverge from
+zero, and we have an epidemic.
+
+\vfill
+
+\end{document}

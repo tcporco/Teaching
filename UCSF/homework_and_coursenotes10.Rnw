@@ -1,0 +1,174 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+Travis C. Porco, instructor
+
+\section*{Further explorations}
+Let's look at an SIR model.
+<<>>=
+rm(list=objects())
+library(deSolve)
+vsir <- function(t,y,pars) {
+  ss <- y[1]
+  ii <- y[2]
+  rr <- y[3]
+  nn <- ss+ii+rr
+  list(
+   with(pars,
+     c(lam - beta*ss*ii/nn - mu*ss -epsilon*ss ,
+       beta*ss*ii/nn - rho*ii -mu*ii + epsilon*ss ,
+       rho*ii - mu*rr)),
+     NULL)
+}
+nm <- function(simout,names) {
+  d1 <- as.data.frame(simout)
+  names(d1) <- c("time",names)
+  d1
+}
+ep <- function(simres) {
+  stmp <- apply(simres[,2:4],1,sum)
+  mx <- max(stmp)
+  plot(simres$time,stmp,type="n",xlab="Time",ylab="Count",ylim=c(0,mx))
+  points(simres$time,simres$S,type="l")
+  points(simres$time,simres$I,type="l",col="red")
+  points(simres$time,simres$R,type="l",col="blue")
+}
+@
+Let's see what the SIR model with ``vital dynamics'' is capable of.
+<<>>=
+simres1 <- nm(lsoda(init <- c(1000/(1/30)-1,1,0),seq(0,256,by=1/8),vsir,pars1 <- list(lam=1000,mu=1/30,beta=2,rho=1,epsilon=0)),c("S","I","R"))
+ep(simres1)
+@
+Let's look just at the infectives:
+<<>>=
+plot(simres1$time,simres1$I,type="l",col="red")
+@
+What is going on?  An epidemic invades a susceptible population, causing a huge outbreak at first.  The exhaustion of susceptibles
+causes the incidence rate to crash.  Eventually, a buildup of susceptibles allows another epidemic, albeit one of lower peak.  Eventually,
+incidence reaches a steady state.
+
+Try it with a smaller population:
+<<>>=
+simres2 <- nm(lsoda(init2 <- c(100/(1/30)-1,1,0),seq(0,256,by=1/8),vsir,pars2 <- list(lam=100,mu=1/30,beta=2,rho=1,epsilon=0)),c("S","I","R"))
+ep(simres2)
+@
+
+How about a smaller one still?  Now, let's change the death rate.
+<<>>=
+simres3 <- nm(lsoda(init3 <- c(100/(1/10)-1,1,0),seq(0,256,by=1/8),vsir,pars3 <- list(lam=100,mu=1/10,beta=2,rho=1,epsilon=0)),c("S","I","R"))
+ep(simres3)
+@
+
+<<>>=
+simres4 <- nm(lsoda(init4 <- c((100/3)/(1/30)-1,1,0),seq(0,256,by=1/8),vsir,pars4 <- list(lam=100/3,mu=1/30,beta=5,rho=4,epsilon=0)),c("S","I","R"))
+ep(simres4)
+plot(simres4$time,simres4$I,type="l",col="red")
+@
+
+\stepcounter{exno}
+{\bf Exercise \theexno.}\stepcounter{exno} Calculate $R_0$ for this model.  Keep the no-disease equilibrium at the
+same value $\Lambda/\mu$ above, which is 30,000.  Vary $\beta$ so that $R_0=0.5$, then try 0.95, 1.05, and 2.  Plot epidemic
+curves.  Experiment; see if you can change the timing of the peaks and the depth of the trough that follows the first one.
+\ding{122} \vskip 6pt
+
+Let's look at the stochastic version.  
+<<>>=
+vsim.sto <- function(t,y,pars,maxt,tsave) {
+  curt <- t
+  savetimes <- tsave
+  out <- matrix(c(t,y),nrow=1)
+  while (curt < maxt) {
+    ss <- y[1]
+    ii <- y[2]
+    rr <- y[3]
+    nn <- ss+ii+rr
+    ratez <- with(pars,
+      c(infection = beta*ss*ii/nn,
+        s.die = mu*ss,
+        i.die = mu*ii,
+        recover = rho*ii,
+        r.die = mu*rr))
+    expz <- rexp(5,rate=ratez)
+    expz[is.nan(expz)] <- Inf
+    event.times <- c(expz,savetimes[1]-curt)
+    mt <- min(event.times)
+    ev <- which(event.times == mt)
+    if (ev==1) {
+      y[2] <- y[2] + 1
+      y[1] <- y[1] - 1
+    } else if (ev==2) {
+      y[1] <- y[1] - 1
+    } else if (ev==3) {
+      y[2] <- y[2] - 1
+    } else if (ev==4) {
+      y[2] <- y[2] - 1
+      y[3] <- y[3] + 1
+    } else if (ev==5) {
+      y[3] <- y[3] - 1
+    } else if (ev==6) {
+      out <- rbind(out,c(curt,y))
+      savetimes <- savetimes[-1]    
+    } else {
+      stop("bad")
+    }
+    y[1] <- y[1] + rpois(1,lambda=pars[["lam"]]*mt)
+    curt <- curt + mt
+  }
+  nm(out,c("S","I","R")) 
+}
+@
+<<>>=
+set.seed(4544558)
+sim2 <- vsim.sto(0,init,pars1,256,1:256)
+ep(sim2)
+@
+
+Let's look at some other population sizes.  
+<<>>=
+sim2a <- vsim.sto(0,init2,pars2,256,1:256)
+ep(sim2a)
+@
+
+Let's try an even smaller population.
+<<>>=
+sim4a <- vsim.sto(0,init2,pars2,256,1:256)
+ep(sim4a)
+@
+
+Now, let's modify the model to allow some inflow.
+<<>>=
+simres5 <- nm(lsoda(init5 <- c((100/3)/(1/30)-1,1,0),seq(0,256,by=1/8),vsir,pars5 <- list(lam=100/3,mu=1/30,beta=5,rho=4,epsilon=0.0001)),c("S","I","R"))
+ep(simres5)
+plot(simres5$time,simres5$I,type="l",col="red")
+@
+
+
+
+{\bf Exercise \theexno.}\stepcounter{exno} How long did this assignment take you?  \ding{122} \vskip 6pt
+
+\vfill
+\end{document}

@@ -1,0 +1,966 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in TB Surveillance, Part 3}
+
+\subsection*{Goals}
+The specific goals for this review segment are:
+\begin{enumerate}
+\item Understand expected values
+\item Understand the hypergeometric distribution
+\item Understand the classical occupancy distribution
+\end{enumerate}
+
+\newcounter{exercount}
+\setcounter{exercount}{1}
+
+\section*{Expected values}
+\subsection*{Definition}
+Suppose that we have some observations we want to average, 
+for instance, 3, 2, 5, 6, 5, and 3.  We can denote the $i$-th
+observation by $X_i$, so that $X_1$, the first observation, is
+3, and so forth.  There are six items, so the count is $6$; we
+will denote the number of items by $N$.
+The average, $\bar{X}$, or 
+{\it arithmetic mean}, as everyone knows, is the sum divided
+by the count.  So we have six items, and their sum is
+just $3+2+5+6+5+3=24$; the average is $24/6=4$.  We know that
+\[
+\bar{X} = \frac{1}{N}\sum_{i=1}^N X_i
+\]
+
+The average is closely related to the relative frequencies of the
+different values.  Before we can discuss this relationship, let's 
+first of all note that although we have six data points ($N=6$), 
+we only have four different values.  Letting $M$ be the number
+of different values, we have $M \leq N$ (you can't have more 
+different values than you have data points!), and $M=N$ only when
+all the data points are different.  In our example, we have
+the data values $3, 2, 5, 6$, and $M=4$.  We can denote the
+different values by $x_j$, where $j$ goes from 1 to $M$ (here, 4).
+So $x_1$, the first value, is 3, and $x_2$ happens to be 2, $x_3=5$,
+and $x_4=6$.  Now
+the relative
+frequency of 2 in this set is 1/6, since there is only one two out
+of six items.  Similarly, the relative frequency of 3 is 2/6, since
+there are two threes out of six items; the relative frequency is
+the count of data points with a certain value divided by the total 
+number of data points.  So if $M_j$ is the number of times the $j$-th
+data point occurs, $f_j=M_j/N$ is the relative frequency.  In our
+example, for $j=1$, we have $M_1=2$ (the first data value, 3, occurs
+two times), so $f_1=2/6$.
+If $\bar{X}$ is the average, then
+\[
+\bar{X} = \sum_{j=1}^{M} x_j f_j
+\]
+In our example, we have
+\begin{eqnarray*}
+\bar{X} & = & x_1 f_1 + x_2 f_2 + x_3 f_3 + x_4 f_4 \\
+ & = & 3 (2/6) + 2 (1/6) + 5 (2/6) + 6 (1/6) \\
+ & = & 4 .
+\end{eqnarray*}
+Why does this work?  In our example, if we factor out the 
+denominator, we get
+\[
+\bar{X} = (1/6) \times \big( 3 \times 2 + 2 \times 1 + 5 \times 2 + 6 \times 1 \big) \\
+\]
+But if we take each value, multiply it by the number of times it
+occurs, and add this all up, this is the same as adding up all the
+values.  In general,
+\[
+\sum_{j=1}^M x_j f_j = \frac{1}{N}\sum_{j=1}^M M_j x_j
+\]
+But $\sum_{j=1}^M M_j x_j = \sum_{i=1}X_i$ because it does not
+matter what order we add things up.
+
+So we have
+\[
+\bar{X} = \sum_{j=1}^M x_j f_j .
+\]
+This is always true by definition.  Now, suppose that we think about
+a very large data set, so large that the relative frequencies can
+be approximated by their probabilities.  Remember, in the long run,
+the relative frequency of some value $x$ is supposed to converge to the 
+probability of $x$.  Of course, in a larger and larger data set,
+there may be more values, values we did not see in the smaller data
+set, so to be formal we'd have to take this into account in our
+notation.  But we're only trying to motivate the next definition,
+that of expected value.
+
+If we think about multiplying each possible value by its
+probability (rather than its relative frequency in a sample), and
+summing all this, we have something inspired by the average, but
+containing probabilities instead of relative frequencies.  
+Before we had values $x_1, x_2, \ldots, x_N$ and we
+computed their average by letting $x_1, x_2, \ldots, x_M$ be their
+observed values, and $\bar{X} = \sum_{j=1}^M f_j x_j$.  Now, we
+sum over all the possible values of $X$, and get
+the expected value of the discrete random variable $X$:
+\[
+E[X] = \sum_{j=1}^{M} x_j P(X=x_j) . 
+\]
+Since the relative frequencies converge to their probabilities as
+the number of observations get larger, we expect the averages to
+get closer to the expected value. Results of this sort are called
+laws of large numbers, and they may involve assumptions of independence,
+and different definitions of what it means to get closer.  There is
+another issue as well---the number of possible values may be 
+infinite, and the infinite sum on the right may or may not converge.
+These and related issues are discussed in advanced probability theory.
+
+\subsection*{Examples}
+Let's compute the expected value of some simple distributions.  For
+instance, we began with the die throwing experiment.  Here, the
+sample space, the set of all possible values, was $\{1,2,3,4,5,6\}$.
+Since we had the discrete uniform distribution (for a fair die),
+the probability of each outcome was 1/6.  Thus, the expected
+value is $1/6 + 2/6 + 3/6 + 4/6 + 5/6 + 6/6 = 3.5$.
+
+A simple, but important, example is given by a Bernoulli random
+variable $X$.  Remember that a Bernoulli random variable represents the
+outcome of a random experiment with two outcomes (a Bernoulli trial).
+When the trial is a ``success'', however that is defined, the value
+is 1, otherwise, the value is zero.  Assume that the probability of
+success is $p$; what is the expected value of $X$?  We multiply each
+possible value (each value in the sample space) by its probability,
+and add it all up.  So we have
+\[
+E[X] = 0 \times P(X=0) + 1 \times P(X=1) = 0 \times (1-p) + 1 \times p = p.
+\]
+So the expected value of a Bernoulli variable with success probability
+$p$ is just $p$.
+
+In general, the probabilists like to define $I_A$ to be an indicator
+function of the event $A$.  If $A$ happens, $I_A$ is 1, and otherwise
+it is 0.  We see that $E[I_A] = P(A)$.
+
+A common application of this is in cost-effectiveness analysis.  
+For example, consider screening for tuberculosis with the
+tuberculin skin test in, say, Solano County.  The Medicare Fee 
+schedule lists \$13.19 as the reimbursement rate for the region
+including Solano County in 2006; assume that the Medicare 
+reimbursment rate represents the cost of the TST.  Suppose that 
+the probability that a person will accept screening is 0.8.  What
+is the expected TST cost for screening one person?  We let $X$
+be the random variable for the cost for a person.  If the
+person accepts the test, then $X=13.19$, otherwise $X=0$.  The
+probability of accepting the test is 0.8, so
+\[
+E[X] = 0.8 \times \$13.19 + (1-0.8) \times \$0 = \$10.552 .
+\]
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that investigation identifies a contact
+of a tuberculosis case as having latent tuberculosis infection.
+Consider treating this contact for nine months.  The Medicaid Federal 
+Upper Limit price of isoniazid (for 2004) was \$8.90 for 
+one hundred 300mg pills.  Assume that 66.1\% of contacts so
+identified start therapy (based on Sprinson et al. 2003).  Assuming
+all the patients who start complete therapy, what is the expected
+cost of INH?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that the probability of hepatitis for one
+individual who received INH therapy were 0.0056, based on a study
+by Fountain et al. (2005).  Although the study was based on laboratory,
+not clinical, findings for diagnosis, assume that this rate applies
+to clinical presentation.  Assume that for every person who 
+has hepatitis, that one medical visit and three liver function tests
+will be needed.  Medicare Part B (BESS 2003) data suggest an average
+reimbursement of \$77.48 for a follow-up medical visit and \$8.20
+for a liver function test.  For one individual, what is the expected
+cost due to hepatitis (ignoring possible hospitalization)?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Last time, we showed that the probability of winning
+the California lottery (using the 2006 version) is 1/41416353.  
+Suppose that the jackpot equals \$7,000,000.  Compute the expected
+value of your winnings. 
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Returning to the above exercise regarding treatment
+of LTBI in contacts, now suppose that the probability of completion
+is 0.642 (Sprinson et al 2003) for those who start.  
+Assume that individuals who discontinue receive two months of therapy.
+What is the expected cost of the INH for one person?  Note that now, 
+there are three outcomes: the person does not start (probability 
+1-0.661=0.339), the person starts and completes nine months
+(probability $0.661 \times 0.642$, using the laws of conditional
+probability), and starts but completes only two months
+(probability $0.661 \times (1-0.642)$).  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+On the game show {\it Deal or no deal}, contestants
+face a collection of closed cases containing various amounts of
+money, usually varying widely; they may either open a specific case
+and get all the money inside it, or make a deal in which they are
+offered an amount with certainty.  Suppose that there are four
+cases known to contain \$20, \$50, \$200, and \$100,000.  If one
+case is selected at random and opened, what is the expected value
+of the contents?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that two fair dice are rolled independently.
+What is the expected value of the unsigned difference between them?
+For instance, if the values are 4 and 6, the unsigned difference is 2
+no matter which die has the 4.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+A {\it dreidel} is a four-sided square top sometimes
+used to play a game during the time of Hannukah.  Play proceeds as
+follows. Each player starts with a certain number of tokens of some
+sort and each puts one into a pot.  When the dreidel is spun, it
+may land on the letter {\it nun} (in which case nothing happens), 
+the letter {\it gimel} (in which case the player gets the entire
+pot), the letter {\it hey} (in which case the player gets half the
+pot rounding up), or the letter {\it shin} (in which case the player
+puts one token into the pot).  Whenever the pot is empty, everyone
+must put one token in to the pot.  When one player has all the tokens,
+the game ends.  Suppose that there are 8 tokens in the pot.  What is
+the expected gain upon spinning the top?  (Count the loss of a token
+as a gain of -1).
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that individuals experience a needlestick
+injury with blood contaminated with Hepatitis B, Hepatitis C, and 
+HIV.  Assume independent risks for each, with probabilities 0.3, 
+0.03, and 0.003.  What is the expected number of infections 
+received by one person?  
+
+An important problem is to determine the expected value of a
+binomial random variable.  Recall that a binomial random variable
+is the number of successes in $N$ independent Bernoulli trials,
+each with success probability $p$.  The binomial probability 
+formula is
+\[
+P(X=x) = {N \choose x} p^x (1-p)^{N-x} .
+\]
+The expected value must be
+\[
+E[X] = \sum_{x=0}^{N} x P(X=x) = \sum_{x=0}^{N} x {N \choose x} p^x (1-p)^{N-x} .
+\]
+We can rewrite this
+\[
+E[X] = \sum_{x=1}^N x \frac{N!}{x!(N-x)!} p^x (1-p)^{N-x} 
+\]
+since the $x=0$ term is zero anyway.  Because now $x \neq 0$, we
+have
+\[
+E[X] = \sum_{x=1}^N \frac{N (N-1)!}{(x-1)!(N-x)!} p p^{x-1} (1-p)^{N-x} .
+\]
+If we factor out $N$ and $p$, we have
+\[
+E[X] = Np \sum_{x=1}^N \frac{(N-1)!}{(x-1)!(N-x)!} p^{x-1} (1-p)^{N-x} =
+ Np \sum_{x=1}^N {(N-1) \choose (x-1)} p^{x-1} (1-p)^{N-x} .
+\]
+If we expand this out, we would have
+\[
+E[X] = Np \times \big( {(N-1) \choose 0} p^0 (1-p)^{N-1} +
+{(N-1) \choose 1} p^1 (1-p)^{N-1-1} + \cdots +
+{(N-1) \choose (N-1)} p^{N-1} (1-p)^{N-1-(N-1)} \big) .
+\]
+We could have just as well written
+\[
+E[X] = Np \sum_{i=0}^{N-1} {(N-1) \choose i} p^i (1-p)^{N-1-i} .
+\]
+But the sum is just the sum of the binomial probabilities for a
+binomial distribution with $N-1$ trials and probability $p$ for
+each trial---and this probability must equal 1.  Therefore,
+\[
+E[X] = Np.
+\]
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose 15\% of a clinic population have a risk
+factor.  If 100 people are sampled at random, what is the expected
+number in the sample who have the risk factor?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose 260 million people are vaccinated against 
+smallpox, with a death rate of one in one million for each vaccination.
+What is the expected number of deaths? 
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+The number of bacilli inside a cavitary pulmonary
+lesion in tuberculosis has been estimated at the order of $10^8$. 
+Suppose that the probability of resistance mutations to the  
+first-line drug isoniazid is $10^{-6}$, and to rifampin $10^{-8}$.
+What is the expected number of bacilli in a cavity
+which are resistant to isoniazid? To rifampin? To both, 
+assuming independence?  Such considerations led to the  
+development of combination therapy for tuberculosis (and HIV).  Source: 
+Toman's Tuberculosis, 2004.
+
+\renewcommand{\baselinestretch}{1.2} \small
+Another way to understand the expected value of a binomial random
+variable is based on the expected value of a sum.  We'll need a
+few more fundamental definitions first.
+To begin with, the {\it joint distribution} of two (discrete) random
+variables $X$ and $Y$ is defined to be $P(X=x, Y=y)$, i.e. the
+probability that $X$ takes the value $x$ {\it and} $Y$ takes the
+value $y$.  The {\it marginal distribution} of $X$ is defined to
+be just $P(X=x)$, and it can be gotten using the laws of probability
+we have already discussed.  Here, 
+\[
+P(X=x) = \sum_{y} P(X=x,Y=y) .
+\]
+Similarly, the marginal distribution of $Y$ is
+\[
+P(Y=y) = \sum_{x} P(X=x,Y=y) .
+\]
+
+It turns out that $E[X+Y] = E[X] + E[Y]$; the expected value of a
+sum is the sum of expected values.  Let's use the definition to
+work out what $E[X+Y]$ is.  We're going to assume that $X$ and
+$Y$ are discrete random variables with a finite sample space (the
+same idea works in general, and is shown in advanced books).
+\[
+E[X+Y] = \sum_{x} \sum_{y} (x+y) P(X=x,Y=y) .
+\]
+Therefore, 
+\[
+E[X+Y] = \sum_{x} \sum_{y} \big( x P(X=x,Y=y) + yP(X=x,Y=y) \big) .
+\]
+Then,
+\[
+E[X+Y] = \sum_{x} \sum_{y} x P(X=x,Y=y) + \sum_{x} \sum_{y} yP(X=x,Y=y) .
+\]
+But when summing over $y$, $x$ is a constant.  So we can
+factor it out.  Similarly, $y$ is a constant when summing over $x$.
+\[
+E[X+Y] = \sum_{x} x \sum_{y} P(X=x,Y=y) + \sum_{y} y \sum_{x} P(X=x,Y=y) .
+\]
+Using the definition of marginal distribution of $X$ and $Y$:
+\[
+E[X+Y] = \sum_{x} x P(X=x) + \sum_{y} y P(Y=y) .
+\]
+Finally, using the definition of expected value, we have
+\[
+E[X+Y] = E[X] + E[Y] .
+\]
+Notice that it does not matter whether or not $X$ and $Y$ are
+independent or not.  
+
+Using a similar method, we can show that the expected value of the 
+sum of any finite number of random variables is the sum of the
+expected values of the variables.  In particular, the sum of $N$
+Bernoulli random variables, each with success probability $p$, is
+$p + p + \cdots + p$ ($N$ times), or $Np$.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show that if $a$ is a constant, $E[aX] = aE[X]$ for
+discrete random variables with a finite sample space.  This is 
+also true in general.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show that if $X$ and $Y$ are independent, $E[XY] = E[X]E[Y]$.  Assume $X$ and $Y$ are discrete random variables with a finite sample
+space.  
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+\subsection*{Expectation of a function of a random variable}
+One of the most important ideas is, as you all know, the concept
+of the {\it variance}.  Just as we had a sample mean which applied
+to any sample, and a population concept called the expected value
+(which sometimes doesn't exist!), we also have a sample variance and
+a population variance.  The sample variance is a statistic you compute
+from data as a measure of the spread of the sample, and as you all 
+know, the formula is
+\[
+S^2 = \frac{1}{N-1} \sum_{i=1}^N (X_i - \bar{X})^2 .
+\]
+The population variance is the population concept, derived from
+the distribution of a random variable.  In a statistics class, the
+relation between the two is explored in detail.
+
+If we have a random variable $X$, the variance is defined to be
+\[
+\mbox{\rm var}(X) = E[(X-EX)^2] .
+\]
+It is the expected squared difference from the expected value.
+
+We can multiply things out inside, and get
+\[
+\mbox{\rm var}(X) = E[ X^2 - 2X\,EX + (EX)^2 ] .
+\]
+Since the expectation of any sum is the sum of the expectations,
+\[
+\mbox{\rm var}(X) = E[X^2] + E[-2X\,EX] + E[(EX)^2] .
+\]
+Now, the last term is {\it just a constant}, like, say, 5. What is
+the expected value of 5?  For the middle term, we have a constant
+($-2EX$) multiplying a random variable, and the expectation of a 
+constant multiple is that multiple of the expectation. So we get
+the important fact that
+\[
+\mbox{\rm var}(X) = E[X^2] - 2EX\,EX + EX^2 = E[X^2] - (EX)^2 .
+\]
+
+Let's work out what this is for a Bernoulli random variable.  We 
+showed the expectation to be $0 \times (1-p) + 1 \times p=p$.  Think
+of the squared difference from the mean as a random quantity itself,
+with its own distribution.  What are its values?  If $X$ is 1, then
+the squared difference from the mean is $(1-EX)^2=(1-p)^2$.  Since
+$X=1$ when and only when $(X-EX)^2 = (1-p)^2$, the probability
+that $(X-EX)^2 = (1-p)^2$ is $p$.  Similarly, $(X-EX)^2$ takes the
+value $p^2$ with probability $1-p$ (whenever $X$ is 0).  So what
+does the expected value of $(X-EX)^2$ have to be?  It is formed by
+multiplying all the values by their probabilities, and adding it
+all up:
+\[
+\mbox{\rm var}(X) = p(1-p)^2 + p^2(1-p) = p(1-p)(1-p+p) = p(1-p) 
+\] 
+for a Bernoulli random variable.  The variance of a Bernoulli random
+variable with success probability $p$ is $p(1-p)$.
+
+In general, the expected value of the square of a random
+variable is 
+\[
+E[X^2] = \sum_x x^2 P(X=x) ,
+\]
+and this is called the second moment.  More generally, if $g(X)$ is
+some function of a random variable, 
+\[
+E[g(X)] = \sum_x g(x) P(X=x) .
+\]
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Find the expected value of the square of the number
+of spots on a fair die after one throw.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Recall that the expected value of the number of
+spots on one fair die tossed once is 3.5.  Compute the 
+variance directly from the definition.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Find the expected value of one plus the number of
+spots on a fair die tossed once.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Find the expected value of the square root of the
+number spots on a fair die tossed once.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Find the expected value of the sum of the number of
+spots on two fair dice tossed.
+
+It turns out that if $X$ and $Y$ are independent, 
+\[
+\mbox{\rm var}(X+Y) = \mbox{\rm var}(X) + \mbox{\rm var}(Y).
+\]
+The variances actually add for independent random variables.
+
+\renewcommand{\baselinestretch}{1.2} \small
+To see this, we use the definition:
+\[
+\mbox{\rm var}(X+Y) = E[ ((X+Y)-(EX+EY))^2 ] = E[ ( (X-EX) + (Y-EY) )^2 ] .
+\]
+Expanding this out,
+\[
+\mbox{\rm var}(X+Y) = E[ (X-EX)^2 + 2(X-EX)(Y-EY) + (Y-EY)^2] =
+\mbox{\rm var}(X) + 2E[(X-EX)(Y-EY)] + \mbox{\rm var}(Y) .
+\]
+Let's look at the middle term (which turns out to be the
+{\it covariance} of $X$ and $Y$):
+\[
+\mbox{\rm cov}(X,Y) = E[(X-EX)(Y-EY)] .
+\]
+Using this definition,
+\[
+\mbox{\rm var}(X+Y) = \mbox{\rm var}(X) + 2 \mbox{\rm cov}(X,Y) + \mbox{\rm var}(Y) .
+\]
+Assuming $X$ and $Y$ are independent, what is $\mbox{\rm cov}(X,Y)$?
+\[
+\mbox{\rm cov}(X,Y) = E[ XY - Y\,EX - X\,EY + (EX)(EY)] =
+E[XY] - EY\,EX - EX\,EY + (EX)(EY) ,
+\]
+since $EX$ and $EY$ are constants.  We already showed that
+if $X$ and $Y$ are independent, $EXY = (EX)(EY)$, so
+\[
+\mbox{\rm cov}(X,Y) = (EX)(EY) - (EY)(EX) = 0 ,
+\]
+when $X$ and $Y$ are independent.
+
+Whenever
+\[
+\mbox{\rm cov}(X,Y) = 0 ,
+\]
+$X$ and $Y$ are {\it uncorrelated}.  We just showed that two
+{\it independent random variables are uncorrelated}.
+It is straightforward to show that $N$ independent random
+variables are all pairwise uncorrelated.
+
+But it does not go the other way.  It is possible for random
+variables to be uncorrelated, but not independent.  For example, 
+suppose $X$ and $Y$ have the joint distribution given in 
+Table~\ref{tbl:inotunc}.
+\begin{table}
+\caption{\label{tbl:inotunc}Example.}
+\begin{tabular}{ccc}
+$X$ & $Y$ & $P(X=x,Y=y)$ \\ \hline
+1 & 1 & 0 \\
+1 & 0 & $\frac{1}{4}$ \\
+1 & -1 & 0 \\
+0 & 1 & $\frac{1}{4}$ \\
+0 & 0 & 0 \\
+0 & -1 & $\frac{1}{4}$ \\
+-1 & 1 & 0 \\
+-1 & 0 & $\frac{1}{4}$ \\
+-1 & -1 & 0 \\
+\end{tabular}
+\end{table}
+The marginal distribution of $X$ is that $P(X=-1)=P(X=1)=1/4$ and
+$P(X=0)=1/2$.  The expected value of $X$ is $E[X]=-1 \times 1/4 + 0 \times 1/2 + 1 \times 1/4=0$.  Similarly, the 
+marginal distribution of $Y$ is that $P(Y=-1)=P(Y=1)=1/4$ and
+$P(Y=0)=1/2$, and $E[Y]=0$.  So $\mbox{\rm cov}(X,Y)=EXY$.  To
+compute $EXY$ directly from the joint distribution, 
+\begin{eqnarray*}
+EXY & = & \sum_{x=-1}^1 \sum_{y=-1}^1 xy P(X=x,Y=y) \\
+ & = & 1 \times 1 \times 0 + 1 \times 0 \times 1/4 + 1 \times -1 \times 0 + 0 \times 1 \times 1/4 + \\
+ &  & \quad 0 \times 0 \times 0 + 0 \times -1 \times 1/4 + -1 \times 1 \times 0 + -1 \times 0 \times 1/4 + -1 \times -1 \times 0 \\
+EXY & = & 0 .
+\end{eqnarray*}
+So $X$ and $Y$ are uncorrelated.  But are they independent?  If
+$X$ and $Y$ were independent, then $P(X=x,Y=y)=P(X=x)P(Y=y)$ for
+all $x$ and $y$.  Suppose $x=y=0$; then $P(X=0,Y=0)=0$. But
+$P(X=0)=1/2$ and $P(Y=0)=1/2$; since $0 \neq 1/2 \times 1/2$, $X$
+and $Y$ are {\it not} independent.  So independent random variables
+are uncorrelated, but uncorrelated random variables are not necessarily
+independent.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+A very important example is the variance of the binomial distribution.
+To compute this, let's suppose $X$ has the binomial distribution
+with $N$ trials and $p$ success probability per trial.  We already
+know that $E[X]=Np$.  It turns out that the variance of this binomial
+distribution is $Np(1-p)$.
+
+\renewcommand{\baselinestretch}{1.2} \small
+One easy way to see that the variance of a binomial must be $Np(1-p)$
+is to note that it is a sum of independent Bernoulli trials.  Let
+$X_i$ be the value on the $i$-th trial.  Since these trials are
+all independent, they are uncorrelated.  So the variance of the 
+sum is the sum of the variances; $\mbox{\rm var}(\sum_{i=1}^N X_i) = \sum_{i=1}^N \mbox{\rm var}(X_i) = N p(1-p)$.
+
+It is also possible to derive this formula straight from the 
+probability function.  We already know $EX=Np$ for binomial $X$ with
+parameters $N$ and $p$.  It turns out to be simplest to derive
+$E[X(X-1)]$:
+\[
+E[X(X-1)] = \sum_{x=0}^N x(x-1) {N \choose x} p^x (1-p)^{N-x} 
+= \sum_{x=2}^N x(x-1) {N \choose x} p^x (1-p)^{N-x} .
+\]
+Then
+\begin{eqnarray*}
+E[X(X-1)] & = & \sum_{x=2}^N \frac{x(x-1)N!}{x! (N-x)!} p^x (1-p){N-x} \\
+ & = & \sum_{x=2}^N \frac{N!}{(x-2)! (N-x)!} p^x (1-p){N-x} \\
+ & = & p^2 \sum_{x=2}^N \frac{N!}{(x-2)! (N-x)!} p^(x-2) (1-p){N-x} \\
+ & = & p^2 \sum_{x=2}^N \frac{N!}{(x-2)! ((N-2)-(x-2))!} p^(x-2) (1-p){(N-2)-(x-2)} \\
+ & = & p^2 \sum_{i=0}^{N-2} \frac{N!}{i! (N-2-i)!} p^i (1-p){(N-2)-i} \\
+ & = & p^2 N(N-1) \sum_{i=0}^{N-2} \frac{(N-2)!}{i! (N-2-i)!} p^i (1-p){(N-2)-i} \\
+ & = & p^2 N(N-1) \times 1 \\
+ & = & p^2 N(N-1) \\
+\end{eqnarray*}
+So if $E[X(X-1)]=N(N-1)p^2$, $E[X^2]=N(N-1)p^2 + EX$, or
+\[
+EX[^2] = N(N-1)p^2 + Np .
+\]
+Since
+\[
+\mbox{\rm var}(X) = E[X^2]-(EX)^2 = N(N-1)p^2 + Np - N^2p^2 = Np-Np^2 = Np(1-p) .
+\]
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+\section*{The Hypergeometric Distribution}
+Suppose that we have two kinds of individuals, say $M$ infected
+and $N$ uninfected, and that we draw a sample of size $S$ 
+{\it without replacement}.  Our sample will contain a certain number,
+perhaps zero, infected individuals.  Let $X$ be the number of
+infected individuals in the sample; we would like to know the
+distribution of the random variable $X$.
+
+Using an argument from the previous notes, we can find the probability
+that $X=x$.  There are ${M \choose x}$ ways to pick the $x$ infected
+people, and for each of these ways, there are ${N \choose S-x}$ ways
+to pick the uninfected people.  So there are ${M \choose x} \times {N \choose S-x}$ combinations (random samples) of people that have $x$ infected
+people.  The total number of combinations is ${M+N \choose S}$, and
+with each combination equally likely, we have
+\[
+P(X=x) = \frac{{M \choose x} {N \choose S-x}}{{M+N \choose S}} .
+\]
+This is the {\it hypergeometric probability function}, and $X$ is
+a {\it hypergeometric random variable}.
+
+Because sampling without replacement is very common, the hypergeometric
+distribution is very common in public health.  What are some of 
+its properties, such as its expected value?  By definition,
+\begin{eqnarray*}
+EX & = & \sum_{x} x \frac{{M \choose x}{N \choose S-x}}{{M+N \choose S}} \\
+& = & \sum_x \frac{x \frac{M!}{x!(M-x)!} {N \choose S-x}}{\frac{(M+N)!}{S! (M+N-S)!}} \\
+& = & \sum_x \frac{\frac{M(M-1)!}{(x-1)!(M-x)!} {N \choose S-x}}{\frac{(M+N)(M+N-1)!}{S(S-1)! (M+N-S)!}} \\
+& = & \frac{MS}{M+N} \sum_x \frac{\frac{(M-1)!}{(x-1)!(M-x)!} {N \choose S-x}}{\frac{(M+N-1)!}{(S-1)! (M+N-S)!}} \\
+& = & \frac{MS}{M+N} \sum_x \frac{{M-1 \choose x-1}}{{N \choose (S-1)-(x-1)}}{{M+N-1 \choose S-1}} \\
+& = & \frac{MS}{M+N} \times 1  \\
+& = & S \frac{M}{M+N}  \\
+\end{eqnarray*}
+We factored out $M$, $S$, and $M+N$ until what was left was a sum of
+hypergeometric probabilities (for $M-1$, $N$, and $S-1$, and we summed
+over $x-1$).  But the expected value makes sense, since $M/M+N$ is
+the fraction of the population that has the property we're counting,
+and $S$ is the size of the sample.
+
+For a concrete example, suppose that we wish to review medical 
+records in a jurisdiction, and that we can only review 12 records out
+of (say) 33.  Imagine that 7 of these records are for individuals with
+diabetes, though of course we would not know that until we reviewed
+the records.  What is the probability that there would be no diabetic
+individuals reviewed, or 1, 2, etc.?  The total number of combinations
+is ${33 \choose 12}=354,817,320$.
+<<>>=
+choose(33,12)
+@
+How many have no diabetic individuals?  We have ${7 \choose 0} \times
+{26 \choose 12}$ combinations with no diabetics, and this works out
+to be a paltry 9657700:
+<<>>=
+choose(7,0) * choose(26,12)
+@
+Dividing gives us the probability, about 3\%:
+<<>>=
+choose(7,0) * choose(26,12) / choose(33,12)
+@
+Fortunately, the R package has this built in.  The R programmers
+call the sample size $k$, and use $m$ for the population number of 
+objects you're counting (diabetics), and $n$ for the population number
+otherwise.  So we can use the function \verb+dhyper+:
+<<>>=
+dhyper(0,m=7,n=26,k=12)
+@
+for the probability of no diabetics in the sample.  We can see that
+there is about a 15\% chance of getting exactly one diabetic in
+the sample:
+<<>>=
+dhyper(1,m=7,n=26,k=12)
+@
+R will also compute all the probabilities at once:
+<<>>=
+dhyper(0:7,m=7,n=26,k=12)
+@
+So there is about a 31\% chance of two diabetics, etc., all the way
+up to about a 2 in 10000 chance of getting all the diabetics.
+
+What is the expected value of the number of diabetics in the sample?
+By the formula, it is the sample size times the population fraction
+of diabetics, which gives us $12 \times 7/33$, or about 2.54.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Use the probabilities computed above and the 
+definition of expectation to directly work out the expected value
+in this example.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Use the hypergeometric probability formula to find
+out the probability that if we just sample a single person ($S=1$),
+that they will have the property of interest.  Using the above 
+example, what is the chance that if we just review a single record,
+that the person will be a diabetic?
+
+Notice that the hypergeometric expected value has the same interpretation
+as that for the binomial.  Thinking of each sample as a trial for
+which success is finding a person with the property we are
+counting, we can think of it as the number of trials times the success
+probability per trial.  But the hypergeometric distribution has a
+different variability than the binomial, as we will see later.
+
+The hypergeometric will help us make inferences about the 
+unknown population count, based on the sample; this will be discussed
+more in the future.
+Another common application of the hypergeometric is to infer something
+about the population size based on the sample, which was taken 
+without replacement.  For instance, suppose that you enroll 200
+homeless individuals, chosen at random, into a study.  Then later,
+you pick a different random sample of 100 homeless, and find 5 individuals
+you have already seen.  You might suppose that this 5 is to the 
+sample of 100 as 200 is to the entire population, and conclude that
+the population is of size 4000.  Inference in this type of study, 
+known as a {\it mark-recapture} design, involves the hypergeometric
+distribution as well.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that 12 records are reviewed out of 33, and
+that 4 individuals turn out to be diabetic.  Compute the probability
+of seeing 4 diabetic individuals assuming that the population number
+of diabetics is 4, 5, ..., 25.  Based on seeing 4 out of 12, we
+know there are at least 4 diabetics and at least 8 non-diabetics in
+the population.  For what population number(s) of diabetics does the
+observation of 4 have the highest probability?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose that an individual who is not infected with HIV reports having
+$n$ sexual partners during a period of time.  Suppose that we know that
+$n_y$ of the partners are below 30 years of age, and suppose that we know
+that protection was used consistently in $n_p$ of the partnerships.  Assume
+that use of protection is independent of partner age.  
+Let $N_{py}$ be the number of partners under 30 for which protection was
+consistently used.  (a) What is the range of possible values of
+$N_{py}$?  (b) What is $P(N_{py}=n_{py})$?  (c) Now assume $\beta$ is the
+probability of infection from an HIV-positive partner when protection is not
+consistently used, let $\beta \theta$
+be the probability of infection from an HIV-positive partner given that
+protection is consistently used, let $p_y$ be the
+prevalence of infection among partners under 30, and let $p_o$ be the prevalence
+among partners 30 and older.  Write the overall probability of infection.
+
+\section*{The Classical Occupancy Distribution}
+A common problem in modeling applications is called the
+{\it classical occupancy problem}.  For instance, suppose that 
+there are $M$ infected ticks in a given region, to be distributed
+over $N$ host mammals.  Suppose that the bite of an infected tick
+transmits disease.  What is the fraction of animals which receive
+an infectious tick bite?  Or equivalently, what is the fraction of
+animals which do not receive such a bite?
+
+This problem is usually formulated in terms of placing $M$
+distinguishable balls into $N$ distinguishable boxes.  We place the
+balls at random into the boxes; each ball has a chance of $1/N$
+of being placed into any particular box.  Let $X$ be the number of
+boxes with at least one ball; then $N-X$ is the number of empty
+boxes.  We would like to determine the probability that $X$ takes
+various values $x$.
+
+To have exactly $x$ boxes filled, we must divide the $M$ balls into
+$x$ subsets.  The number of ways to do this is written 
+$\left\{ {M \atop x} \right\}$, and this is known as a {\it Stirling number of
+the second kind}.  For instance, suppose we have the set ABCDE of
+distinguishable objects.  We could divide them up according to the
+table.
+\begin{table}
+\begin{tabular}{ccccc}
+A, B, CDE & B, D, ACE & A, BC, DE & B, AE, CD & D, AC, BE \\
+A, C, BDE & B, E, ACD & A, BD, CE & C, AB, DE & D, AE, BC \\
+A, D, BCE & C, D, ABE & A, BE, CD & C, AD, BE & E, AB, CD \\
+A, E, BCD & C, E, ABD & B, AC, DE & C, AE, BD & E, AC, BD \\
+B, C, ADE & D, E, ABC & B, AD, CE & D, AB, CE & E, AD, BC \\
+\end{tabular}
+\end{table}
+We can see that $\left\{{5 \atop 3}\right\} = 25$.  Without going into
+details here, we can use the simple R function shown below to compute
+values of the Stirling numbers of the second kind.
+<<>>=
+stirling2 <- function(mm,ii) {
+  ans <- 0
+  for (jj in 0:ii) {
+    ans <- ans + (-1)^jj * choose(ii,jj) * (ii-jj)^mm
+  }
+  ans / prod(1:ii)
+}
+stirling2(5,3)
+@
+We have another combinatorial explosion here too; for instance, there
+are \Sexpr{stirling2(20,4)} ways to group twenty items together into
+four groups.  We should note that this is not a particularly
+effective numerical method, and will produce nonsense for moderately
+large arguments.
+
+For each of the $\left\{ {M \atop x} \right\}$ ways to group the balls,
+we also have to choose $x$ of the $N$ boxes to put them in.  We know
+there are ${N \choose x}$ ways to choose the boxes.  Now we have
+$x$ groups to be placed in $x$ boxes, one group in each box; there
+are $x!$ ways to do this.  Finally, multiplying all this together,
+there are $\left\{ {M \atop x} \right\} {N \choose x} x!$ different
+ways to fill up exactly $x$ boxes with the $M$ balls (leaving the
+remaining boxes unfilled).  
+
+The total number of configurations of $M$ balls in $N$ boxes is 
+$N^M$, since there are $N$ different places to put the first ball,
+another $N$ different ways to place the second, and so forth.  With
+all the configurations equally likely, the probability of a 
+configuration that fills exactly $x$ boxes is
+\[
+P(X=x) = \frac{ \left\{ {M \atop x} \right\} {N \choose x} x!}{N^M} .
+\]
+This is known as the {\it classical occupancy distribution}.
+
+To get a feel for what it looks like, let's compute some 
+classical occupancy probabilities.
+The simple R function \verb+dco+ computes probabilities for the
+classical occupancy distribution, for relatively small values of
+$N$ and $M$.
+<<>>=
+dco<-function(ii,balls,boxes) {
+  mm <- balls
+  nn <- boxes
+  ans <- rep(NA,length(ii))
+  for(jj in 1:length(ii)) {
+    if (ii[jj]==0) {
+      ans[jj] <- 0
+    } else if (ii[jj]>boxes) {
+      ans[jj] <- NA
+    } else {
+      ans[jj] <- exp(log(stirling2(mm,ii[jj])) + lchoose(nn,ii[jj]) + log(prod(1:ii[jj])) - mm*log(nn))
+    }
+  }
+  ans
+}
+@
+<<echo=false,results=hide>>=
+nballs<-5
+nboxes<-3
+@
+So for \Sexpr{nballs} balls and \Sexpr{nboxes} boxes, we have a
+probability \Sexpr{signif(dco(3,balls=nballs,boxes=nboxes),3)} of
+filling all three boxes, a probability
+\Sexpr{signif(dco(2,balls=nballs,boxes=nboxes),3)} of
+filling only two boxes (and leaving one empty), and a probability
+\Sexpr{signif(dco(1,balls=nballs,boxes=nboxes),3)} of
+putting all three balls into one of the boxes.
+
+Suppose we think of putting 50 balls at random into 30 boxes.  Now
+we have a very tiny chance of filling all the boxes, only
+\Sexpr{ signif(dco(30,balls=50,boxes=30),2) }.  Let's take a look at
+the distribution in Figure~(\ref{fig:co50b30x}).
+\begin{figure}
+\caption{\label{fig:co50b30x}Probability distribution of the number of filled boxes (classical occupancy distribution), with $N=30$, $M=50$.}
+  \centering
+<<fig=true>>=
+barplot(dco(0:30,balls=50,boxes=30),names.arg=0:30)
+@
+\end{figure}
+% numerically quite a weak computation; must do better for 
+% the stirling numbers
+
+We're going to next compute the mean of the classical occupancy
+distribution.  But first, we'll need a fact about the Stirling
+numbers of the second kind.  Remember that the Stirling number
+of the second kind $\left\{M \atop x\right\}$ is the number of ways
+to make $x$ groups out of $M$ objects.  Imagine that we know what
+$\left\{M \atop x\right\}$ is, and let's figure out what 
+$\left\{M+1 \atop x\right\}$ is.  So imagine that we have all the
+possible ways to group $M$ objects into $x$ piles, and we bring
+one more object in.  Let's think about the first of the 
+$\left\{M \atop x\right\}$ groups; since it has $x$ piles, we could
+put the new object into any of the piles.  Whenever we put the object
+into one of the piles, we make $x$ piles out of $N+1$ objects.  So
+for every one of the $\left\{M \atop x\right\}$ groups of the original
+$M$ objects, we make $x$ groups.  This gives us
+$x\left\{M \atop x\right\}$ different groupings of $M+1$ objects.  But
+we are not finished---what about groupings where the new object is
+in a pile all by itself?  To count groupings like this, we have to 
+ask how many ways there are to group the $M$ original objects into
+$x-1$ piles; this is $\left\{M \atop x-1\right\}$.  Since this
+procedure gives us all the groupings, we find that
+\[
+\left\{M+1 \atop x\right\} = x \left\{M \atop x\right\}  + \left\{M \atop x-1\right\} .
+\]
+
+Let's now compute the expected value of the classical occupancy
+distribution.  Remember the probability of $x$ {\it filled} boxes
+when placing $M$ balls into $N$ boxes at random is
+\[
+P(X=x) = \frac{\left\{M \atop x\right\}{N \choose x}x!}{N^M} = \frac{\left\{M \atop x\right\}\frac{N!}{(N-x)!}}{N^M} .
+\]
+We know that
+\[
+\sum_x P(X=x) = 1 ,
+\]
+so
+\[
+\sum_x \frac{\left\{M \atop x\right\}}{(N-x)!} = \frac{N^M}{N!} .
+\]
+By definition, the expected value of $X$ is
+\begin{eqnarray*}
+EX & = & \sum_x \frac{x \left\{M \atop x\right\}\frac{N!}{(N-x)!}}{N^M} \\
+& = & \frac{N!}{N^M} \sum_x \frac{x \left\{M \atop x\right\}}{(N-x)!} \\
+& = & \frac{N!}{N^M} \sum_x \frac{1}{(N-x)!} \left(\left\{M+1 \atop x\right\} - \left\{M \atop x-1\right\} \right) \\
+& = & \frac{N!}{N^M} \left( \sum_x \frac{\left\{M+1 \atop x\right\}}{(N-x)!} - \sum_x \frac{\left\{M \atop x-1 \right\}}{(N-x)!} \right) \\
+& = & \frac{N!}{N^M} \left( \frac{N^{M+1}}{N!} - \sum_x \frac{\left\{M \atop x-1 \right\}}{(N-1-(x-1))!} \right) \\
+& = & \frac{N!}{N^M} \left( \frac{N^{M+1}}{N!} - \frac{(N-1)^M}{(N-1)!} \right) \\
+& = & \frac{N!}{N^M} \left( \frac{N^{M+1}}{N!} - \frac{N(N-1)^M}{N!} \right) \\
+& = & \frac{1}{N^M} \left( N^{M+1} - N(N-1)^M \right) \\
+& = & N\left( 1- \left(\frac{N-1}{N}\right)^M \right) \\
+\end{eqnarray*}
+So we have $N$ times the fraction $1-(1-((N-1)/N)^M)$.  Another way
+to look at this that we expect a fraction $(1-1/N)^M$ to be empty.
+But $1-1/N$ is the chance a given ball will miss a given box.  
+With $M$ balls placed independently, we have $(1-1/N)^M$ as the
+chance that none of the balls will land in a {\it given} box.  But
+remember the number of balls in a given box is not independent of
+the number in the other boxes, so it is interesting that 
+multiplying this value by the number of boxes gives the correct
+result.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Suppose 80 infected ticks are distributed randomly over
+50 hosts.  What is the expected number of hosts that do {\it not}
+receive a tick bite from an infected tick?
+
+\renewcommand{\baselinestretch}{1.2} \small
+
+Remember that we found an association between transmission patterns
+and sequences formed by sampling with replacement.  Suppose you have
+$N$ boxes and $M$ balls, you can make a sequence of length $M$ by
+just writing down which box each ball went into.  For instance, if
+we have boxes ABCD and three balls, we get sequences of the form
+AAA, BAC, etc.  With $N$ boxes and $N-1$ balls, each such sequence
+corresponds to a disease transmission pattern, as we showed earlier
+(based on a simple modification of Pr{\"u}fer codes).  The number
+of different letters in such a sequence corresponds to the height
+of the tree (length of the maximum chain of transmission).  But
+asking what the expected number of different letters is the same as asking
+what the fraction of occupied boxes is in the classical occupancy
+problem with $N$ boxes and $N-1$ balls!
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+What is the expected maximum chain length in a
+randomly chosen cluster of size 7?
+
+Soon we will learn a simple approximation for this value when
+$N$ is large.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+\vfill
+\end{document}

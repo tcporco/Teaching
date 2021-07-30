@@ -1,0 +1,1075 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Introduction to Probability}
+TC Porco. University of California, Berkeley
+
+\section*{Orientation}
+In this first series, we will discuss some models and methods
+which may be useful in analyzing and interpreting incidence data.
+Our surveillance data set is complex, as are the questions we may
+wish to answer.  We may wish to determine if an increase in case
+count from the previous year is ``real'' in some sense, which is to
+say, indicative of some change in the underlying epidemiology, or
+simply a chance fluctuation.  We may wish to assess whether an
+increase in the incidence in a particular county or among a particular
+subgroup may be the result of an outbreak or transmission.
+Or we may wish to determine risk factors
+for some particular outcome, such as acquired multidrug-resistance,
+or determine if apparent underperformance of a particular county on 
+an indicator is the result of chance or not.  
+
+In these sessions, we will study some selected analytic methods which 
+can be used to address these and related questions.  Our goal is
+to introduce ourselves to the methods (and the literature), as well
+as software which can be used for estimation.  Our discussion will
+include the Poisson distribution, small sample sizes, outbreak
+detection, Poisson and logistic regression, permutation tests, 
+stochastic simulation, Kalman filtering, and dynamic generalized 
+linear models.
+We will use the package R for simulation and statistical analysis.
+
+Because we wish to interpret patterns in our data in the light of
+chance, we must invest time in reviewing the theory of probability.
+
+\subsection*{Goals}
+The specific goals for this review segment are:
+\begin{enumerate}
+\item Understand the concept of a sample space
+\item Understand the definition of relative frequency
+\item Understand the axiom that the probability of a certain event is 1
+\item Understand the concept of mutual exclusivity or disjointness
+\item Understand the concept of union, intersection, complement
+\item Understand that the probability of a disjoint union is the sum of the probabilities
+\item Understand that the probability of a complement of an event is one minus the probability of an event
+\item Understand conditional probability  
+\item Understand sensitivity, specificity, and predictive value
+\item Understand Bayes' Theorem
+\item Understand the definition of independence
+\end{enumerate}
+
+\subsection*{The sample space}
+Probability theory began with analysis of games of chance, such as
+dice games.  A {\it die} (pl. {\it dice}) is a small cube whose
+faces contain one to six spots in a certain pattern; when dropped onto
+a flat surface, it tumbles irregularly, finally coming to rest with
+one to six spots on the upper face.  The {\it elementary outcomes}
+of this experiment may be labeled 1, 2, 3, 4, 5, and 6, and the
+set of these outcomes is called the {\it sample space}, and may be
+written $\Omega = \{1, 2, 3, 4, 5, 6\}$.  If we toss the die and
+record the number of spots, we may think of this as a random 
+experiment.
+
+In public health we are interested in a different sort of random
+experiment (although we don't use the word ``experiment'' in this
+context).  Suppose that we select a patient from a clinic and
+administer an immunoglobulin-$\gamma$ assay for tuberculosis, and that
+the possible results are that the person is positive (P), negative (N), 
+or indeterminate (I).  We have a random experiment with three outcomes,
+and we could denote our sample space as $\Omega = \{P, N, I\}$.
+
+A random experiment with two outcomes is called a {\it Bernoulli
+trial}.  For instance, suppose that someone takes a driving road
+test; the outcomes are either success or failure, and we may write
+the sample space as $\Omega=\{S, F\}$.  The outcome of the road test
+is a Bernoulli trial.  For another example, suppose that someone 
+experiences a needlestick injury with hepatitis C contaminated blood;
+the person may become infected, or not.  This too is a Bernoulli
+trial, and the sample space may be written $\Omega = \{I, N\}$, with
+$I$ representing infection and $N$ representing no infection.  The
+words ``success'' and ``failure'' are often used anyway with no
+connotation of good or bad here; we may label infection ($I$) as
+success in this Bernoulli trial.
+
+{\bf Exercise.~~}Suppose we select a patient from a clinic and
+test them for HIV with a test whose results are positive or negative.
+Write the sample space.  
+
+{\bf Exercise.~~}Suppose we select a patient from a clinic and
+test them simultaneously for HIV and Hepatitis C virus with tests
+whose results are positive or negative for each (no indeterminates).
+Write the sample space for this experiment.
+
+\subsection*{Events}
+Returning to the die rolling experiment, we may roll the die, and
+ask the question, ``Was the number of spots even?''  If the number
+of spots is 2, 4, or 6, then the number of spots is even; if the 
+number of spots is 1, 3, or 5, then the number is odd.  The event
+that the number of spots is even is represented by a {\it subset} of
+the sample space.  We may write $E=\{2,4,6\}$.  
+
+The event that the number of spots was 1 could be written $\{1\}$,
+a subset with only one element.   
+
+{\bf Exercise.~~}In the die experiment, express the event that the
+number of spots was at least 5 in terms of a subset of the sample
+space; list all the elements of this subset.
+
+{\bf Exercise.~~}In the die experiment, express the event that the
+number of spots was not 1 in terms of a subset of the sample space;
+list all the elements of the subset.
+
+{\bf Exercise.~~}In some games, a twenty-sided icosahedral die is
+used, with the faces labeled with the numbers from one to twenty.
+Express (a) the event that the outcome was even, but not a square,
+(b) the event that the outcome was either even, or a square, or
+both, (c) the event that the outcome was either even, or a
+square, but not both, and (d) the event that the outcome was both
+even and a square.
+
+{\bf Exercise.~~}In the immunoglobulin-$\gamma$ test experiment, 
+express the event that the person did not test negative in terms
+of a subset of the sample space; list all the elements of the subset.
+
+\subsection*{Sets}
+The formal structure of probability is based on set theory, and it
+is helpful to briefly touch on this language and terminology.  There
+are a few key concepts, in particular {\it union}, {\it intersection}, 
+{\it subset} and {\it complement} that are helpful to discuss.  
+
+For simple sets, you can simply describe them by listing their
+elements in braces, such as $\{1, 2, 3, 4, 5, 6\}$ for the sample
+space of the die rolling experiment.  
+
+The main property of a set is that it has elements in it.  If 
+$\omega$ is an element of the set $A$, you write $\omega \in A$, 
+and if it is not, you write $\omega \notin A$.  For instance, 
+$1 \in \{1,2\}$, but $3 \notin \{1,2\}$.  Note in particular that
+there is no concept of order in a set; a set is an unordered
+collection.  Also, there is no concept of being in a set multiple
+times; a given element is either in a set or it isn't.
+
+Suppose that every element of a set $A$ is also an element of the
+set $B$.  If this is true, $A$ is a {\it subset} of $B$, and
+we write $A \subset B$.  By this definition, if for every 
+$\omega \in A$, $\omega \in B$, $A \subset B$.  Notice that for
+every set $A$, $A \subset A$; every set is a subset of itself.
+In some books, the symbol $\subseteq$ is used for this concept,
+and $A \subset B$ is used only when $A$ and $B$ are not the same.
+
+In probability theory, certain subsets of the sample space are
+called {\it events}.  Events will have probabilities associated with
+them.  
+For instance, suppose we perform the die rolling experiment,
+and suppose we are interested in whether or not the number of spots
+was no more than three.  The event of interest is satisfied when
+the number of spots is one, two, or three, and we can represent this by
+the set $\{1, 2, 3\}$, which is a subset of the sample space.  
+Suppose we are also interested in whether or not the number of spots
+was no more than two, i.e. the event $\{1,2\}$.  This event is a
+subset of the previous one (and both are subsets of the sample space);
+we can write $\{1,2\} \subset \{1,2,3\} \subset \Omega$.  The event
+$\{1,2,3\}$ always happens when $\{1,2\}$ happens, so the subset
+relation corresponds to what the logicians call ``material implication''.  But this is only saying that whenever the number of spots is no more than
+two, it's also no more than three.
+
+It turns out it is important to have a set that has no elements in
+it, called the {\it empty set} and denoted $\emptyset$; the empty
+set corresponds to something impossible.  The empty set is
+considered to be a subset of every set.
+
+If we claim that two sets are equal, $A = B$, this means that every
+element in A is in B and every element in B is in A; the two sets
+have the same and only the same elements.  We can write
+$A \subset B$ and $B \subset A$.
+
+In the theory of sets, the {\it union} $A \cup B$ of two sets 
+$A$ and $B$ is the set that contains every element of that is
+in either.  Formally, $\omega \in A \cup B$ if and only if 
+$\omega \in A$ or $\omega \in B$. 
+So a union is related to an ``or'' operation, and 
+essentially combines the elements of two sets together.  So,
+for instance, $\{1,2\} \cup \{3\} = \{1,2,3\}$, 
+$\{1,2\} \cup \{2,3\} = \{1,2,3\}$, and
+$\{1,2\} \cup \emptyset = \{1,2\}$.
+
+{\bf Exercise.~~}Prove that for any sets $A$ and $B$, $A \subset A \cup B$.
+
+{\bf Exercise.~~}Prove that for any set $A$, $A \cup \emptyset = A$.
+
+{\bf Exercise.~~}Prove that $A \cup B = B \cup A$.
+
+Another key idea in set theory is that of {\it intersection}.  The
+{\it intersection} $A  \cap B$ is the set that contains every
+element that is in both sets: $\omega \in A \cap B$ if $\omega \in A$
+and $\omega \in B$.  So, for instance, $\{1,2\} \cap \{2,3\} = \{2\}$,
+$\{1,2\} \cap \{3\} = \emptyset$, and $\{1,2\} \cap \emptyset = \emptyset$.
+
+{\bf Exercise.~~}Prove that for any sets $A$ and $B$, $A \cap B = 
+B \cap A$.
+
+{\bf Exercise.~~}Prove that for any sets $A$ and $B$, $A \cap B \subset  A$.
+
+{\bf Exercise.~~}Prove that for any sets $A$ and $B$, $A \cap \emptyset = \emptyset$.
+
+In the above example $\{1,2\} \cap \{3\} = \emptyset$.  The intersection
+of $\{1,2\}$ and $\{3\}$ is empty; these two sets have nothing in
+common.  They correspond to mutually exclusive events, events that
+cannot both happen.  It is not possible for a die throw to be in
+$\{1,2\}$ (to be 1 or 2), and also to be in $\{3\}$ (to be 3).  For
+any two sets $A$ and $B$, if $A \cap B = \emptyset$, the sets $A$ and
+$B$ are said to be {\it disjoint}.
+
+The {\it difference} $A \backslash B$ is every element
+of A that is not in B: $\omega \in A \backslash  B$ if $\omega  \in A$ but
+$\omega \notin B$.  We are always working with a sample space or 
+universal set, and whenever we take the difference of a set with the
+sample space, we refer to the difference as the complement.  In
+other words, the {\it complement} of a set $A$ in $\Omega$ is
+defined to be $\Omega \backslash A$; it is everything in the sample
+space that is not in $A$, and it is sometimes written $A^C$ or $\bar{A}$ (we will use the latter).
+
+Together, the concepts of subset, union, intersection and complement
+allow us to formally represent a full range of important events.
+For instance, we may sample individuals and determine whether they
+exhibit a risk factor ($R$ denoting the presence of the risk 
+factor) and whether they have a disease ($D$ denoting the presence 
+of the disease).  Then $R \cap D$ denotes the presence of both the
+risk factor and the disease (we will usually omit the $\cap$ and just
+write $RD$ to save space), $\bar{R}$ denotes the absence of the
+risk factor, and so forth.  And $R\bar{D}$ denotes the risk factor
+without the disease, $\bar{R}D$ the disease without the risk factor,
+and we could express the event that a person was one of these
+``discordant'' cases by the union $R\bar{D} \cup \bar{R}D$.
+
+{\bf Exercise.~~}Prove that for any sets $A$, $B$, and $C$:
+\begin{enumerate}
+\item $(A \cup B) \cup C = A \cup (B \cup C)$
+\item $(A \cap B) \cap C = A \cap (B \cap C)$
+\item $(A \cap B) \cup C = (A \cup C) \cap (B \cup C)$
+\item $(A \cup B) \cap C = (A \cap C) \cup (B \cap C)$
+\item $\Omega = A \cup \bar{A}$
+\item $A = (A \cap B) \cup (A \cup \bar{B})$
+\item $(A \cap B) \cap (A \cup \bar{B}) = \emptyset$
+\end{enumerate}
+What do these statements say? The first, that it does not matter
+what order unions are taken in, and the second, that it does not
+matter what order intersections are taken in.  The next two show
+how unions and intersections distribute over each other; 
+$\Omega = A \cup \bar{A}$ just says that event $A$ and not-$A$ 
+cover all the possibilities.  The next-to-last states that if A happened,
+it either happened with or without B. The last states that A did not
+happen both with and without B.
+
+{\bf Exercise.~~}Prove De Morgan's Laws:
+\begin{enumerate}
+\item $\bar{(A \cup B)} = \bar{A} \cap \bar{B}$
+\item $\bar{(A \cap B)} = \bar{A} \cup \bar{B}$
+\end{enumerate}
+These state that if it is not true that either A or B happened, then
+A did not happen and B did not happen: if it is not true that either
+happened, then neither happened.  The second states that if it is
+not true that both A and B happened, then either A didn't happen or
+B didn't happen.
+
+{\it Exercise.} Prove that $\bar{A} \cap B = B \backslash (A \cap B)$.
+
+\subsection*{Relative frequency}
+Relative frequencies are simply proportions; they are constrained to
+be between zero and one, inclusive.  They can be added together
+under certain circumstances, as when table cells are collapsed or 
+added to compute marginal proportions.  The following material
+is familiar to epidemiologists, but the language is that of
+probability theory and is designed to motivate the statement of
+the axioms of probability.
+
+The die experiment is not a Bernoulli trial, because a Bernoulli
+trial has two outcomes, and the die experiment has six outcomes
+in the sample space.  But if we ask only whether the outcome is in
+the set $\{1, 2\}$, we get a yes or no answer; either the number of
+die rolls is 1 or 2 or it is not; this is a Bernoulli trial.
+
+Suppose that we repeat this experiment, say, five times, and we write
+Y whenever we get a success (the number of spots was 1 or 2), and
+N for a failure (the number of spots was 3, 4, 5 or 6, i.e. neither
+1 nor 2).  Imagine that our results were YNNYN.  We obtained a
+success on two out of five experiments; the relative frequency of
+success was 2/5, or 40\%.  In general, if a trial is repeated $N$
+times, and the number of successes was $S$, then the relative
+frequency of success is $f=S/N$.
+
+Since every trial is either a success or a failure, and no trial can
+be both a success and a failure, we can determine the number $F$ of
+failures in $N$ trials by just subtracting the number of successes
+from the number of trials, so that $F=N-S$.  The relative frequency
+of failure is is $(N-S)/N = 1-f$.  Thus, the relative frequency
+of failure in the above example is 60\%.
+
+Suppose we ask the relative frequency of something certain, such 
+as the die roll yielding an integer between one and six (inclusive).
+This is satisfied every single experiment, and the relative 
+frequency must be 1.  The event of interest corresponds to the
+sample space itself.
+Similarly, if we ask the relative frequency
+of something impossible, such as a die throw yielding both 1 and
+6 at the same time,
+this is never satisfied on any experiment. The number of successes
+is always zero, and the relative frequency of success is always
+zero.  Here, the event of interest corresponds to the empty
+set, denoted $\emptyset$, defined as the set that has no elements
+at all, as we have seen.
+
+{\bf Exercise.~~}Suppose 100 people are sampled and the tuberculin
+skin test is administered; suppose all return and are read, and that
+11 test positive.  In this sample, what is
+the relative frequency of positive test results?  What is the
+relative frequency of negative test results?
+
+For another example, suppose that we examine the 2004 count of
+tuberculosis cases
+from the nine San Francisco Bay Area counties 
+(see Table~\ref{tbl:pcs}), where we have included Berkeley in 
+Alameda County (source: 2004 Tuberculosis Report, CDHS/TBCB).  We
+can think of each patient's county as an random experiment whose 
+sample space is one of the nine counties in the Bay Area.
+<<echo=false,results=hide>>=
+tb.bay.2004 <- c(alameda=148,contracosta=64, marin=13,napa=7,sanfrancisco=135,sanmateo=56, santaclara=203,solano=42,sonoma=20)
+bay.names <- sort(c( alameda="Alameda", contracosta="Contra Costa", marin="Marin", napa="Napa", sanfrancisco="San Francisco", sanmateo="San Mateo", santaclara="Santa Clara", solano="Solano", sonoma="Sonoma"))
+@
+\begin{table}
+\caption{Tuberculosis cases by Bay Area county, 2004. \label{tbl:pcs}}
+\begin{tabular}{rr}
+County & Count \\ \hline
+\Sexpr{bay.names[1]} & \Sexpr{tb.bay.2004[names(bay.names[1])]} \\
+\Sexpr{bay.names[2]} & \Sexpr{tb.bay.2004[names(bay.names[2])]} \\
+\Sexpr{bay.names[3]} & \Sexpr{tb.bay.2004[names(bay.names[3])]} \\
+\Sexpr{bay.names[4]} & \Sexpr{tb.bay.2004[names(bay.names[4])]} \\
+\Sexpr{bay.names[5]} & \Sexpr{tb.bay.2004[names(bay.names[5])]} \\
+\Sexpr{bay.names[6]} & \Sexpr{tb.bay.2004[names(bay.names[6])]} \\
+\Sexpr{bay.names[7]} & \Sexpr{tb.bay.2004[names(bay.names[7])]} \\
+\Sexpr{bay.names[8]} & \Sexpr{tb.bay.2004[names(bay.names[8])]} \\
+\Sexpr{bay.names[9]} & \Sexpr{tb.bay.2004[names(bay.names[9])]} \\ \hline
+Total & \Sexpr{sum(tb.bay.2004)}
+\end{tabular}
+\end{table}
+In future meetings, we will look closely at tuberculosis case counts,
+and consider trend lines and statistical evidence for outbreaks, and
+other features.  But for today, simply observe that the reporting
+county is exclusive and exhaustive (ignoring missing values).  
+This means that every case has one and only one county.  The set
+of patients in one county does not overlap the set of patients in
+any other county (these are {\it disjoint} sets).  No patient
+appears in two or more counties, and this is why we can fearlessly
+sum up the total, safe from the {\it horror} of double counting.
+
+We could also compute the proportion of Bay area cases in
+Alameda (say) county, by simply dividing 
+\Sexpr{tb.bay.2004["alameda"]}/\Sexpr{sum(tb.bay.2004)} to obtain
+the relative frequency 
+\Sexpr{signif(tb.bay.2004["alameda"]/sum(tb.bay.2004),3)} of
+Alameda-hood in the Bay area in 2004.  The event that a particular
+patient was from Alameda county could be represented by the 
+subset $\{\mbox{\rm Alameda}\}$ of the sample space.
+The event that a particular
+patient was from Contra Costa county could be represented by the 
+subset $\{\mbox{\rm Contra Costa}\}$ of the sample space, and
+similarly, the relative
+frequency of Contra Costa location among Bay area counties in 2004
+was \Sexpr{signif(tb.bay.2004["contracosta"]/sum(tb.bay.2004),3)}, 
+and so forth for the other counties.
+
+Suppose that we needed to determine the relative frequencies of
+cases in Medicare geographic pricing localities.  In the Bay area,
+San Francisco, San Mateo, Santa Clara, and Sonoma are each independent
+and separate pricing localities.  Alameda and Contra Costa county
+together form a fifth region, and Marin, Napa, and Solano counties
+are aggregated to form a sixth (source: Federal Register, Vol. 70,
+No. 151, p. 45867, August 8, 2005).  
+
+Suppose we are interested in the event that a Bay area patient is
+from either Alameda or Contra Costa county.  We can think of this
+event as corresponding to the subset $\{\mbox{\rm Alameda, Contra Costa}\}$ of the sample space.  (Mathematically, this set is the {\it union} of
+the sets $\{\mbox{\rm Alameda}\}$ and $\{\mbox{\rm Contra Costa}\}$.)
+Because having a location
+in Alameda county excludes having a location in Contra Costa county,
+we can compute the relative frequency of the event that a Bay
+area case lies in the Alameda-Contra Costa (``AC'') pricing region by 
+adding together the two relative frequencies to obtain
+\Sexpr{signif((tb.bay.2004["alameda"]+tb.bay.2004["contracosta"])/sum(tb.bay.2004),3)}.  We can say that because the sets 
+$\{\mbox{\rm Alameda}\}$ and $\{\mbox{\rm Contra Costa}\}$ have no 
+elements in common (and are said by the mathematicians to be
+{\it disjoint}), the relative frequency of the occurrence of the 
+event corresponding to the union $\{\mbox{\rm Alameda, Contra Costa}\}$ 
+is the sum of the relative frequencies of the events
+$\{\mbox{\rm Alameda}\}$ and $\{\mbox{\rm Contra Costa}\}$.  A terse
+way to indicate this is to say that the relative frequency of a
+disjoint union is the sum of the relative frequencies.
+
+The relative frequency of the Marin-Napa-Solano (``MNS'') region can be
+computed in the same way, yielding \Sexpr{signif((tb.bay.2004["marin"]+tb.bay.2004["solano"] + tb.bay.2004["napa"])/sum(tb.bay.2004),3)}.  And
+suppose you wanted the relative frequency of being in either the AC
+region or the MNS region?  Since this corresponds to another 
+disjoint union, we can add the relative frequencies to obtain
+\Sexpr{signif((tb.bay.2004["marin"]+tb.bay.2004["solano"] + tb.bay.2004["napa"] + tb.bay.2004["alameda"] + tb.bay.2004["contracosta"])/sum(tb.bay.2004),3)}.  
+If the MNS region and AC regions had overlapped, we could not have
+added, since we would have double counted some patients.  
+
+As a general rule, if $A$ and $B$ are two events that do not
+overlap (are mutually exclusive, cannot both happen in the same 
+experiment, are disjoint),
+then the relative frequency of ``$A$ or $B$'' is the sum of 
+the relative frequency of $A$ and the relative frequency of $B$.
+(In ordinary discourse, ``and'' is often used to indicate
+addition, but in this setting, ``or'' leads to addition for the
+same reason that you can find more items by including OR terms in
+a Boolean search.)
+
+<<echo=false,results=hide>>=
+is.rs <- 2022
+is.rr<-9
+ir.rs<-218
+ir.rr<-39
+ir <- ir.rs+ir.rr
+is <- is.rs+is.rr
+rs<-is.rs+ir.rs
+rr<-is.rr+ir.rr
+totdr <- ir+is
+if (rr+rs-totdr != 0) {
+  stop("error")
+}
+@
+
+For another example, consider individuals in the RVCT database 
+counted during 2004 for which initial drug susceptibility results
+were available for INH and rifampin.  Out of \Sexpr{totdr}
+patients, there were \Sexpr{is.rs} were sensitive to both
+drugs, \Sexpr{is.rr} sensitive to INH but resistant to 
+rifampin, \Sexpr{ir.rs} sensitive to rifampin but resistant to
+INH, and \Sexpr{ir.rr} resistant to both (and thus multidrug-resistant
+by definition).  See Table~\ref{tbl:drugs}.
+\begin{table}
+\caption{Initial TB drug resistance, 2004. Source: TB Surveillance
+Report, 2004, CDHS/TBCB. \label{tbl:drugs}}
+\begin{tabular}{l|rr|r}
+- & INH sensitive & INH resistant & - \\ \hline
+RIF sensitive & \Sexpr{is.rs} & \Sexpr{ir.rs} & \Sexpr{rs} \\
+RIF resistant & \Sexpr{is.rr} & \Sexpr{ir.rr} & \Sexpr{rr} \\ \hline
+- & \Sexpr{is} & \Sexpr{ir} & \Sexpr{totdr} \\
+\end{tabular}
+\end{table}
+It is straightforward to realize that the cells in the 2 by 2 table
+are exclusive and exhaustive, and that we can sum rows to get the
+total number of individuals by rifampin resistance status, and 
+sum columns to get the total number of individuals by INH resistance
+status.  The relative frequency of INH resistance, say, could
+be found by adding the relative frequency of MDR to the relative
+frequency of INH resistance without rifampin resistance, so that
+\Sexpr{signif(ir.rr/totdr,3)} + \Sexpr{signif(ir.rs/totdr,3)}
+yields \Sexpr{signif(ir/totdr,3)}.  The relative frequency of 
+a disjoint union is the sum of the relative frequencies, because the
+count of elements in a finite disjoint union is the sum of the counts of
+elements in the original sets.  (Mathematically, the 
+{\it cardinality} of a finite disjoint union of finite sets
+is the sum of the cardinalities, a fancy way of 
+stating a familiar realization.  Notice that it is {\it union}, or
+the logical operation {\it or}, that corresponds to combination 
+and that leads to addition.  If we put your cats in an empty room 
+together with mine, then the room contains a cat if that cat was
+yours OR mine.  The room contains the union of the sets of cats,
+and assuming we share no cats (the union is disjoint!), we can 
+determine the number of cats by adding however many I had with however 
+many you had---safer, perhaps than entering the room to count them.)
+
+In general, suppose we have two events A and B we classify people
+on, leading to a two by two table.
+\begin{table}
+\caption{Notation for 2 by 2 tables. \label{tbl:notat}}
+\begin{tabular}{l|rr|r}
+- & B, no & B, yes & - \\ \hline
+A, no & $n_{\bar{A}\bar{B}}$ & $n_{\bar{A}B}$ & $n_{\bar{A}}$ \\
+A, yes & $n_{A\bar{B}}$ & $n_{AB}$ & $n_{A}$ \\ \hline
+- & $n_{\bar{B}}$ & $n_{B}$ & $n$\\
+\end{tabular}
+\end{table}
+The relative frequency of $A$ in this sample is $n_{A}/n$, the relative frequency of $A$ and not-$B$ (say) is
+$n_{A\bar{B}}/n$, and so forth.
+
+We can denote the relative frequency of $A$ by $f_A$, so that
+\[
+f_A = \frac{n_{A}}{n} ,
+\]
+with a similar definition holding for other relative frequencies.
+
+\subsection*{Probability}
+Probability is defined to be a long run limit of relative
+frequencies in random experiments; infinite experiments can't really
+be done, and the mathematicians defined a mathematical structure 
+based on axioms of probability.  
+
+In this formalism, the mathematicians assume a sample space 
+$\Omega$ (sometimes called a {\it universal set} $U$).  They also 
+assume a collection $\cal F$ of subsets of $\Omega$ such that if $A$ is
+in this collection, then the subset consisting of everything in 
+$\Omega$ but not in $A$ is in the collection.  There is also a
+rule that says that if $A_1$, $A_2$, and so forth are in the collection,
+then the set consisting of all the elements in these sets (the 
+{\it union} of these sets) is in the collection also.  A final rule
+says that $\Omega$ itself is always in the collection $\cal F$.
+
+A key feature, important in advanced
+theory, is that probability is a set function.  Every set that is in
+$\cal F$ gets a probability associated with it, which is a number
+between 0 and 1 inclusive.  Probabilities have to be between 0 and 1
+because relative frequencies are always between 0 and 1; if 
+probabilities were outside this range, they could not be long run
+limits of relative frequencies.  The other important rule is that
+if two sets $A$ and $B$ in $\cal F$ don't overlap (have no members in 
+common, are disjoint, are mutually exclusive), then the probability of 
+A or B is the sum of the probabilities.  The long run limit of
+relative frequencies is expected to behave this way because
+relative frequencies themselves behave this way.
+
+Using a technique called {\it mathematical induction}, you can show
+that the probability of any finite disjoint union is the sum of
+the probabilities.  Some mathematicians are content with this
+axiom, but standard probability theory goes further, and states that
+if you have a {\it possibly infinite} sequence of events
+$A_1$, $A_2$, and so forth, which are disjoint, that the
+probability of the union of all of them is the sum of the probabilities.
+Those of you who are mathematically inclined recognise that although
+the sequence of sets can be infinite, it is {\it countable}, since
+it can be put into a one to one correspondence with the integers
+(shown by the subscripts).  
+
+More formally, we can review the axioms of probability below.
+
+The first axiom of probability is that $\Omega$ itself has the
+probability of one.  ($\Omega$ is a subset of itself, and is one
+of those subsets that gets a probability.)  This can be written
+$P(\Omega)=1$.
+
+The next axiom is that if you have a sequence of subsets
+$A_i$ that don't overlap, then the probability of the union is the
+sum of the probabilities:
+\[
+P\Big(\bigcup_{i=1}^{\infty}A_i \Big) = \sum_{i=1}^{\infty}P(A_i)
+\]
+if $A_i \cap A_j = \emptyset$ whenever $i \neq j$.
+
+Example: Prove that $P(\emptyset)=0$.\newline
+{\it Solution.}  Notice that $\Omega \cup \emptyset = \Omega$, and
+$\Omega \cap \emptyset = \emptyset$.  We can use the second axiom
+and write $P(\Omega \cup \emptyset) = P(\Omega) + P(\emptyset)$.
+But since $P(\Omega \cup \emptyset) = P(\Omega)$, we have
+$P(\Omega)=P(\Omega)+P(\emptyset)$.  Therefore $P(\emptyset)=0$.
+
+Example: Prove that $P(\bar{A})=1-P(A)$. \newline
+{\it Solution.}  Since $A \cup \bar{A} = \Omega$ by definition, and
+similarly by definition $A \cap \bar{A} = \emptyset$, we can use the
+second axiom and write $P(A \cup \bar{A}) = P(A)+P(\bar{A})$. But
+$P(A \cup \bar{A})=P(\Omega)=1$, so $P(A)+P(\bar{A})=1$, and $P(\bar{A})=1-P(A)$. 
+
+Mathematically, probability theory has been developed into a formal
+theory (based on what is called {\it measure theory}) since the work
+of Kolmogorov and others in the early middle of the previous 
+century.  While few disagree with the formal theory itself, there are
+at least two ways the axioms can be interpreted.  In the first of
+these interpretations, the {\it frequentist interpretation}, the 
+probability of an event is considered to be the long run relative 
+frequency of the occurrence of the event in a sequence of independent 
+repetitions of an experiment that could lead to the event.  In the
+second major interpretation, the {\it Bayesian interpretation}, 
+plausible definitions of rational belief are used to prove that any 
+numerical measure of degree of belief in the truth of a proposition 
+must obey the laws of probability.  Despite the coherence and
+strengths of each interpretation, acrimonious debate between
+frequentists and Bayesians still overshadows from time to time what 
+is ultimately a philosophical, and not a mathematical, distinction.  
+
+Here are a few standard exercises.
+
+{\it Exercise.} Prove that if $A \subset B$, 
+$P(B \backslash A) = P(B) - P(A)$.
+
+{\it Exercise.} Prove that $P(A) = P(A \cap B) + P(A \cap \bar{B})$.
+
+{\it Exercise.} Prove that if $A \subset B$, $P(A) \leq P(B)$.
+
+{\it Exercise.} Prove that $P(A \cup B) = P(A) + P(B) - P(A \cap B)$.
+
+\subsection*{Some simple examples}
+{\bf Tossing a fair coin.}~~If we toss a fair coin, it may land heads 
+up (H) or tails up (T).  The elementary outcomes are H and T, and the 
+sample space $\Omega$ is $\{H, T\}$.  We assign the probability 
+$\frac{1}{2}$ to the event $\{H\}$.  {\it Exercise.} What are all the
+other events for this model, and what are their probabilities?
+
+{\bf Rolling a fair die.}~~If we roll a fair die, we may get 1, 2, 3,
+4, 5, or 6 spots showing.  The elementary outcomes may be designated
+1, 2, 3, 4, 5, and 6, and the sample space $\Omega$ is 
+$\{1, 2, 3, 4, 5, 6\}$.  We assign the probability $\frac{1}{6}$
+to each event $\{i\}$ with $i=1, 2, \ldots, 6$.  Here, $\#(\Omega)=6$.
+\newline
+{\it Exercise.} Let $A=\{1\}$, $B=\{1,2\}$, $C=\{2,4,6\}$, $D=\{3,4\}$.
+What is $P(A)$, $P(B)$, $P(C)$, $P(D)$, $P(A \cup B)$, $P(A \cap B)$,
+$P(B \cup C)$, $P(B \cap C)$, $P(B \cup D)$, $P(B \cap D)$.\newline
+{\it Exercise.} Continuing the die example, prove
+that for every subset $A$ of $\Omega$, $P(A)=\#(A)/\#(\Omega)$.  
+
+Whenever we have a sample space $\Omega$ with a finite number of
+elements in it, and we define the probability of each subset 
+$\{\omega\}$ to be $P(\{\omega\})=\frac{1}{\#(\Omega)}$, the 
+probability distribution is called the {\it discrete uniform} 
+distribution.  Then for every subset $A$ of $\Omega$, 
+$P(A)=\#(A)/\#(\Omega)$ as you showed for the die example.
+Among other applications, the discrete uniform 
+distribution is a model of selecting an individual at random from
+a group.
+
+{\it The Bernoulli distribution}. An experiment with two outcomes
+(such as the coin toss) is called a Bernoulli trial. Conventionally,
+the two outcomes are called ``success'' and ``failure'' and we will
+designate the outcomes by 1 for success and 0 for failure.  
+The sample space is $\Omega=\{0,1\}$. Suppose that the probability of 
+success is $p$.  Then the probability of failure is $1-p$.  This
+distribution is called the {\it Bernoulli distribution}.  The
+coin toss example is a Bernoulli trial with $p=0.5$ (as well as a
+discrete uniform distribution).  Another example of a 
+Bernoulli trial would be to roll a die and declare success if a 1-spot
+shows, and failure otherwise (then $p=1/6$).  Similarly, we could
+roll a die and declare success if anything other than a 1-spot
+shows and failure if we see a one-spot; then $p=5/6$.  A more
+practical example would arise if, for instance, a person experienced
+a needlestick injury with contaminated blood, and we considered the
+outcome of ``success'' if the person is infected with a blood-borne
+pathogen and ``failure'' otherwise (remember the labels ``success''
+and ``failure'' are merely conventional labels and carry no 
+favorable or unfavorable connotation).  In this example, there is
+no reason to know in advance what the probability of success is.
+
+{\it Exercise.} Five white balls and fifteen black balls are placed
+in an urn, and one ball is selected at random. What is the probability
+the ball is white?
+
+{\it Exercise.} Five million white beads and fifteen million black
+beads are placed in a giant urn, and one bead is selected at random.
+What is the probability the bead is white?
+
+{\it Exercise.} Five males and fifteen females comprise a target
+population. An individual is selected at random. What is the probability
+the chosen person is male?
+
+{\it Exercise.} A target population is 63\% male. Twelve percent of males
+have a risk factor and 8\% of females have the risk factor. What is
+the probability a randomly chosen person has the risk factor?
+
+\subsection*{Conditional probability}
+Let's return to the drug resistance data in Table~\ref{tbl:drugs}.
+We have already shown that in this data set, the relative frequency
+of INH resistance was \Sexpr{signif(ir/totdr,3)}.  But we could well 
+restrict our attention to individuals who were rifampin-sensitive,
+and ask---just for this subset---what the relative frequency of
+INH resistance was.  We all know this is a simple computation; we
+need only divide the number of individuals who are both INH-resistance
+and rifampin sensitive (\Sexpr{ir.rs}) by the total number of 
+rifampin sensitive cases (\Sexpr{rs}), obtaining
+\Sexpr{signif(ir.rs/rs,3)}.  We've used the rifampin-sensitive
+cases as our denominator; we can think of this as a
+{\it conditional relative frequency}.  We have computed the
+relative frequency of INH resistance conditional on being, or 
+{\it given}, rifampin sensitivity.
+
+{\bf Exercise.~~}Determine the conditional relative frequency of
+(a) INH resistance given rifampin resistance,
+rifampin resistance given INH sensitivity,
+rifampin sensitivity given INH sensitivity.
+
+Using the notation from Table~\ref{tbl:notat}, we could write the
+conditional relative frequency of event B given A as
+$n_{AB}/n_{A}$.  This is because the denominator is all
+individuals for whom A happened, $n_{A}$, and the numerator is
+all individuals for whom B happened assuming A happened too, 
+$n_{AB}$.  But we don't actually need the counts.  Let's divide
+the numerator and denominator by $n$, the total.  We will denote
+the conditional relative frequency of B given A as $f_{B|A}$, and so
+we have
+\[
+f_{B|A} = \frac{n_{AB}/n}{n_{A}/n} .
+\]
+We can rewrite this in terms of the relative frequency of A and B
+and the relative frequency of A:
+\[
+f_{B|A} = \frac{f_{AB}}{f_{A}} .
+\]
+
+This last result is what motivates the definition of conditional
+probability.  The conditional probability of B given A is
+\[
+P(B|A) = P(AB) / P(A)
+\]
+provided that the probability of A is not zero.  Notice that this
+definition implies that
+\begin{equation}
+\label{eq:pba}
+P(AB) = P(B|A) P(A) .
+\end{equation}
+
+For example, suppose that a person has a sex partner at random, and
+suppose the probability that a randomly chosen partner is infected
+with HIV is 0.4.  Suppose that the probability of infection given 
+a partnership with an infected person is 0.1 (assuming no protection
+is used).  Then the chance that a person will have an infected
+partner and become infected is the chance that the person will have
+an infected partner times the chance of infection given an infected
+partner, or $0.4 \times 0.1$, or $0.04$.
+
+Now, the chance of A given B is 
+\[
+P(A|B) = P(AB) / P(B) ,
+\]
+so that
+\begin{equation}
+\label{eq:pab}
+P(AB) = P(A|B) P(B) .
+\end{equation}
+Using Equations~(\ref{eq:pba}) and~(\ref{eq:pab}), we have
+\[
+P(B|A) P(A) = P(A|B) P(B) .
+\]
+From here, we get a relation between the probability of A given B
+and the probability of B given A:
+\begin{equation}
+\label{eq:bayes}
+P(B|A) = \frac{P(A|B) P(B)}{P(A)} .
+\end{equation}
+This relationship is so important that it has a name, {\it Bayes
+theorem}.
+
+One public health application of Bayes theorem is used as an example 
+even in mathematics books, and is familiar to epidemiologists.
+Suppose that the prevalence rate in a certain population of a disease or
+condition is $P(D)$, the probability of disease.  For instance, 
+this condition might be latent
+tuberculosis infection.  
+Suppose that a screening test is used to
+detect this condition, such as the tuberculin skin test.  The 
+{\it sensitivity} of a test is the conditional probability that 
+a person tests positive ($T$) given that they truly have the disease or
+condition, $P(T|D)$.  The {\it specificity} of a test is the conditional
+probability that the person tests negative ($\bar{T}$) given that
+they don't truly have the disease or condition, $P(\bar{T}|\bar{D})$.
+These are usually derived or estimated from studies where there is
+some ``gold standard'' for determining whether or not someone really
+has the condition (a difficult problem, however, in tuberculosis).
+
+Notice that sensitivity and specificity really are two distinct
+and different features of a test, and high sensitivity and specificity
+are both desirable.  It is very simple to construct a test with
+{\it perfect} sensitivity if specificity does not matter: you simply
+declare everyone to test positive.  The sensitivity is perfect, since
+the probability of testing positive given that you have the 
+disease is one.  The specificity, however, is zero; there is no
+chance of testing negative if you don't have the disease (everyone
+has been declared positive).  At times, it may in fact be desirable
+to simply consider everyone in a population to require treatment or
+some other intervention without using any medical test procedure,
+to in effect behave as though everyone was positive.  Similarly,
+a perfectly specific test could be constructed by simply declaring
+everyone negative, at the cost of no specificity. 
+
+What we really want in public health, however, is the probability
+that the person really has the condition given their test status.
+The {\it predictive value of a positive} is the probability that a
+person really has the disease given a positive test result,
+$P(D|T)$.
+
+But from Bayes Theorem, we know that
+\[
+P(D|T) = \frac{P(T|D)P(D)}{P(T)}
+\]
+
+What is $P(T)$? This is the chance of a positive test.  How does
+this relate to the prevalence?  In the population, you have 
+individuals with and without the condition; for those with the
+condition, their chance of testing positive is the sensitivity; for
+those without the condition, their chance of testing positive is
+one minus the specificity.  
+
+More formally, if you test positive, you are either a true positive
+or a false positive.  Using formal set theoretic language, 
+\[
+T = TD \cup T\bar{D} .
+\]
+This means that the event $T$, a positive test result, is the same
+as the union of two other events, $TD$ and $T\bar{D}$.  The event
+$TD$ is the event that the person tested positive and really was
+positive (it is the {\it intersection} of $T$ and $D$), and 
+$T\bar{D}$ is the event that the person tested positive but really
+was negative (they are a false positive).  
+
+So if $T$ is the {\it same event} as $TD \cup T\bar{D}$, then 
+\[
+P(T) = P(TD \cup T\bar{D}) .
+\]
+But $TD$ and $T \bar{D}$ are {\it disjoint}; they cannot both happen.
+Since the probability of a disjoint union is the sum of the 
+probabilities,
+\[
+P(T) = P(TD) + P(T \bar{D}) .
+\]
+But now $P(TD) = P(T|D)P(D)$, and 
+$P(T \bar{D}) = P(T|\bar{D})P(\bar{D})$.
+So
+\[
+P(T) = P(D)P(T|D) + P(\bar{D})P(T|\bar{D}).
+\]
+All this says is that the chance of testing positive overall is the
+chance of having the disease times the chance of testing
+positive given the disease (the sensitivity), plus the 
+chance of not having the disease times the chance you will test positive
+given you don't have the disease.
+
+Putting it all together,
+\begin{equation}
+\label{eq:pvp}
+P(D|T) = \frac{P(T|D)P(D)}{P(D)P(T|D)+P(\bar{D})P(T|\bar{D})} .
+\end{equation}
+{\bf Exercise.~~}Express the above equation in terms of the overall
+probability of
+testing positive $P(T)$ instead of the fraction truly diseased $P(D)$.
+
+Let's see what this looks like for the tuberculin skin test.  For
+now, we will not pause to consider the complications resulting from
+choices of the induration cutoff, interrater reliability, BCG
+vaccination, and so forth.
+<<>>=
+sens <- 0.95
+spec <- 0.98
+@
+For the tuberculin skin test in
+practice, the sensitivity is sometimes assumed to be \Sexpr{sens}, and
+the specificity \Sexpr{spec}.  We will implement Equation~(\ref{eq:pvp}) in R as follows:
+<<>>=
+pvp <- function(prev,sens,spec) {
+  true.pos <- sens * prev
+  false.pos <- (1-spec) * (1-prev)
+  true.pos / (true.pos + false.pos)
+}
+@
+\begin{figure}
+\caption{\label{fig:pvp1}Predictive value of a positive as a function of prevalence.}
+  \centering
+<<fig=true>>=
+prevs <- seq(0,1,by=0.001)
+plot(prevs,pvp(prevs,sens,spec),type="l",xlab="True prevalence",ylab="Predictive value of a positive")
+@
+\end{figure}
+From the graph, you can see that the predictive value can be quite
+small.  This makes perfect sense; if no one at all had the disease,
+then every positive test would be a false positive and the predictive
+value would in fact be zero.  But the real question is not what 
+happens at zero prevalence, but what happens for very small
+prevalences. How small does the prevalence have to be for the
+test results to become essentially useless (because the predictive
+value is very low)?  The next figure zooms in on the very small
+range of prevalences.
+\begin{figure}
+\caption{\label{fig:pvp2}Predictive value of a positive as a function of prevalence.}
+  \centering
+<<fig=true>>=
+prevs <- seq(0,0.05,by=0.01)
+plot(prevs,pvp(prevs,sens,spec),type="l",xlab="True prevalence",ylab="Predictive value of a positive")
+@
+\end{figure}
+
+{\bf Exercise.~~}Repeat the above graph for a specificity of 0.9, and
+then for a sensitivity of 0.8.
+
+{\bf Exercise.~~}Assuming that a person with the disease is more
+likely to test positive than someone without it, prove that the 
+population probability of a positive test $P(T)$ cannot be larger than 
+the sensitivity and cannot be smaller than one minus the specificity.
+
+{\bf Exercise.~~}Assuming that a person with the disease is more
+likely to test positive than someone without it, prove or give
+a counterexample to this statement:
+The predictive value of a positive $P(D|T)$ is never smaller than the 
+prevalence $P(D)$.
+
+{\bf Exercise.~~}Construct an equation relating the predictive value
+of a positive to the probability of testing positive $P(T)$, rather
+than the unknown prevalence of disease $P(D)$.
+
+\subsection*{Independence}
+Instead of considering diagnostic tests, suppose we have a putative
+risk factor for latent tuberculosis infection.  If an individual is 
+positive for this risk factor, we say that the event $R$ has occurred; 
+otherwise, we say that the event $\bar{R}$ (not-$R$) has occurred.  
+We will let $D$ denote the event the person has the condition of
+latent infection and $\bar{D}$ be the event that they do not.  As
+before, we can define $P(RD)$ to be the probability the person
+has both the risk factor and the ``disease'', $P(D|R)$ is the
+probability of the disease given the risk factor, $P(D|\bar{R})$ is
+the probability of the disease given no risk factor, $P(R|D)$ is
+the probability of the risk factor given the disease, and so forth.
+
+We know that if we knew these probabilities, we could compute the
+population relative risk
+\[
+r = \frac{P(D|R)}{P(D|\bar{R})}
+\]
+and that if $r=1$, we would believe that the alleged risk factor
+was in fact of no importance (given some further assumptions).
+
+Let's assume that $P(D|R)=P(D|\bar{R})$.  We already know that
+\[
+P(D) = P(D|R)P(R) + P(D|\bar{R})P(\bar{R}) ,
+\]
+so substituting,
+\begin{eqnarray*}
+P(D) & = & P(D|R)P(R) + P(D|R)P(\bar{R})  , \\
+     & = & P(D|R) \big(P(R) + P(\bar{R}) \big) , \\
+     & = & P(D|R) \times 1 .
+\end{eqnarray*}
+Therefore, $P(D)=P(D|R)=P(D|\bar{R})$.  In particular, if 
+$r=1$, $P(D|R)=P(D)$.  In other words, if the relative risk is one,
+the chance of having disease given the risk factor is the same as
+the unconditional chance of having the disease.
+
+Let's go back to the diagnostic test example, and imagine that we
+had a test such that the predictive value of a positive was just the
+same as the prevalence, $P(D|T)=P(D)$.  The test is not telling you
+anything you did not already know.  {\it This is not the same thing
+as not being specific, for instance.}  Suppose I put 99 white poker
+chips in a bag and one blue one, and shake them up, and draw one out
+without looking, and agree to declare any patient positive if I get
+the blue chip, and negative otherwise. The sensitivity is in fact
+99\%, but unfortunately the specificity is 1\%.  Despite the
+excellent sensitivity, it is still the case that $P(D|T)=P(D)$, 
+as we shall see.  Assume that $P(T|D) = P(T|\bar{D})$.
+Since
+\[
+P(T) = P(D)P(T|D) + P(\bar{D})P(T|\bar{D}),
+\]
+we have
+\[
+P(T) = P(D)P(T|D) + P(\bar{D})P(T|D) = \big(P(D)+P(\bar{D})\big)P(T|D) = P(T|D).
+\]
+But
+\[
+P(D|T) = \frac{P(T|D)P(D)}{P(T)}
+\]
+by Bayes' Theorem, so
+\[
+P(D|T) = \frac{P(T)P(D)}{P(T)} = P(D).
+\]
+So as long as the sensitivity equals one minus the specificity, 
+$P(D|T)=P(D)$ no matter how high or low the specificity is (we already
+saw extreme cases of 0 and 1 earlier).
+
+The important condition that for two events $A$ and $B$, 
+$P(A|B)=P(A)$ is known as {\it independence}, or {\it stochastic
+independence}.  Independence is one of the central concepts in
+probability theory.  Events $A$ and $B$ are independent if
+$P(A|B)=P(A)$.
+
+Suppose that $P(A|B)=P(A)$.  Then by Bayes' Theorem, 
+\[
+P(A|B) = \frac{P(AB)}{P(B)}
+\]
+by definition, and so
+\[
+P(A) = \frac{P(AB)}{P(B)}
+\]
+assuming $P(B) \neq 0$.  Then $P(AB)=P(A)P(B)$, a fact so important
+that it is often used as the definition of independence.  Since
+\[
+P(A|B) = \frac{P(B|A)P(A)}{P(B)} 
+\]
+by Bayes' Theorem; if we assume $P(A|B)=P(A)$,
+\[
+P(A) = \frac{P(B|A)P(A)}{P(B)} ,
+\]
+so that $P(B|A)=P(B)$.  So if $A$ and $B$ are independent, $B$ and
+$A$ are independent.
+
+{\bf Example.} Show that if $P(A \cap B)=P(A)P(B)$, then
+$P(\bar{A} \cap B)=P(\bar{A})P(B)$. \newline {\it Solution.} 
+$P(B)=P(A \cap B \cup \bar{A} \cap B) = P(A \cap B)+P(\bar{A} \cap B)$, so
+$P(\bar{A} \cap B)=P(B)-P(A \cap B)=P(B)-P(A)P(B)$ by assumption; therefore
+$P(\bar{A} \cap B)=(1-P(A))P(B)=P(\bar{A})P(B)$.
+
+{\bf Example.} Show that $P(\bar{A}|B) = 1-P(A|B)$. \newline {\it Solution.}
+$P(\bar{A}|B)=P(\bar{A} \cap B)/P(B)$. But $P(\bar{A} \cap B) = 
+P(B \backslash A \cap B) = P(B)-P(A \cap B)$. So
+$P(\bar{A} \cap B)/P(B) = 1-P(A \cap B)/P(B) = 1-P(A|B)$.
+
+{\bf Exercise.} Given $P(A|B)$, $P(A)$, and $P(B)$, 
+what is $P(A|\bar{B})$?
+
+{\bf Exercise.~~}
+Suppose that the baseline probability that a given tubercle
+bacillus will exhibit resistance mutations to the  
+first-line drug isoniazid is $10^{-6}$, and to rifampin $10^{-8}$
+(Source: Toman's Tuberculosis, 2004).
+Assuming that these probabilities are independent, what is the 
+probability of simultaneous resistance to both?
+
+In general, events $A_1, A_2, \ldots, A_k$ are independent if
+$P(A_1 \cap A_2 \cdots A_k) = \prod_{i=1}^k P(A_i)$.  Also, it turns
+out that events can be pairwise independent but not independent,
+that is, it is possible to have (for instance) $P(A_1 \cap A_2)=P(A_1)P(A_2)$, 
+$P(A_1 \cap A_3)=P(A_1)P(A_3)$,  and
+$P(A_2 \cap A_3)=P(A_2)P(A_3)$, but still
+$P(A_1 \cap A_2 \cap A_3) \neq P(A_1)P(A_2)P(A_3)$.  For instance,
+suppose we ask three yes/no questions, and let's denote
+the responses on each by $Y$ or $N$ (yes or no), and to all three
+by listing them in order.  So, for instance, $YYN$ indicates 
+yes on the first two, and no on the third. There are eight possibilities, and let's
+assume the probabilities are as given in the table.
+\begin{table}
+\begin{tabular}{cc}
+Outcome & Probability \\ \hline
+YYY & $\frac{1}{4}$ \\
+YYN & 0 \\
+YNY & 0 \\
+YNN & $\frac{1}{4}$ \\
+NYY & 0 \\
+NYN & $\frac{1}{4}$ \\
+NNY & $\frac{1}{4}$ \\
+NNN & 0 \\
+\end{tabular}
+\end{table}
+Now, let $A$ be the event of a yes on the first question, $B$ the
+event of a yes on the second, and $C$ of a yes on the third. 
+Then $P(A)=P(\{YYY,YYN,YNY,YNN\})=\frac{1}{2}$, 
+$P(B)=P(\{YYY,NYY,YYN,NYN\})=\frac{1}{4}+0+0+\frac{1}{4}=\frac{1}{2}$, 
+and $P(C)=P(\{YYY,NYY,YNY,NNY\})=\frac{1}{4}+0+0+\frac{1}{4}=\frac{1}{2}$.
+Also, $A \cap B$ is the event of a yes on the first and second
+questions; $P(A \cap B)=P(\{YYY,YYN\})=\frac{1}{4}$. Similarly,
+$P(A \cap C) = P(\{YYY,YNY\})=\frac{1}{4}$, and
+$P(B \cap C) = P(\{YYY,NYY\})=\frac{1}{4}$.  So 
+$P(A \cap B)=P(A)P(B)$, $P(A \cap C)=P(A)P(C)$, and
+$P(B \cap C)=P(B)P(C)$.  But $P(A \cap B \cap C)=P(\{YYY\})=\frac{1}{4}$, which is not the same as $P(A)P(B)P(C)=\frac{1}{8}$.  This is one of the
+reasons the analysis of two by two by two tables in epidemiology can
+be more tricky than two by two tables.
+
+{\it Preview problem for next time.~~}For each diagnosed case of 
+tuberculosis, 
+let $S$ be the event that the patient was sputum smear-positive,
+$A$ be the event that the patient was actively detected, and 
+let $H$ be the event that the patient was hospitalized.  We are
+interested in a reasonable estimate of the probability that an
+actively detected patient is hospitalized, $P(H|A)$.  Suppose we
+know $P(S|A)$, $P(S)$, $P(A)$, $P(H)$, and $P(H|S)$; what
+bounds, if any, do these data place on $P(H|A)$?
+
+\vfill
+
+\end{document}

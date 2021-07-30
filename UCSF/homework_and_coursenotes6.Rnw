@@ -1,0 +1,716 @@
+\documentclass[fleqn,12pt]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+<<echo=FALSE,results='hide'>>=
+opts_chunk$set(fig.path='f2/')
+@
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+
+Version 1.1---modified 8 Mar 2019, time 1311
+
+\section{Quick review}
+We need a bit of calculus.  The first derivative of the function $f$ of the argument $x$ (say), is defined as
+\[
+\lim_{\Delta x \rightarrow 0} \frac{f(x+\Delta x)-f(x)}{\Delta x} .
+\]
+There's mathematical fine print sometimes; the limit has to exist, for example.  
+
+Let's do one.  Let $f(x)=x^2$, the simple parabola:
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \frac{(x+\Delta x)^2 - x^2}{\Delta x} .
+\]
+Then,
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \frac{x^2 + 2 x \Delta x + (\Delta x)^2 - x^2}{\Delta x} ,
+\]
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \frac{2 x \Delta x + (\Delta x)^2}{\Delta x} ,
+\]
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \left(2 x + \Delta x\right) ,
+\]
+so
+\[
+\frac{df}{dx} = 2 x .
+\]
+
+How about another one?  Let $f(x) = x^n$, with $n$ an integer (say).
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \frac{(x+\Delta x)^n - x^n}{\Delta x} .
+\]
+With the Binomial theorem: $(x+\Delta x)^n = \sum_{i=0}^n (\Delta x)^i x^{n-i}$, so
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \frac{x^n + n x^{n-1}\Delta x + o(\Delta x) - x^n}{\Delta x} .
+\]
+where $o(\Delta x)$ means something or other that has the property that $\lim_{\Delta x \rightarrow 0} o(\Delta x)/\Delta x = 0$ (stuff
+that goes to 0 faster than $\Delta x$ does---for example, $k (\Delta x)^2$ where $k$ is just some number that doesn't depend on 
+$\Delta x$).  So let's cancel:
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \frac{n x^{n-1}\Delta x + o(\Delta x)}{\Delta x} .
+\]
+\[
+\frac{df}{dx} = \lim_{\Delta x \rightarrow 0} \left( n x^{n-1} + \frac{o(\Delta x)}{\Delta x}\right) .
+\]
+So this is just $n x^{n-1}$.  
+
+We need two others: $\frac{d}{dx} e^x = e^x$, and $\frac{d}{dx} \log(x) = \frac{1}{x}$, but we won't prove these.
+
+\section{The Reed-Frost Process}
+
+We're going to now shift gears.  
+
+We've taken a good hard look at a classical stochastic model of an epidemic system, the Galton-Watson process.  But
+it's missing something important.  One thing it's missing is the idea of depletion of susceptibles.  Another is
+the idea of change in behavior.  People don't, for the most part, just mindlessly keep doing the same things in
+response to epidemic disease, but rather, change what they're doing to reduce their chance of getting the disease.
+
+Remember the simple Galton-Watson model simply gave us
+\[
+E[Y_{\tau+1}] = R E[Y_\tau]
+\]
+where $R$ is the reproductive number of the infection, i.e. the mean of the secondary case distribution.  If $R>1$
+the mean of the epidemic simply increased without bound, as a geometric increase.  
+
+\stepcounter{exno}
+{\bf Exercise \theexno.}
+Just in words, without writing any formulas or doing any math,
+explain how the mean can increase geometrically, even though sometimes the process goes extinct.
+\ding{122 } \vskip 6pt
+
+And we found that if $R<1$, the mean geometrically declines to zero.  But the stochastic analysis also
+gave us the fact that the probability of extinction is 1 whenever $R<1$ but also whenever $R=1$.  
+
+The equation $E[Y_{\tau+1}]=RE[Y_\tau]$ clearly shows that the mean goes to zero whenever $R<1$, but on the critical
+case $R=1$ the analysis of the mean alone doesn't give us much insight at all.  Still, $R=1$ is a special boundary case.
+It will often be valuable to just forego analysis of the random nature of the process, and just look at models where
+we have taken some sort of averaging process during the model development itself, leading to a {\it deterministic model}.
+The computational and analytical simplicity (relatively speaking) of such models often makes it worthwhile.
+
+Now: the Galton-Watson analysis always assumed that each case could just make secondary cases from the same distribution, forever,
+till the bitter end of time if necessary.  
+Today's goal is to lift that restriction.  Soon we will need to move on to deterministic models as well as 
+explore continuous time as well.
+
+So let's get started.  Let's consider the idea that the epidemic can ``use up'' susceptibles so to speak.  So we will need
+to keep track of the number of susceptibles.  Let's let $X_{\tau}$ be the number of susceptibles at time $\tau$ and
+$Y_{\tau}$ be the number of infectives.  
+
+In the Galton-Watson model we had each case give rise to a number of secondary cases, and we specified the distribution's
+probability generating function, $g$.  Let's suppose we have the same thing now---almost.  Before felt entitled to just use
+any old distribution we wanted, any count distribution at all supported on $0,1,2,\cdots$.  But this isn't all that great
+now, not now that we are trying to be crystal clear on the issue of the total count of susceptibles.  You can't possibly
+have more new infections than there are susceptibles.  
+
+So let's approach this a different way.  I'll show you one particular approach.
+
+To start with, let's imagine that each case of disease lasts one time period, and that once you recover, you have recovered and
+you are totally immune.  You are totally removed from the epidemic process.  We're still going to follow generations the way
+we did with the Galton-Watson process, but we're going to toss the secondary case distribution $g$ out the window.  Instead,
+focus on the susceptibles.  
+
+What we're going to have is a rule that is going to take the number of susceptibles and infectives now, $X_{\tau}$ and
+$Y_{\tau}$, and generate from them the number of susceptibles and infectives next time, $X_{\tau+1}$ and $Y_{\tau+1}$.
+
+Suppose we have a rule that says that {\it each} infective has a chance $p$ of infecting {\it each} susceptible at any
+time period.  
+
+So what is the chance that a susceptible is infected?  We have $Y$ infectives and each of them has a chance $p$ of doing
+the deed (causing infection).  Remember the binomial risk models we looked at earlier?  The logic is the same: the only
+way to {\it not} get infected is to not get infected by every single infective:
+\[
+P({\hbox{not infected}}) = (1-p)^{Y_{\tau}}
+\]
+So the risk of infection---chance a susceptible DOES get infected---is
+\[
+r_{\tau} = 1-(1-p)^{Y_{\tau}} .
+\]
+This changes over time.  It depends on the number of infectives, which in general is changing.  
+
+Does this make sense?  Let's check special cases.  What if $Y_{\tau}=0$?  We would have $1-(1-p)^0=1-1=0$, so no infectives implies
+no risk.  What if $p=0$?  Now we have $1-(1-0)^Y=1-1=0$; no transmission per infective, no risk.  
+
+So now, there are $X_\tau$ infectives, and each of them is at risk $r$.  We assume independent and identical transmission risks
+from every infective to every susceptible.  So here we have $X$ Bernoulli trials, and each of them independent and identical.
+We know what to do with that:
+\[
+P(Y_{\tau+1} = y) = {X_{\tau} \choose y} r_{\tau}^y (1-r_{\tau})^{X_\tau - y} .
+\]
+and of course
+\[
+X_{\tau+1} = X_{\tau} - Y_{\tau+1} .
+\]
+whatever $Y_{\tau+1}$ happened to be.  
+
+So here we have a simple model of an epidemic that uses up its population.  It's not hard to see that it must die out.
+There are only $X_{0}$ susceptibles; each time unit you either die out or use up at least one susceptible and there are
+only so many and they aren't replaced.  
+
+This particular model is called the {\it Reed-Frost} process in the literature.  
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Assume $Y_{0}=1$, $X_{0}=N-1$.  Compute the expected number
+of secondary cases for a single index case in an otherwise susceptible population.   \ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Suppose you wanted to allow superspreaders in the Reed-Frost model.  How might
+you vary the model to allow this? \ding{122} \vskip 6pt
+
+The Reed-Frost model is an example of a so-called chain binomial model.
+
+Here is some R code to simulate the process.  The function {\tt reed.frost} takes the probability $p$ as the
+first argument, the population size as the second, the initial number of infectives as the third, and finally the
+total amount of time.
+<<>>=
+reed.frost <- function(pp, nn, c1, t.end, cumul.only = FALSE) { 
+  if (t.end > 1000) {
+    stop("t.end too big")
+  }
+  if (t.end <= 0) {
+    stop("negative or zero ending time")
+  }
+  if (c1 < 0 || abs(round(c1) - c1) > 1e-07) {
+    stop("invalid starting number of cases")
+  }
+  if (nn < 0 || abs(round(nn) - nn) > 1e-07) { 
+    stop("invalid population size")
+  }
+  if (pp > 1 || pp < 0) {
+    stop("invalid transmission probability")
+  }
+  if (nn < c1) {
+    stop("more cases than people")
+  }
+  ss <- rep(0, t.end)
+  cc <- rep(0, t.end)
+  cumul <- 0
+  current.cc <- c1
+  current.ss <- nn-c1
+  if (!cumul.only) {
+    cc[1] <- current.cc
+    ss[1] <- current.ss
+  }
+  for (ii in 2:t.end) {
+    rr <- 1-(1-pp)^current.cc
+    current.cc.new <- rbinom(1,size=current.ss,prob=rr)
+    current.ss.new <- current.ss - current.cc.new
+    if (!cumul.only) {
+      ss[ii] <- current.ss.new
+      cc[ii] <- current.cc.new
+    }
+    current.ss <- current.ss.new
+    current.cc <- current.cc.new
+    cumul <- cumul + current.cc.new
+    if (current.cc.new == 0) {
+      if (!cumul.only) {
+        for (jj in (ii+1):t.end) {
+          ss[jj] <- current.ss
+        }
+      }
+      break
+    }
+  }
+  if (cumul.only) {
+    cumul
+  } else {
+    list(susc=ss,cases=cc,cumul.new.cases=cumul)
+  }
+}
+@
+You can call it with the flag {\tt cumul.only}, and have it just tell you how many infections there were.  Othewise, it
+returns a list containing the number of susceptibles over time ({\tt susc}), the number of cases over time ({\tt cases}), and
+the total outbreak size {\tt cumul.new.cases}.  
+
+For fun, here is a function that will average a lot of different runs.  As before, you can either use {\tt cumul.only} to
+get the average final size, or you can average the replications.
+<<>>=
+reed.frost.average <- function(pp,nn,c1,t.end,nreps=1,cumul.only=FALSE) {
+  if (cumul.only) {
+    cumul <- reed.frost(pp,nn,c1,t.end,cumul.only) 
+    for (ii in 2:nreps) {
+      cumul <- cumul + reed.frost(pp,nn,c1,t.end,cumul.only)
+    }
+    cumul/nreps
+  } else {
+    run <- reed.frost(pp,nn,c1,t.end)
+    ss <- run$susc
+    cc <- run$cases
+    if (nreps >= 2) {
+      for (ii in 2:nreps) {
+        run <- reed.frost(pp,nn,c1,t.end)
+        ss <- ss+ run$susc
+        cc <- cc + run$cases
+      }
+    }
+    list(susc=ss/nreps,cases=cc/nreps)
+  }
+}
+@
+
+Let's do a few, with population size 64 say:
+<<>>=
+colrz <- c("black","red","blue","green","cyan","gray","magenta","orange")
+multi.rf <- function(nsims,pp,nn,endtime,pcolors=colrz) {
+  if (nsims<1) {
+    stop("bad nsims")
+  }
+  ans <- reed.frost(pp=pp,nn=nn,c1=1,t.end=endtime) 
+  sims <- list(ans)
+  for (jj in 2:nsims) {
+    sims[[jj]] <- reed.frost(pp=pp,nn=nn,c1=1,t.end=endtime) 
+  }
+  timez <- 1:endtime
+  plot(timez,sims[[1]]$cases)
+  points(timez,sims[[1]]$cases,type="l")
+  for (ii in 2:nsims) {
+    points(timez,sims[[ii]]$cases,col=pcolors[[(ii %% length(pcolors))+1]])
+    points(timez,sims[[ii]]$cases,col=pcolors[[(ii %% length(pcolors))+1]],type="l")
+  }
+}
+multi.rf(nsims=8,pp=1/16,nn=64,endtime=16)
+@
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.}  Repeat the above exercise for the same $p$; can you find an epidemic where it went extinct?  Try it
+for smaller $p$, say for $p=0.01$; try it for $p=1/64$.  Try different 
+population sizes.  What is the longest epidemic you see?  What is the largest epidemic?  How often do you see it drop near zero
+and then have a large epidemic?  Try it dozens of times (but only turn in 3).  You can use the {\tt multi.rf} function.
+\ding{122} \vskip 6pt
+
+\section{Extending the model}
+
+The Reed-Frost process is a simple example of a so-called SIR model, because susceptibles become infective and then
+removed or recovered.  But there is something a little special or unnatural about having the generations keep separated.  
+
+Let's take some steps to remedy this.  How about this: allow, each time period, each infective to recover with probability
+$q$?  Now, you know that you will have a {\it geometric waiting time} until recovery.  We're going to 
+have to write it this way: let $\nu_\tau=\hbox{Binom}(X_\tau,r_{\tau})$ be the random number of new infections.
+\[
+Y_{\tau+1} = \hbox{Binom}(Y_{\tau},1-q) + \nu_\tau ,
+\]
+with
+\[
+X_{\tau+1} = X_\tau - \nu_\tau .
+\]
+
+If we want to keep track of the recovered individuals $Z$, we can do it.  Let $\zeta_\tau = \hbox{Binom}(Y_\tau,q)$.  So
+\[
+X_{\tau+1} = X_\tau - \nu_\tau
+\]
+\[
+Y_{\tau+1} = Y_\tau - \zeta_\tau + \nu_\tau ,
+\]
+\[
+Z_{\tau+1} = Z_\tau + \zeta_\tau  .
+\]
+
+In a moment, we are going to change to time steps of different sizes, and take the limit as the time step becomes
+tinier and tinier.  Before doing this with the epidemic model, let's try it with a simpler model.
+
+Suppose we are just looking at, say, death or recovery.  Let $W(t)$ be the number of people at time $t$.  We might have
+a rule that says that over a time unit, the chance of surviving is $s$.  We could then write
+\[
+W(t+1) = sW(t).
+\]
+We know that the solution is $W(t) = W(0)s^t$.  If we want to change the time step, then we need to reflect on the fact
+that the risk pertains to the length of the time step.  Changing the time step means we need to think of how the risk
+depends on the time step.  
+
+One idea is to suppose that we have a force of mortality $\mu$, which is to say, a hazard.  The risk is given by
+the hazard times the time at risk, so that $1-s = \lambda dt$ for tiny time steps $dt$.  This gives us $s=1-\lambda dt$.
+
+Now, let's rewrite:
+\[
+W(t+dt) = (1-\lambda \, dt)W(t) = W(t) - W(t) \lambda\, dt
+\]
+We rearrange:
+\[
+W(t+dt) - W(t) =  - W(t) \lambda\, dt
+\]
+\[
+\frac{W(t+dt) - W(t)}{dt} =  - W(t) \lambda
+\]
+Now, we can take $dt \rightarrow 0$:
+\[
+\frac{dW}{dt} =  - W \lambda.
+\]
+
+This is a simple differential equation, a relation between an unknown function $W(t)$ and its derivatives.  This one can be
+solved.  The formalities are:
+\[
+\frac{dW}{W} =  - \lambda\, dt .
+\]
+
+\[
+\int \frac{dW}{W} =  \int (- \lambda\, dt) .
+\]
+\[
+\ln W =  - \lambda t + C
+\]
+where $C$ is a constant of integration.
+\[
+W(t)  =  e^{- \lambda t + C} = C' e^{-\lambda t}
+\]
+At the beginning $t=0$, say $W$ is $W(0)$, some starting value.  Substituting,
+\[
+W(0)  =  C' e^{-\lambda 0} = C'
+\]
+so we know what that constant means.  Thus we can write
+\[
+W(t)  =  W(0) e^{-\lambda t}
+\]
+This is exponential decay.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.}  At what time $t^*$ does the value $W(t^*)$ equal half of its starting value $W(0)$, i.e. what is the half-life?
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.}  The solution $e^{-\lambda t}$ gives the probability of survival at time $t$.  If $T$ is the random
+death time for a person, $S(t) = P(T > t) = e^{-\lambda t}$.  Let $F(t)=1-S(t)=P(T \leq t)$ be the cumulative distribution
+function of the time of death, and let $f(t) = F'(t)$ be the {\it density function}.  Find the mean time of death $\int_0^\infty t f(t) dt$.
+  How does this relate to $\int_0^{\infty}S(t)dt$?
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.}  This process can be used to model the decay of a radioisotope.  Suppose the half-life of strontium-90
+is 28.8 years; this is a radioactive isotope produced by nuclear fission and which was released into the atmosphere during
+nuclear testing during the Cold War.  Of the strontium-90 released into the biosphere at the time of the atmospheric test ban
+treaty of 1963, how much is still undecayed?  
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.}  What is the solution of the equation $\frac{dX}{dt} = kX$, where $k>0$?  What does it mean?  Suppose
+an earth mass of well mixed nutrient broth were available for bacterial growth and that bacteria could double every 20 minutes until
+the broth were used up.  Use the doubling time to calculate the growth rate.  How long until the broth were entirely used up?
+\ding{122} \vskip 6pt
+
+Now, we return to the epidemic model.
+Now that we don't have to have the time interval match the length of infection or anything like that, we're free to 
+let it become very small.  Let's keep our head clear though:
+\[
+X_{t+dt} = X_t - \nu_t
+\]
+\[
+Y_{t+dt} = Y_t - \zeta_t + \nu_t ,
+\]
+\[
+Z_{t+dt} = Z_t + \zeta_t  .
+\]
+
+Let's pause a moment.  This model is perfectly legitimate in its own right.  It is a stochastic model in discrete time, and
+it makes sense for small $dt$.  But we're going to move on and not explore it.
+
+It does not make sense to allow the time step to become small, but $p$ to stay the same.  Instead, we're going to assume
+that $p=\beta \/ dt$, so that the transmission probability were proportional to the time at risk.  This does not work if $dt$
+is large.
+
+Now, $\nu_t$ is a random variable.  Let's approximate it with its mean, for a small time step.  This is, at
+least in principle, a huge thing to do, but let's do it.  
+The mean of $\nu$ is $X_t r_t$, but $r=1-(1-p)^{Y_t}$.  But this is $r_t = 1-(1-\beta\/ dt)^Y \approx \beta Y_t\/ dt$.
+So the mean of $\nu_t$ is $\beta X_t Y_t\/ dt$.  So:
+\[
+X_{t+dt} = X_t - \beta X_t Y_t\/ dt .
+\]
+which we could write
+\[
+X_{t+dt} - X_t =  - \beta X_t Y_t\/ dt .
+\]
+Then, dividing by $dt$:
+\[
+{X_{t+dt} - X_t \over dt} =  - \beta X_t Y_t .
+\]
+If we take $dt \rightarrow 0$:
+\[
+{dX \over dt} =  - \beta X Y  .
+\]
+Here, I suppressed the subscript for time, $t$.  We have gone from a discrete quantity, defined at various time steps,
+over to a continuous function of time.
+
+Similarly, we could look at approximating the random variable $\zeta_t$.  
+We could say that the recovery probability $q$ really equals a hazard $\rho$
+times $dt$.  Then the mean of $\zeta_t$ would be $Y_t \rho\/ dt$.
+\[
+Y_{t+dt} = Y_t - Y_t \rho\/ dt + \beta X_t Y_t\/ dt .
+\]
+which becomes
+\[
+Y_{t+dt} - Y_t = - Y_t \rho\/ dt + \beta X_t Y_t\/ dt 
+\]
+and then
+\[
+{Y_{t+dt} - Y_t \over dt} = - Y_t \rho  + \beta X_t Y_t 
+\]
+
+Finally,
+\[
+{dY \over dt} = - Y \rho  + \beta X Y  .
+\]
+
+The equation for $Z$ is
+\[
+{dZ \over dt} =  Y \rho   .
+\]
+At this point, we arrive at what is often called the {\it Kermack-McKendrick model} for an epidemic.  In
+point of fact, the original paper of Kermack and McKendrick featured a fairly involved analysis of a more
+complex system, of which this is just a small special case.  
+
+\begin{framed}
+Kermack-McKendrick model:
+\[
+\frac{dX}{dt} =  - \beta X Y  .
+\]
+\[
+\frac{dY}{dt} =   \beta X Y - \rho Y 
+\]
+\[
+\frac{dZ}{dt} =  \rho Y 
+\]
+\end{framed}
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Let $N=X+Y+Z$.  Assume the Kermack-McKendrick model.  Prove $\frac{dN}{dt}=0$; interpret.
+\ding{122} \vskip 6pt
+
+A couple of things to notice: first, suppose we have a big population $N$, with 1 infective, all else susceptible.  Then
+$X \approx N$.  The second equation is then
+\[
+\frac{dY}{dt} \approx Y \left(\beta N - \rho\right) .
+\]
+If $\beta N - \rho > 0$, then the time derivative of $Y$ is positive.  This means that $Y$ is getting larger over time, right
+at the start.  But if $\beta N - \rho < 0$, $Y$ is decreasing.  This is equivalent to saying if $\beta N/\rho>1$, then $Y$
+increases at the beginning, and if $\beta N/\rho < 1$, then $Y$ decreases at the beginning.  Next time we will see that for
+this model, $\beta N/\rho = R_0$, the basic reproduction number.
+
+Another thing: $\frac{dX}{dt} \leq 0$, always; the number of susceptibles can {\bf never} increase at any instant.  Intuitively,
+you are just using up susceptibles that can never be replaced.  
+
+Let's take a moment to look at what happens to our original cohort of infectives.  Maybe this initial cohort is just $Y=1$, a
+single person.  A single person is kind of hard to interpret in this sort of deterministic model, where we have made $Y$
+a smooth continuous variable that can take any nonnegative value.  (Not only did we go over to continuous time, we also moved
+over to a real valued variable!)  For the {\it original cohort}, 
+\[
+\frac{dY^0}{dt} = - \rho Y^0 .
+\]
+There is no $+ \beta X Y$ or anything {\it right here}, because we're just looking at the original cohort of infectives.
+By definition, they just die away; we don't get any more.  New infectives are not in the original cohort.  Let's solve the
+equation:
+\[
+\frac{dY^0}{Y^0} = - \rho dt
+\]
+Integrate:
+\[
+\int_{t=0}^{t=T}\frac{dY^0}{Y^0} = \int_{t=0}{t=T}(- \rho\/ dt)
+\]
+\[
+\log(Y^0(T))-\log(Y^0(0)) = -\rho(T-0) = -\rho T .
+\]
+\[
+\log(Y^0(T)/Y^0(0)) = - \rho T .
+\]
+\[
+Y^0(T)/Y^0(0) = e^{- \rho T} .
+\]
+\[
+Y^0(T) = Y^0(0) e^{- \rho T} .
+\]
+This is a {\it very important} idea in the big picture.  We found the original cohort {\it decays exponentially}.  As time $T$
+gets larger, $Y^0$ goes to 0.  
+
+Let's figure out how many new cases this first cohort can cause, in the otherwise completely susceptible population.  I need to 
+know the cumulative number of the next generation, the number of people newly infected by this first cohort.  I don't need the
+actual size of the next cohort.  The definition of $R_0$ is the number of new infections caused by an initial infection in an
+otherwise susceptible population.  So: the number of {\it new} infectives resulting from the initial cohort follows
+\[
+\frac{dU}{dt} = \beta X Y^0 .
+\]
+But we're going to take $X \approx N$; that one infective shouldn't make much of a dent in $X$, at the beginning.  So
+\[
+dU = \beta N Y^0 dt .
+\]
+We know $Y^0(t) = Y^0(0) e^{- \rho t}$:
+\[
+dU = \beta N Y^0(0)e^{-\rho t} dt .
+\]
+Integrate:
+\[
+\int_{t=0}{t=\infty} dU = \beta N Y^0(0) \int_0^{\infty}e^{-\rho t} dt .
+\]
+So:
+\[
+U(\infty) - U(0) = \beta N Y^0(0) \int_0^{\infty}e^{-\rho t} dt .
+\]
+How many people have been cumulatively infected by the first generation of infectives at the beginning of the epidemic?  None,
+by definition.  So $U(0)=0$, and
+\[
+U(\infty) = \beta N Y^0(0) \int_0^{\infty}e^{-\rho t} dt .
+\]
+Now, we need to do the integral.  Let $w=-\rho t$, so $dw=-\rho dt$ and the limits of integration become $w=0$ to $w=-\infty$:
+\[
+U(\infty) = \beta N Y^0(0) \frac{1}{-\rho} \int_0^{-\infty}e^{w} dw .
+\]
+We know that the integral of $e^w$ is $e^w$, so
+\[
+U(\infty) = \beta N Y^0(0) \frac{1}{-\rho} (e^{-\infty}-e^0) = \beta N Y^0(0)\frac{1}{-\rho}(0-1) = \frac{\beta N Y^0(0)}{\rho} .
+\]
+If $Y^0(0)=1$, representing a single infective, we have
+\[
+U(\infty) = \frac{\beta N}{\rho} .
+\]
+So: a single infective, in an otherwise wholly susceptible population, will result in $\frac{\beta N}{\rho}$ new infections, and
+so this is why we can write $R_0=\beta N/\rho$ for this model.
+
+Every model will have different assumptions, and a different calculation for the basic reproduction number will have to be done.
+There is no single formula that just works for every model.  The initial group of infectives dies away, but on the way, they
+cause a certain number of new infections.
+
+Continuing then, with our analysis, we can see that
+intuitively, in the far future, you just shouldn't have any infectives.  The ones you started with decay away; new infectives
+enter the $Y$ box and are subject to the same process, and there are only a finite fixed number of people who can ever enter $Y$
+anyway.  Epidemiologically, our instinct is that this process has to quieten down in the far future with no infections, but
+how do we know {\it these equations} actually behave that way?  Well, we'll see next time.  For the moment, however, please
+take for granted that in the far future, $Y=0$ and $dY/dt=0$.  
+
+We have $\frac{dX}{dt} = - \beta X Y$.  So $Y=-\frac{1}{\beta X}\frac{dX}{dt}$.  So
+\[
+\frac{dZ}{dt} = \rho Y = - \frac{\rho}{\beta X}\frac{dX}{dt} .
+\]
+Integrate both sides:
+\[
+\int_{t=0}^{t=T} \frac{dZ}{dt} = \int_{t=0}^{t=T}\left( - \frac{\rho}{\beta}\frac{dX}{dt} \right)
+\]
+\[
+Z(T) - Z(0) =  - \frac{\rho}{\beta} (\log(X(T))-\log(X(0))) .
+\]
+Assume there weren't any recovered/removed people at the beginning: $Z(0)=0$.  
+ 
+Also, now divide both sides by $N$, the population size:
+\[
+Z(T)/N =  - \frac{\rho}{\beta N} (\log(X(T))-\log(X(0))) .
+\]
+Call $Z(T)/N = z(T)$, the fraction who are removed.  This is the fraction who were infected at some time.
+\[
+z(T) =  - \frac{1}{R_0} \log(X(T)/X(0)) .
+\]
+Rearrange a bit:
+\[
+- R_0 z(T) =  \log(X(T)/X(0)) .
+\]
+Then:
+\[
+e^{- R_0 z(T)} =  X(T)/X(0)
+\]
+Let's also assume this: $X(0) \approx N$, so we're looking at basically everybody being susceptible at the beginning.  We could
+write $X(T)/N = x(T)$ as the fraction susceptible.
+\[
+e^{- R_0 z(T)} =  x(T)
+\]
+Let's go to the far future: $T \rightarrow \infty$:
+\[
+e^{- R_0 z(\infty)} =  x(\infty)
+\]
+In the far future, you are either still susceptible, or recovered/removed, so $x(\infty)=1-z(\infty)$:
+\[
+e^{- R_0 z(\infty)} =  1-z(\infty) .
+\]
+And so
+\[
+z(\infty) = 1- e^{- R_0 z(\infty)} .
+\]
+This is quite a strange formula in some ways.  Think of it this way: we had $Z(\infty)$ people who were infected.  They may
+not be infected at the end of time; they're removed.  But they were infected at some point, or they wouldn't be $Z$s.  Each
+person can infect $R_0$ other people in a fully susceptible population.  So we had, all together, the capability of infecting
+$Z(\infty) R_0$ people.  This much ``infection capability'' is spread over $N$ people, so you have an average of $z(\infty)R_0$
+exposures per person.  Thinking of this as though these were distributed according to the Poisson distribution, the chance of
+having no ``hits'' or exposures is $e^{-z(\infty)R_0}$.  The chance of having at least one such hit or exposure (one or more 
+= {\bf not zero}) is then
+$1-e^{-z(\infty)R_0}$.  So that is the fraction that ought to have been infected, and sure enough, the formula tells us that
+$z(\infty)=1-e^{-z(\infty)R_0}$.  
+
+This classic formula goes way back, and seems strange when you first see it.  But it does relate the basic reproduction number
+$R_0$ to the final attack size of a simple epidemic.  This {\bf does} include exhaustion of susceptibles over the course of 
+the epidemic, but it does not include other sources of change in transmission.  It still assumes the people are mixing randomly
+and so on, so it is really only the first word, and not the last.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Suppose that an epidemic of asymptomatic infection in a well-mixed population occurs, and that
+later it is discovered through serological studies that 75\% of the population contracted the epidemic.  Assume the epidemic
+ended when susceptibles were exhausted.  Use the final value formula above to calculate what $R_0$ would have been.  You will have
+to numerically try different values.
+\ding{122} \vskip 6pt
+
+You will have to have the package {\tt deSolve} installed in your R.  Email if you have trouble with this.
+
+<<>>=
+require(deSolve)
+km <- function(t,sys,params) {
+  dsys <- sys[]
+  c1 <- params[["beta"]] * sys[1] * sys[2]
+  c2 <- sys[2]*params[["rho"]]
+  dsys[1] <- -c1
+  dsys[2] <- c1-c2
+  dsys[3] <- c2
+  list(dsys,NULL)
+}
+dosim <- function(pars,init,endtime) {
+  tmp <- lsoda(init,seq(0,endtime,length=512),km,pars)
+  ans <- as.data.frame(tmp)
+  names(ans) <- c("time","X","Y","Z")
+  ans 
+}
+u <- dosim(pars=c(beta=0.001,rho=0.1),init=c(1999,1,0),endtime=40)
+kmplot <- function(kmout) {
+  plot(u$time,u$X,col="black",type="l")
+  points(u$time,u$Y,col="red",type="l")
+  points(u$time,u$Z,col="blue",type="l")
+}
+kmplot(u)
+@
+With the parameters I gave, $N=2000$, and $R_0=0.001*2000/0.1=20$.  We see an explosive epidemic that happens on the order of the
+timescale of a single infectious lifetime.  In the plot, black is susceptible, red is infective, and blue is recovered.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Play with the Kermack-McKendrick epidemic; vary $\beta$, vary $\rho$, vary $N$.  To vary $N$, just change
+the sum of the number of people you use in {\tt init}.  You can do all your explorations as one-liners:
+\begin{verbatim}
+kmplot(dosim(pars=c(beta=0.001,rho=0.1),init=c(1999,1,0),endtime=40))
+\end{verbatim}
+where you just change $\beta$, $\rho$, etc.  Do a bunch of them; make sure you look at one with $R_0<1$ and one with $R_0$ around 2 or so.
+Only turn in 3 graphs.
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} How long did this assignment take you?  
+\ding{122} \vskip 6pt
+
+\vfill
+\end{document}
+

@@ -1,0 +1,1174 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\setlength{\parindent}{0.6cm}
+
+\begin{document}
+
+\section*{Mathematical modeling of infectious diseases, lecture 19}
+
+\renewcommand{\baselinestretch}{1.259921} \small\normalsize
+
+\section*{Introduction}
+In this lecture, we'll take a selective look at some deterministic compartment
+models that have appeared in the literature.
+Needless to say, only a tiny fraction of the thousands of epidemic modeling papers can be looked at
+here, and the selection is not even remotely comprehensive or objective.  The purpose here is to 
+illustrate several different approaches to modeling disease using classical compartmental models.
+
+\newcounter{exercount}
+\setcounter{exercount}{1}
+
+\section*{Examples}
+
+\subsection*{A simple SI model}
+One of the simplest epidemic models is called an SI, for susceptible-infective.  We will start with a
+closed population of individuals who are either susceptible, or infective.  Like all compartment models, we
+are treating the number of cases as a continuous variable, not as a discrete counting process.  For large
+numbers the approximation is reasonable.  We are also neglecting stochastic variability, an important feature
+of realistic systems when the numbers are small.  This is a standard derivation.
+
+In this model, we are going to assume that the hazard for infection $\lambda$ is proportional to the number of cases.
+In other words, if $Y(t)$ is the number of cases at time $t$, we can write $\lambda(t)=\beta Y(t)$.  (In these
+notes I'm not going to be particular about whether or not we explicitly write down time dependence or not.)
+Letting $X$ be the number of susceptibles, we then have
+\[
+X(t+\Delta\,t) = X(t) - X(t) \lambda(t) \Delta\,t + o(\Delta t)
+\]
+As before, this leads to
+\[
+\frac{X(t+\Delta\,t) - X(t)}{\Delta \,t} = - \lambda(t) X(t) + o(\Delta t) .
+\]
+Taking the limit as $\Delta\,t \rightarrow 0$, we get
+\[
+\frac{dX}{dt} = - \lambda(t) X .
+\]
+But here, we already assumed $\lambda = \beta Y$.
+Therefore,
+\[
+\frac{dX}{dt} = - \beta X Y .
+\]
+
+For many models, there's not much else to do at this point.  Here, though, we have a closed population, and
+everybody that is not susceptible is infected.  And there's no way out of the population; we're neglecting
+death---reasonable for a nonfatal disease on a short time scale.  So if $N=X+Y$ is actually constant, then
+\begin{equation}
+\label{eq:logisttime}
+\frac{dX}{dt} = - \beta X (N-X).
+\end{equation}
+
+Let's check this equation for dimensional consistency.  On the left, we have a mathematical quantity representing the number of
+people per unit time.  It is quite convenient to consider ``persons'' to have dimensions $\mbox{\rm PERSON}$, rather than thinking
+of this as a dimensionless pure count.  So the dimensions on the right can be written $\mbox{\rm PERSON~TIME}^{-1}$.  Time is in
+the denominator, since this is a number of people per time.  Now, on the right, we have $\beta$, whose dimensions we don't know
+yet, multiplied by $X (N-X)$.  We will write the dimensions of $\beta$ as $[\beta]$.
+The product $X (N-X)$ must have dimensions $\mbox{\rm PERSON}^2$, since we are multiplying two
+quantities each of which has dimension $\mbox{\rm PERSON}$.  So we can write a dimensional equation
+\[
+\mbox{\rm PERSON~} \mbox{\rm TIME}^{-1} = [\beta] \, \mbox{\rm PERSON}^2 .
+\]
+We can cancel a $\rm PERSON$ off of both sides, so that
+\[
+\mbox{\rm TIME}^{-1} = [\beta] \mbox{\rm PERSON} .
+\]
+Rearranging,
+\[
+[\beta] = \mbox{\rm TIME}^{-1} \, \mbox{\rm PERSON}^{-1} ,
+\]
+showing that $\beta$ has dimensions of reciprocal person-time.  This makes perfect since, since $\beta$ is in fact a hazard rate per infective.
+
+Equation~\ref{eq:logisttime} turns out to be an example of the {\it logistic differential equation}, and it actually can be solved analytically.  Let's go through it.  The equation is nonlinear, but it is {\it separable}:
+\[
+\frac{dX}{X(N-X)} = - \beta dt .
+\]
+The standard technique of {\it partial fractions} works here: 
+\[
+\frac{1}{X(N-X)} = \frac{A}{X} + \frac{B}{N-X} = \frac{AN - AX + BX}{X(N-X)} .
+\]
+The only way this can possibly be true for every $X$ is if $A=B$:
+\[
+\frac{1}{X(N-X)} = \frac{AN}{X(N-X)} .
+\]
+Then we're going to need $A=1/N$, so then
+\[
+\frac{dX}{X(N-X)} = \frac{dX}{NX} + \frac{dX}{N(N-X)} .
+\]
+So now we have
+\[
+\frac{dX}{NX} + \frac{dX}{N(N-X)} = - \beta dt .
+\]
+Integrating:
+\[
+\int \frac{dX}{NX} + \int \frac{dX}{N(N-X)} = - \beta t + C ,
+\]
+where $C$ is the constant of integration, which will be determined by the initial conditions.  We'll get
+more constants on the left side also, but we'll just lump them all together as $C$.
+So
+\[
+\frac{1}{N} \log(X) - \frac{1}{N} \log(N-X) = - \beta t + C .
+\]
+Rearranging:
+\[
+\log(X) - \log(N-X) = - \beta N t + C .
+\]
+Note that here $\log$ is always the {\it natural} log. Also,
+remember: $C$ is an arbitrary constant of integration. When I multiply it by $N$ I get $CN$, which I could
+just rename $C$.  So $C$ changed its meaning here, which is more or less traditional when working with
+these arbitrary constants of integration.  An unknown constant multiplied by something is another 
+unknown constant.
+The next step is to use the property of the logarithm:
+\[
+\log(X) + \log\left(\frac{1}{N-X}\right) = - \beta N t + C .
+\]
+Then since the log of a product is the sum of the logs, 
+\[
+\log\left(\frac{X}{N-X}\right) = - \beta N t + C .
+\]
+If we imagine sampling a person at random from the population, we can recognize this functional form:
+it says the log of the odds of staying susceptible are linearly decreasing with time.  So while this isn't
+logistic regression, you see the appearance of the logistic functional form.  Now,
+exponentiate both sides:
+\[
+\frac{X}{N-X} = C e^{- \beta N t} ,
+\]
+where now the new $C$ is the exponential of the old one.  Note that if we think of sampling a person at
+random from the population, the quantity on the left is the odds of not being infected yet.  Now we've
+learned something: the odds of not being infected declines exponentially to zero.  This is as good a time
+as any to deal with the constant of integration. At time 0, 
+\[
+\frac{X(0)}{N-X(0)} = C .
+\]
+So now
+\[
+\frac{X}{N-X} = \frac{X(0)}{N-X(0)} e^{- \beta N t} .
+\]
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show
+\begin{equation}
+\label{eq:logistepi}
+X(t) = \frac{NX_0e^{-\beta N t}}{N-X_0+X_0e^{-\beta N t}} 
+\end{equation}
+where we wrote $X_0=X(0)$.  Substitute this into the differential equation and verify that the equation
+is satisfied.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show that in the long run, as $t \rightarrow \infty$, $X(t) \rightarrow 0$.  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show that as $\beta \rightarrow 0$, $X(t) \rightarrow X(0)$. 
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Assume $X(0) < N/2$. At what time does half the population become infected?
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Show in Equation~(\ref{eq:logistepi}) that if $X_0 \ll N$ (i.e., there are very few susceptibles left), the
+susceptibles decline approximately exponentially, and find the rate.  Let $Y_0=N-X_0$, and show that
+\[
+Y(t) = \frac{NY_0}{Y_0 + (N-Y_0)e^{-\beta N t}} .
+\]
+Assume $Y_0 \ll N$ and show that for small $t$, the increase in the number of cases is approximately
+exponential, and find the doubling time.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+We're going to explore the waiting time distribution for a susceptible individual during this logistic
+epidemic.
+In general, a random variable whose cumulative distribution function $F(x) = \frac{1}{1+e^{-x}}$ is 
+called a standard logistic random variable.  (a) Prove that the mean of the standard logistic distribution
+is zero.  (b) Prove that the variance of the standard logistic distribution is $\pi^2/3$.  (c) The general
+logistic distribution has cumulative distribution function
+\[
+F(x) = \frac{1}{1+e^{-(x-\mu)/\sigma}} .
+\]
+Prove that the expected value is $\mu$ and that the variance is $\frac{\pi^2}{3}\sigma^2$.  (d) Let
+$Y$ be a nonnegative random variable whose distribution function is the distribution of a logistic
+random variable conditional on being nonnegative.  Show this is
+\[
+F(y) = \frac{e^{y/\sigma}-1}{e^{\mu/\sigma} + e^{y/\sigma}} 
+\]
+for $y>0$.  Prove that this function is always positive when $y>0$, and that it is always increasing.
+(e) Show that the mean of $Y$ is
+\[
+EY = \sigma e^{-\mu/\sigma} (1+e^{\mu/\sigma}) \log\left(1+e^{\mu/\sigma}\right) .
+\]
+(f) Use Equation~(\ref{eq:logistepi}) to derive the survival function (with respect to infection) of
+an individual susceptible during a logistic epidemic.
+(g) Use the result in (f) to find the
+expected waiting time to infection for a susceptible during a logistic epidemic.  Show that your result
+is reasonable by exploring the behavior in special cases.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Change the model to read
+\begin{equation}
+\label{eq:logisttime2}
+\frac{dX}{dt} = - \beta' X (N-X)/N.
+\end{equation}
+What is the relationship between $\beta$ from before (Equation~\ref{eq:logisttime}), and $\beta'$?  Substitute $\beta=\beta'/N$ into
+Equation~(\ref{eq:logistepi}) to derive the analytic solution.  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Continue with the model in the form
+\[
+\frac{dX}{dt} = - \beta' X (N-X)/N.
+\]
+Rewrite this equation
+as a differential equation for the fraction $x=X/N$ susceptible, and use the analytic solution 
+Equation~(\ref{eq:logistepi}) to derive the solution for the fraction susceptible.  Note that $\beta'$ is
+often written $\beta$ in the literature. 
+ 
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+In Equation~\ref{eq:logisttime2}, what are the dimensions of $\beta'$?  {\it Ans.} $\mbox{\rm TIME}^{-1}$.
+
+\small
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Consider modifying the incidence term to a more general power law:
+\[
+\frac{dX}{dt} = - \beta^* X (N-X)^{\alpha}.
+\]
+Suppose $0 < \alpha \leq 1$. What sort of epidemiological reality might be modeled this way?  Let $x=X/N$
+be the susceptible fraction.  Rewrite this equation as
+\[
+\frac{dx}{dt} = - \beta x (1-x)^{\alpha} .
+\]
+How does $\beta$ relate to $\beta^*$?  What is $dx/dt$ when $x=0$, or $x=1$? Is it possible for $x$ to
+become negative or to exceed 1?
+(b) Separate variables to yield
+\[
+\frac{dx}{x(1-x)^{\alpha}} = - \beta dt .
+\]
+Then write
+\[
+\int \frac{dx}{x(1-x)^{\alpha}} = - \beta t + C .
+\]
+(c) Use a table of integrals or a computer mathematics package (such as Maple or Mathematica) to evaluate
+the difficult integral, and find that in general
+\[
+\frac{(1-x)^{1-\alpha}}{1-\alpha} {}_2F_1(1-\alpha,1;2-\alpha;1-x) = \beta t + C .
+\]
+Here, ${}_2F_1$ denotes a {\it hypergeometric function}, another one of those functions which comes up
+from time to time. It's not as common as say the exponential or the trigonometric functions, but you see
+it once in a while.  Also, I have {\it not} dropped a minus sign on the right hand side.  Now when
+$\alpha=1/2$, the hypergeometric function simplifies into an expression involving the hyperbolic arctangent and square
+root, but we have no such luck in general.  We just have to deal with it, unpleasant as it might seem---this
+is the sort of thing that can come up in real-world problems if you can get an analytic solution at all.
+(d) Now, set $t=0$ and solve for the constant. Then find
+\begin{equation}
+\label{eq:pwrso}
+\frac{(1-x(t))^{1-\alpha}}{1-\alpha} {}_2F_1(1-\alpha,1;2-\alpha;1-x(t)) = \beta t + \frac{(1-x_0)^{1-\alpha}}{1-\alpha} {}_2F_1(1-\alpha,1;2-\alpha;1-x_0) 
+\end{equation}
+Now there's a fairly large industry of special properties of the hypergeometric function, but let's just
+look at it numerically. \newline
+(e) Install the \verb+gsl+ package into your version of R, and load it.  Let's pick $\alpha$ of 0.2 and an $x$ of 0.3, and evaluate the hypergeometric function:
+<<>>=
+require(gsl)
+hyperg_2F1(1-0.2,1,2-0.2,1-0.3)
+@
+You should get 1.623281.
+Now we're going to write an R function to evaluate the above equation, and solve for the value of $x$ as
+a function of $t$.  Remember all we were able to get out of the analytic solution is how to get what time
+you get to a certain $x$.
+<<>>=
+pwrepi.1 <- function(tt,alpha,beta,x0,cc,xmin=0.000001) {
+  fn <- function(xx) {
+    (((1-xx)^(1-alpha))/(1-alpha))*hyperg_2F1(1-alpha,1,2-alpha,1-xx) - beta*tt-cc
+  }
+  uniroot(f=fn,interval=c(xmin,1))$root
+}
+pwrepi <- function(tt,alpha,beta,x0) {
+  ans <- rep(NA,length(tt))
+  cc <- ((1-x0)^(1-alpha) / (1-alpha)) * hyperg_2F1(1-alpha,1,2-alpha,1-x0)
+  for (ii in 1:length(tt)) {
+    ans[ii] <- pwrepi.1(tt[ii],alpha,beta,x0,cc)
+  }
+  ans
+}
+@
+Let's try it. We'll pick $\alpha$ of 0.2 and $\beta$ of 0.5, and start with 1\% of the population
+infected (99\% uninfected).
+<<>>=
+tt <- seq(0,20,by=0.1)
+xs <- pwrepi(tt,0.2,0.5,0.99)
+@ 
+\begin{figure}
+\caption{\label{fig:ans1}Simple SI epidemic with power law incidence curve with $\beta=0.5$, $\alpha=0.2$.}
+\centering
+<<fig=true>>=
+plot(tt,1-xs,type="l",xlab="Time",ylab="Fraction infected",col="red")
+@
+\end{figure}
+Experiment with this; you'll find the numerical search failing occasionally. Can you fix it?\newline
+(f) Let's now try to solve the ordinary differential equation numerically from the outset:
+<<>>=
+require(odesolve)
+pwrepi.ode <- function(t,y,pars) {
+  list(c(-pars[1]*y[1]*(1-y[1])^(pars[2])),NULL)
+}
+ans1 <- lsoda(c(0.99),tt,pwrepi.ode,c(0.5,0.2))
+@
+Add these points to the plot you just got for the analytic solution, and compare. Experiment with different
+values of beta and alpha.  Can you think of a way to make the code clearer and more readable? Is it obvious
+which parameter is the initial condition, which is beta, and which is alpha?  Produce a plot with the fraction infected beginning at 0.001 each time, but have different values of $\alpha$. \newline
+(g) {\it Optional.}~~This is to introduce you to a standard reference book on topics involving
+special functions, and to working a bit with them. Return to Equation~(\ref{eq:pwrso}), and substitute $a=1-\alpha$ and $y=1-x$, to obtain
+\[
+\frac{y^a}{a}\, {}_2F_1(a,1;a+1;y) = \beta t + \frac{y_0^a}{a}\, {}_2F_1(a,1;a+1;y_0) .
+\]
+Assume $a=1/2$, and
+use the following fact (Abramowitz and Stegun, Equation 15.1.5, page 556)
+\[
+{}_2F_1(a,b;c;-z^2) = \frac{\arctan z}{z} 
+\]
+to show
+\[
+\frac{\sqrt{y}}{1/2}\, {}_2F_1(\frac{1}{2},1;\frac{3}{2};y) = -2 i \arctan\left(i \sqrt{y}\right) ,
+\]
+with $i=\sqrt{-1}$.  Now use this fact (Abramowitz and Stegun, Equation 4.6.16, page 87):
+\[
+\mbox{\rm arctanh}(z) = - i \arctan(iz)
+\]
+to get
+\[
+\frac{\sqrt{y}}{1/2}\, {}_2F_1(\frac{1}{2},1;\frac{3}{2};y) = 2 \arctan\left(\sqrt{y}\right) .
+\]
+(Some computer algebra packages can do reductions like this for you automatically.)
+Now we have
+\[
+2 \arctan\left(\sqrt{y}\right) = \beta t + 2 \arctan\left(\sqrt{y_0}\right) .
+\]
+This you can actually solve for $y$:
+\[
+y(t) = \tanh^2\left(\frac{\beta t}{2} + \mbox{\rm arctanh}\left(\sqrt{y_0}\right)\right) .
+\]
+Use R to numerically explore this solution for $\beta=0.5$ and $y_0=0.01$.  An example solution of this
+is given in Figure~\ref{fig:atanh}.
+\begin{figure}
+\caption{\label{fig:atanh}Simple SI epidemic with power law incidence curve with $\beta=0.5$, $\alpha=0.5$.}
+\centering
+<<fig=true>>=
+ans1a <- lsoda(c(0.99),tt,pwrepi.ode,c(0.5,0.5))
+plot(tt,1-ans1a[,2])
+points(tt,tanh(0.5*tt/2 + atanh(sqrt(0.01)))^2,col="red",type="l")
+@
+\end{figure}
+Some authors refer to a nonnegative random variable whose CDF has the form
+\[
+F(x) = \tanh^m \left(a+bx\right)^n 
+\]
+for $0 < a+bx$, and $F(x)=0$ otherwise, as a {\it hyperbolic tangent random variable} (Blickle et al, 1998).
+Use a table of integrals to determine the mean when $n=1$ and $m=2$.  Use the probability integral
+transform to generate random samples from the distribution of infection times in the simple SI epidemic
+with $\alpha=0.5$.\newline
+(h) {\it Optional.}  For part (f), numerically integrate the survival function for uninfected individuals for a given
+value of $\beta$ and $x_0$ to find the expected waiting time as $\alpha$ varies, and plot the result. Check
+the special cases $\alpha=0.5$ (see part (g)) and $\alpha=1$ to make sure your numerical results agree with
+the formulas in these known cases. \newline
+(i) {\it Optional.}  Consider the SI model with incidence rate $\beta X f(Y)$.  Assume $f(Y)$ is piecewise differentiable and monotone decreasing, with $f(0)>0$.  Find necessary and sufficient conditions on $f$ such that
+$\lim_{t \rightarrow \infty} y(t) < 1$. 
+
+\normalsize
+
+\subsection*{A simple SI model, with turnover}
+The SI model with no turnover, as we just explored, is unrealistic. Since each infective lasts forever,
+in the long run, each and every individual must become infected as long as there is any possibility of
+transmission from the infectives.  Let $X$ be the number of susceptibles and $Y$ be the number of infectives;
+let $\mu$ be a per-capita force of mortality, let $\beta$ be the transmission parameter and let $\Lambda$ be
+a constant inflow rate of uninfected people. 
+\begin{equation}
+\label{eq:siturnx}
+\frac{dX}{dt} = \Lambda - \beta X Y/N - \mu X  ,
+\end{equation}
+\[
+\frac{dY}{dt} =  \beta X Y/N - \mu Y ,
+\]
+together with $X+Y=N$.  Here, we chose the bilinear incidence term with $N$ in the denominator.  It is
+quite possible to analyze this system with an incidence term $\beta X Y$---in fact, with $N$ constant, it
+is exactly the same if we just redefine $\beta$.  
+Just to be careful, let's agree that if $N=X+Y=0$, $dX/dt=\Lambda$ and $dY/dt=0$.  
+
+Let's look at the dimensions of this system.  The dimensions on the left side of any equation must equal the dimensions
+on the right hand side.  And we cannot add quantities of different dimensions, so the equations can only be dimensionally
+consistent if each term being added has the same dimension.  Looking at Equation~\ref{eq:siturnx}, we see that $\Lambda$, the inflow rate, must have the same dimensions
+as $\frac{dX}{dt}$, i.e., $\mbox{\rm PERSON}\,\mbox{\rm TIME}^{-1}$.  The second term, $\beta X Y/N$, must also have 
+dimensions $\mbox{\rm PERSON}\,\mbox{\rm TIME}^{-1}$.  Since the factor $Y/N$ has dimensions $\mbox{\rm PERSON} \, \mbox{\rm PERSON}^{-1}$, it is in fact dimensionless since the numberator dimensions cancel the denominator dimensions.  So $\beta X$ must have
+dimensions $\mbox{\rm PERSON}\,\mbox{\rm TIME}^{-1}$ by itself, and so $\beta$ has dimensions $\mbox{\rm TIME}^{-1}$.  Finally, 
+$\mu$ must have dimensions $\mbox{\rm TIME}^{-1}$ also.
+
+It is often useful to represent simple systems in dimensionless form, a process described in numerous books.  Let's try it here.  We
+could define $\theta$ to be our dimensionless time variable, by $\theta = \mu t$.  Now, since $\mu$ has dimensions of $\mbox{\rm TIME}^{-1}$ and $t$ of $\mbox{\rm TIME}$, $\theta$ is dimensionless.  We don't know yet whether this is the best natural scale of time;
+we could also try using $\theta' = \beta t$ for all we know---sometimes you have try different things to see what is simplest.  What
+will we pick to scale people here?  We only have three parameters in the model: $\Lambda$, $\beta$, and $\mu$.  Of these, only
+$\Lambda$ involves $\mbox{\rm PERSON}$, since the dimensions of $\Lambda$ are $\mbox{\rm PERSON}\,\mbox{\rm TIME}^{-1}$.  Thus,
+we could pick either $\Lambda/\mu$ or $\Lambda/\beta$ as the natural scaling for person variables.  Since we've already scaled
+time by $\mu$, let's pick $\Lambda/\mu$.  So let $X = \xi \Lambda/\mu$, where $\xi$ is our dimensionless person variable for $X$, and
+let's let $Y = \eta \Lambda/\mu$.  
+
+So what is $d\xi/d\theta$?  A bit of substitution gives 
+\[
+\frac{d\xi}{d\theta} = \frac{1}{\Lambda} \frac{dX}{dt}
+\]
+and
+\[
+\frac{d\eta}{d\theta} = \frac{1}{\Lambda} \frac{dY}{dt} .
+\]
+Thus,
+\[
+\frac{d\xi}{d\theta} = 1 - \frac{\beta}{\Lambda} \frac{X Y}{X + Y} - \frac{\mu}{\Lambda} X .
+\]
+Substituting $X$ and $Y$,
+\begin{equation}
+\label{eq:xieq1}
+\frac{d\xi}{d\theta} = 1 - \frac{\beta}{\mu} \frac{\xi \eta}{\xi + \eta} - \xi 
+\end{equation}
+and
+\begin{equation}
+\label{eq:etaeq1}
+\frac{d\eta}{d\theta} = \frac{\beta}{\mu}\frac{\xi \eta}{\xi + \eta} - \eta .
+\end{equation}
+
+Now that we've represented the system in dimensionless form, let's look at its behavior.
+As we shall see, this system has sharply different behavior than the SI model without turnover.  The first step toward
+understanding this system can be understanding its equilibria.  So let's set $d\xi/d\theta=0$ and $d\eta/d\theta=0$, and try
+to find the specific values of $\xi^*$ and $\eta^*$:
+\begin{equation}
+\label{eq:xieq}
+0 = 1 -  \frac{\beta}{\mu} \frac{\xi^* \eta^*}{\xi^* + \eta^*} - \xi^* 
+\end{equation}
+and 
+\begin{equation}
+\label{eq:etaeq}
+0 = \frac{\beta}{\mu}\frac{\xi^* \eta^*}{\xi^* + \eta^*} - \eta^* .
+\end{equation}
+Beginning with Equation~\ref{eq:etaeq}, we can divide both sides by $\eta^*$ {\it assuming it is not zero}.  So we have
+either $\eta^*=0$ or $\eta^*>0$ and 
+\begin{equation}
+\label{eq:xiint}
+\frac{\beta}{\mu}\frac{\xi^*}{\xi^* + \eta^*} - 1 = 0 .
+\end{equation}
+Therefore,
+\[
+\eta^* = \big(\frac{\beta}{\mu} - 1\big) \xi^* ,
+\]
+which will only make sense provided $\beta/\mu > 1$.
+
+Now, let's go back to Equation~\ref{eq:xieq} and substitute in the possibilities for $\eta^*$.  If $\eta^*=0$, then
+\[
+\xi^* = 1 .
+\]
+So that is our first equilibrium solution: we found the {\it no disease} equilibrium $\eta^*=0$ and $\xi^*=1$.  Since $X=\xi \Lambda/\mu$, the equilibrium value of actual $X$ is $\Lambda/\mu$ (which we have already seen from the immigration-death process).
+The other possibility is $\eta^* = (\beta/\mu - 1)\xi^*$.  We can avoid a lot of arithmetic by just substituting Equation~\ref{eq:xiint} into Equation~\ref{eq:xieq}, giving us
+\[
+1 - \xi^* - \eta^* = 0 .
+\]
+Substituting $\eta^* = (\beta/\mu - 1)\xi^*$ into this gives
+\[
+1 - \frac{\beta}{\mu} \xi^* + \xi^* - \xi^* = 0 
+\]
+and finally
+\[
+\xi^* = \big(\frac{\beta}{\mu}\big)^{-1} .
+\]
+
+The choices we made in nondimensionalizing the system were helpful.  Note that at the endemic equilibrium (when there is disease
+present), the population size is in fact equal to $\Lambda/\mu$ in this model.  Since the disease causes no mortality, the total
+population size with and without the disease are the same.  And since $\Lambda/\mu$ was our population unit (we represented the
+nondimensional population size in terms of this quantity), the equations were simplified.  The quantity $\beta/\mu$ arose
+naturally as well; whenever $\beta/\mu>1$ there can be an endemic equilibrium, and otherwise, not.  Notice that $\beta/\mu$ is
+dimensionless, as of course it must be if it is to be compared to 1.  
+
+Now, $\beta$ has dimensions of reciprocal time, so it must be possible to somehow interpret it as a rate, or frequency, or something
+like that.  What is it the rate of?  Looking back at Equation~\ref{eq:siturnx}, the number of individuals per unit time becoming
+infected is $\beta X Y / N$.  If $Y \ll N$ and so $X \approx N$, we can see that the incidence rate would be $\beta Y$.  In other
+words, $\beta$ is the rate at which one infective produces infections in a completely susceptible population.  And since 
+$1/\mu$ is the expected duration of infection, $\beta/\mu$ is the expected number of new infections produced by a single infective
+in a completely susceptible population.  By definition, the expected number of new infections produced by a single infective
+in a completely susceptible population is called the {\it basic reproduction number}, so {\it for this model}, the basic
+reproduction number is $\beta/\mu$.  The basic reproduction number is conventionally denoted $R_0$, so
+\[
+R_0 = \frac{\beta}{\mu}
+\]
+{\it for this model}.
+So if $R_0>1$, there is both a no-disease equilibrium and an endemic equilibrium.  If $R_0<1$, there is only a no-disease
+equilibrium.  We're omitting any discussion of $\beta/\mu=1$ exactly, since it is unlikely these parameters will balance so
+perfectly in practice.
+
+We're nowhere near done.  All we've done is find some very special solutions to Equations~(\ref{eq:xieq1}) and~(\ref{eq:etaeq1}),
+solutions constant in time given the appropriate initial conditions.  Really, we just want to know what the time behavior of
+the system is given initial conditions.  Let's take a look at the conditions under which $d\xi/d\theta=0$; set
+\begin{equation}
+\label{eq:xiiso}
+\frac{d\xi}{d\theta} = 1 - \frac{\beta}{\mu} \frac{\xi \eta}{\xi + \eta} - \xi = 0.
+\end{equation}
+Now this ($d\xi/d\theta=0$) isn't true everywhere.  It's only true if $\xi$ and $\eta$ take values that satisfy 
+Equation~(\ref{eq:xiiso}).  Provided $\xi+\eta>0$, this is equivalent to
+\[
+\eta = \frac{\xi (\xi-1)}{1-R_0 \xi - \xi} .
+\]
+First of all---notice that when
+$\xi>1$, the numerator is positive but the denominator is negative.  So no part of this graph is interesting to us when $\xi>1$
+since these would correspond to nonphysical solutions.  Now, can the denominator vanish?  Can $1-R_0 \xi - \xi=0$?  If $\xi=1/(R_0+1)$,
+then the denominator vanishes and the hyperbola has a vertical asymptote.  When $\xi > 1/(R_0+1)$, the denominator is negative.
+So summarizing all this, there are possible real-world (nonnegative) solutions to Equation~\ref{eq:xiiso} in the region
+$1/(R_0+1) \leq \xi \leq 1$.  Let's pick $R_0=1.5$ say and plot it (See Figure~\ref{fig:xiso1}) (and by the way notice that it is not
+hard to add a Greek letter on an R plot).
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+In R, try this:
+<<>>=
+fn <- function(xi,r=3/2) { ((xi)*(xi-1))/(1-r*xi-xi)}
+xis <- seq(0,2,by=0.001)
+etas <- fn(xis)
+ymin <- min(etas)
+ymax <- max(etas)
+plot(xis,fn(xis),type="l",ylim=c(ymin,ymax))
+@
+In version 2.6.1, this is what the default looks like if you just plot \verb+plot(xis,fn(xis),type="l")+.  What on earth is going
+on?
+
+\begin{figure}
+\caption{\label{fig:xiso1}Null isocline of $\xi$ of simple SIS model with turnover.}
+\centering
+<<fig=true>>=
+r0 <- 3/2
+fn <- function(xi,r=r0) { ((xi)*(xi-1))/(1-r*xi-xi)}
+xis <- seq(-1,2,by=0.001)
+etas <- fn(xis)
+plot(xis,etas,type="n",xlim=c(0,2),ylim=c(0,2),xlab=expression(xi),ylab=expression(eta))
+vasym <- 1/(r0+1)
+points(xis[xis<vasym],etas[xis<vasym],type="l",col="red")
+points(xis[xis>vasym],etas[xis>vasym],type="l",col="red")
+abline(h=0,col="gray")
+abline(v=vasym,col="gray",lty=2)
+abline(v=0,col="gray")
+@
+\end{figure}
+
+Anywhere on this red curve, $d\xi/d\theta=0$.  Remember, we're only interested in the region where $\xi \geq 0$ and $\eta \geq 0$.  It's also
+worth remembering that the little segment to the left actually intersects the region of interest at a single point, $\xi=\eta=0$, but
+that at that point it really does not apply.  When $\xi=\eta=0$, the denominator in Equation~\ref{eq:xiiso} actually vanishes, so
+we're dividing by zero.  That whole derivation that followed was based on the assumption that $\xi+\eta \neq 0$.  In fact, when 
+$\xi=\eta=0$, $d\xi/d\theta$ should be equal to 1 (which you should convince yourself of as an exercise).  So in fact the only 
+regions in the {\it feasible region} $\xi \geq 0$, $\eta \geq 0$ for which $d\xi/d\theta=0$ is the right-hand part of the red curve.
+Along that whole red curve, the derivative of $\xi$ instantaneously vanishes.  Now the derivative of $\eta$ does not in general
+vanish along that curve, so $\eta$ can keep changing.  
+
+A plot where the possible values of the state variables are the coordinate axes is called a phase plot.  Because we have only
+two state variables, we are plotting the {\it phase plane}.  Every point in the phase plane, or rather, the nonnegative quadrant of
+it, represents a possible value of the state variables, and thus a possible state of the system.  The differential equations
+tell you what the rates of change of the state variables are as a function of position.  In other words, at every spot on the
+phase plane, imagine a little velocity arrow.  The side-to-side component of that velocity arrow is the rate of change of $\xi$,
+and the vertical component is the rate of change of $\eta$.  See Figure~\ref{fig:velf}.
+
+\small
+\begin{figure}
+\caption{\label{fig:velf} Velocity field for the simple SIS model with turnover, assuming $R_0=3/2$.}
+\centering
+<<fig=true>>=
+r0 <- 3/2
+xis <- seq(0,2,by=1/8)
+etas <- seq(0,2,by=1/8)
+dxi <- function(x,y) {1-r0*x*y/(x+y)-x}
+deta <- function(x,y) {r0*x*y/(x+y)-y}
+plot(xis,etas,type="n",xlim=c(0,2),ylim=c(0,2),xlab=expression(xi),ylab=expression(eta))
+for (ii in 1:length(xis)) {
+  for (jj in 1:length(etas)) {
+    xx <- xis[ii]
+    yy <- etas[jj]
+    xdx <- xx + dxi(xx,yy)/10
+    ydy <- yy + deta(xx,yy)/10
+    arrows(x0=xx,x1=xdx,y0=yy,y1=ydy,length=1/10,angle=20)
+  }
+}
+@
+\end{figure}
+\normalsize
+
+We've just found a curve along which the horizontal velocity components vanish, so that $d\xi/d\theta=0$.  This curve is called
+the null isocline for $\xi$, or the {\it nullcline} for $\xi$.  There is a nullcline for $\eta$, too, and let's find it by
+setting $R_0 \xi \eta/(\xi+\eta) = \eta$ (Equation~\ref{eq:etaeq1}).  We can divide by $\eta$ provided $\eta \neq 0$; so either
+$\eta=0$ or $\eta=(R_0-1)\xi$.  So the null isocline is the union of two separate pieces; both together form the null isocline.
+In Figure~\ref{fig:bothisos}, the $\eta$-isocline is added in blue to the phase plane:
+\begin{figure}
+\caption{\label{fig:bothisos}Null isocline of $\xi$ of simple SIS model with turnover is plotted in red; the null
+isocline of $\eta$ is plotted in blue.}
+\centering
+<<fig=true>>=
+r0 <- 3/2
+fn <- function(xi,r=r0) { ((xi)*(xi-1))/(1-r*xi-xi)}
+xis <- seq(-1,2,by=0.001)
+etas <- fn(xis)
+plot(xis,etas,type="n",xlim=c(0,2),ylim=c(0,2),xlab=expression(xi),ylab=expression(eta))
+vasym <- 1/(r0+1)
+points(xis[xis<vasym],etas[xis<vasym],type="l",col="red")
+points(xis[xis>vasym],etas[xis>vasym],type="l",col="red")
+abline(h=0,col="gray")
+abline(v=vasym,col="gray",lty=2)
+abline(v=0,col="gray")
+points(xis,(r0-1)*xis,type="l",col="blue")
+points(xis,rep(0,length(xis)),type="l",col="blue")
+@
+\end{figure}
+
+In Figure~\ref{fig:bothisos}, the red curve is the $\xi$-nullcline---except for the origin (the point $(0,0)$ is {\it not} on the
+nullcline for $\xi$).  The two blue lines together form the $\eta$-nullcline, looking like the outline of a wedge.  At any point on
+a blue curve, the vertical velocity component actually disappears.  There are exactly two points which are on both isoclines: one of
+them is $(1,0)$ (the no-disease equilibrium), and the other is the endemic equilibrium.  It may {\it look} like the blue lines intersect
+a red line at the origin, but again, don't be fooled---the red curve happens to be missing the point $(0,0)$, and the nullclines 
+do not intersect there.  All the equilibria can be found (by definition) at the intersections of nullclines.  
+
+Let's take a look at
+the nullclines again, this time with the velocity field illustrated; see Figure~\ref{fig:vfi}.  Notice how anywhere above the top
+blue line, there is always a negative $\eta$ velocity, and below the top blue line there is a positive $\eta$ velocity?  And to
+the left of the red curve, $\xi$ is aways increasing (the horizontal velocity is to the right), while to the right of the 
+red curve, $\xi$ is decreasing?
+\begin{figure}
+\caption{\label{fig:vfi}Null isocline of $\xi$ of simple SIS model with turnover is plotted in red; the null
+isocline of $\eta$ is plotted in blue; the velocity field is suggested with arrows.}
+\centering
+<<fig=true,echo=FALSE>>=
+r0 <- 3/2
+fn <- function(xi,r=r0) { ((xi)*(xi-1))/(1-r*xi-xi)}
+xis <- seq(-1,2,by=0.001)
+etas <- fn(xis)
+plot(xis,etas,type="n",xlim=c(0,2),ylim=c(0,2),xlab=expression(xi),ylab=expression(eta))
+vasym <- 1/(r0+1)
+points(xis[xis<vasym],etas[xis<vasym],type="l",col="red")
+points(xis[xis>vasym],etas[xis>vasym],type="l",col="red")
+abline(h=0,col="gray")
+abline(v=vasym,col="gray",lty=2)
+abline(v=0,col="gray")
+points(xis,(r0-1)*xis,type="l",col="blue")
+points(xis,rep(0,length(xis)),type="l",col="blue")
+xis <- seq(0,2,by=1/8)
+etas <- seq(0,2,by=1/8)
+dxi <- function(x,y) {1-r0*x*y/(x+y)-x}
+deta <- function(x,y) {r0*x*y/(x+y)-y}
+for (ii in 1:length(xis)) {
+  for (jj in 1:length(etas)) {
+    xx <- xis[ii]
+    yy <- etas[jj]
+    xdx <- xx + dxi(xx,yy)/10
+    ydy <- yy + deta(xx,yy)/10
+    arrows(x0=xx,x1=xdx,y0=yy,y1=ydy,length=1/10,angle=20)
+  }
+}
+@
+\end{figure}
+
+In Figure~\ref{fig:vfi}, consider a point in the far upper left, say near $\xi=1/8$ and $\eta=2$ (Figure~\ref{fig:vfia}, point A).  
+There are so many infectives that
+they cannot possibly be replenished by new infections; there just aren't enough susceptibles.  There are so few susceptibles that
+the immigration process can actually outpace death and infection, and the number of susceptibles increases.  At that instant, the
+velocity can be determined by the equations; the rate of change of $\xi$ is approximately 0.699 (and is in fact dimensionless), and 
+the rate of change of $\eta$ is about -1.82; the state of the system is moving south-southeast (so to speak) at this velocity---for an instant.  Once it has moved infinitesimally, the velocity is then different; the velocity is determined by {\it where the particle
+representing the system} actually is.  We use a differential-equation integrator to solve for the actual motion; by time 1 (in
+dimensionless time) the system has moved to approximately 0.45, 0.95 (where the next circle is) along the green line.  By time 
+$\theta=2$, the system has moved further to the next circle.  The motion slows down, and asymptotically approaches the endemic
+equilibrium at the intersection of the red curve and the top blue line.  Remember: the phase plane plots the state variables
+against each other.  At any time, the state of the system is a point on the phase plane.  As time progresses, the point traces out
+a trajectory on the phase plane.
+\begin{figure}
+\caption{\label{fig:vfia}Null isocline of $\xi$ of simple SIS model with turnover is plotted in red; the null
+isocline of $\eta$ is plotted in blue; the velocity field is suggested with arrows.}
+\centering
+<<fig=true,echo=FALSE>>=
+r0 <- 3/2
+fn <- function(xi,r=r0) { ((xi)*(xi-1))/(1-r*xi-xi)}
+xis <- seq(-1,2,by=0.001)
+etas <- fn(xis)
+plot(xis,etas,type="n",xlim=c(0,2),ylim=c(0,2),xlab=expression(xi),ylab=expression(eta))
+vasym <- 1/(r0+1)
+points(xis[xis<vasym],etas[xis<vasym],type="l",col="red")
+points(xis[xis>vasym],etas[xis>vasym],type="l",col="red")
+abline(h=0,col="gray")
+abline(v=vasym,col="gray",lty=2)
+abline(v=0,col="gray")
+points(xis,(r0-1)*xis,type="l",col="blue")
+points(xis,rep(0,length(xis)),type="l",col="blue")
+xis <- seq(0,2,by=1/8)
+etas <- seq(0,2,by=1/8)
+dxi <- function(x,y) {1-r0*x*y/(x+y)-x}
+deta <- function(x,y) {r0*x*y/(x+y)-y}
+for (ii in 1:length(xis)) {
+  for (jj in 1:length(etas)) {
+    xx <- xis[ii]
+    yy <- etas[jj]
+    xdx <- xx + dxi(xx,yy)/10
+    ydy <- yy + deta(xx,yy)/10
+    arrows(x0=xx,x1=xdx,y0=yy,y1=ydy,length=1/10,col="gray",angle=20)
+  }
+}
+fn <- function(t,y,p) {list(c(dxi(y[1],y[2]),deta(y[1],y[2])),NULL)}
+points(1/8,2,col="green")
+text(1/8+0.04,2,label="A")
+u1 <- lsoda(c(1/8,2),seq(0,10,by=1/32),fn,NULL)
+points(u1[,2],u1[,3],type="l",col="green")
+iv <- u1[,1]==floor(u1[,1])
+points(u1[iv,2],u1[iv,3],col="green")
+points(2,2,col="orange")
+text(2.04,2,label="B")
+u1 <- lsoda(c(2,2),seq(0,10,by=1/32),fn,NULL)
+points(u1[,2],u1[,3],type="l",col="orange")
+iv <- u1[,1]==floor(u1[,1])
+points(u1[iv,2],u1[iv,3],col="orange")
+points(2,3/4,col="cyan")
+text(2.04,3/4,label="C")
+u1 <- lsoda(c(2,3/4),seq(0,10,by=1/32),fn,NULL)
+points(u1[,2],u1[,3],type="l",col="cyan")
+iv <- u1[,1]==floor(u1[,1])
+points(u1[iv,2],u1[iv,3],col="cyan")
+points(2,1/8,col="magenta")
+text(2.04,1/8,label="D")
+u1 <- lsoda(c(2,1/8),seq(0,10,by=1/32),fn,NULL)
+points(u1[,2],u1[,3],type="l",col="magenta")
+iv <- u1[,1]==floor(u1[,1])
+points(u1[iv,2],u1[iv,3],col="magenta")
+@
+\end{figure}
+
+In Figure~\ref{fig:vfi}, now consider point B (near $\xi=2$ and $\eta=2$).  This time, both $\xi$ and $\eta$ are falling at the
+outset, and the motion is toward the west-southwest.  Sometime after time 2, though, the point crosses the null isocline for $\xi$. At
+that instant, $\xi$ is not changing; the time of the crossing of the null isocline is the time for the turnaround of $\xi$.  Because
+after that, the levels of infectives (the value of $\eta$) has dropped so much that the number of susceptibles can start to increase
+again.  After that, the number of susceptibles rises and the number of infectives falls as the endemic equilibrium is asymptotically
+approached.  Notice that although the phase paths starting at A and B become quite close together, they do {\it not} and {\it cannot}
+cross!  At each point in phase space, the velocity at that instant is determined and the entire future history determined as well
+(in a deterministic model).  Phase paths that crossed would correspond to two different futures starting from the point of crossing.
+
+Now, in Figure~\ref{fig:vfi}, consider a point C starting near $\xi=2$ and $\eta=0.75$.  Here, we begin with a very rapid drop in
+the number of susceptibles, both due to infection and to mortality far exceeding the inflow rate.  At point C, the number of infectives
+is actually rising since the incidence rate is so large that it outweighs the mortality losses.  At the instant the cyan line crosses
+the blue null isocline, $\eta$ is instantaneously stopped at its maximum value.  After this, the motion is qualitatively similar to
+path B (orange).  Another interesting path begins at point D,starting near $\xi=2$ and $\eta=1/8$.  At the outset, along path D (in magenta), infective levels are rising and susceptibles rapidly falling.  But along path D, the infective levels never overshoot the endemic equilibrium; the $\eta$-isocline is never crossed.  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+In R, add the curve beginning at (0.01, 0.01), and interpret.  Then add a curve beginning at (1, 0.001), corresponding to a small
+number of infectives in an otherwise susceptible population.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Plot time series curves of $\xi$ and $\eta$ for the starting values in Figure~\ref{fig:vfi}.  Identify on the graphs the points 
+where an isocline is crossed, and compare to Figure~\ref{fig:vfi}.  
+
+These numerical explorations suggest that points near the endemic equilibrium are on trajectories that approach it asymptotically, 
+but points near the no-disease equilibrium (but with $\eta>0$!) are part of trajectories that eventually wind up far from the no-disease equilibrium.  This turns out to be the key to {\it local asymptotic stability}, a concept due to Liapunov.  The idea is to 
+linearize the system near an equilibrium.  Let $\bar{\xi}$ be the endemic equilibrium value of $\xi$, and $\bar{\eta}$ be the
+endemic equilibrium value of $\eta$.  Let's write $f(\xi,\eta)=1 - \frac{\beta}{\mu} \frac{\xi \eta}{\xi + \eta} - \xi$ and
+$g(\xi,\eta) = \frac{\beta}{\mu}\frac{\xi \eta}{\xi + \eta} - \eta$.  So
+\[
+\frac{d\xi}{d\theta} = 1 - \frac{\beta}{\mu} \frac{\xi \eta}{\xi + \eta} - \xi = f(\xi,\eta)
+\]
+\[
+\frac{d\eta}{d\theta} = \frac{\beta}{\mu}\frac{\xi \eta}{\xi + \eta} - \eta = g(\xi,\eta) .
+\]
+Now, we know $f(\bar{\xi},\bar{\eta})=0$ and $g(\bar{\xi},\bar{\eta})=0$; that was the whole point of something even being an
+equilibrium.  But what is $f(\bar{\xi}+x,\bar{\eta}+y)$, where $x$ and $y$ are {\it very small}?  We're going to do a Taylor
+series expansion around the equilibrium:
+\[
+f(\bar{\xi}+x,\bar{\eta}+y) = f(\bar{\xi},\bar{\eta}) + x \frac{\partial{}f}{\partial{}\xi}(\bar{\xi},\bar{\eta}) +
+y \frac{\partial{}f}{\partial{}\eta}(\bar{\xi},\bar{\eta})  + \cdots
+\]
+Similarly,
+\[
+g(\bar{\xi}+x,\bar{\eta}+y) = g(\bar{\xi},\bar{\eta}) + x \frac{\partial{}g}{\partial{}\xi}(\bar{\xi},\bar{\eta}) +
+y \frac{\partial{}g}{\partial{}\eta}(\bar{\xi},\bar{\eta})  + \cdots
+\]
+The good news is that $f(\bar{\xi},\bar{\eta})=g(\bar{\xi},\bar{\eta})=0$, and that simplifies things.  We're doing a Taylor
+series expansion around an {\it equilibrium}, and that helps.  
+
+Let's figure out how the discrepancy in $x$ (the difference between $\xi$ and $\bar{\xi}$) changes.  Since
+\[
+\frac{dx}{dt} = \frac{d\,(\xi - \bar{\xi})}{d\theta} = \frac{d\xi}{d\theta} ,
+\]
+we just have
+\[
+\frac{dx}{dt} = x \frac{\partial{}f}{\partial{}\xi}(\bar{\xi},\bar{\eta}) + y \frac{\partial{}f}{\partial{}\eta}(\bar{\xi},\bar{\eta})
+\]
+and similarly
+\[
+\frac{dy}{dt} = x \frac{\partial{}g}{\partial{}\xi}(\bar{\xi},\bar{\eta}) + y \frac{\partial{}g}{\partial{}\eta}(\bar{\xi},\bar{\eta})
+\]
+neglecting higher-order terms.  We can express this in matrix form:
+\[
+\frac{d}{d\theta}
+\left[ \begin{array}{c}
+         x \\
+         y \\
+       \end{array} \right] = 
+\left[ \begin{array}{cc}
+         \frac{\partial{}f}{\partial{}\xi}(\bar{\xi},\bar{\eta}) & \frac{\partial{}f}{\partial{}\eta}(\bar{\xi},\bar{\eta}) \\
+         \frac{\partial{}g}{\partial{}\xi}(\bar{\xi},\bar{\eta}) & \frac{\partial{}g}{\partial{}\eta}(\bar{\xi},\bar{\eta}) \\  
+       \end{array} \right]
+\left[ \begin{array}{c}
+         x \\
+         y \\
+       \end{array} \right] .
+\]
+Letting
+\begin{equation}
+\label{eq:defjac}
+\mbox{\bf J} = \left[ \begin{array}{cc}
+         \frac{\partial{}f}{\partial{}\xi}(\bar{\xi},\bar{\eta}) & \frac{\partial{}f}{\partial{}\eta}(\bar{\xi},\bar{\eta}) \\
+         \frac{\partial{}g}{\partial{}\xi}(\bar{\xi},\bar{\eta}) & \frac{\partial{}g}{\partial{}\eta}(\bar{\xi},\bar{\eta}) \\  
+       \end{array} \right] 
+\end{equation}
+and $\epsilon = [x,y]^T$, we could write the system $\frac{d\epsilon}{d\theta} = \mbox{\rm \bf J}\epsilon$.  This matrix $\mbox{\bf J}$
+is just a matrix of constants; the derivatives have all been evaluated at the equilibrium.  This matrix is known as the Jacobian
+matrix of the system evaluated at the equilibrium.
+
+There is a great deal to be said about systems of the form $\frac{d\epsilon}{d\theta} = \mbox{\rm J}\epsilon$, and it is not
+possible to do justice to this in a short lecture.  But let's see what we can do.  We know what we would do if we just had a
+scalar equation like $du/dt = au$; you already know the solution is $u(t) = u(0)e^{at}$.  What we want here is something like
+$\epsilon(\theta) = \epsilon(0) e^{\mbox{\rm \bf J}}\theta$.
+
+I want to emphasize that we have a vector of equations, and for the moment let's switch
+to $\mbox{\rm \bf v}(t)$ for the variables, instead of $\epsilon(t)$.  I want to emphasize that we have a vector of state
+variables.  We want to consider the problem $d\mbox{\rm \bf v}/dt = \mbox{\rm \bf Jv}$, where $\mbox{\rm \bf J}$ is some big
+matrix of constants.
+
+Let's start gently, assuming the matrix $\mbox{\rm \bf J}$ is {\it diagonal}.  Then the vector differential
+equation $d\mbox{\rm \bf v}/dt = \mbox{\rm \bf Jv}$ is really just $dv_i/dt = J_{ii} v_i$.  Here, the $i,j$-th element of 
+$\mbox{\rm \bf J}$ is written $J_{ij}$, so the diagonal elements are $J_{ii}$.  Here, we know the answer: the solution is
+$v_i(t) = v_i(0) e^{J_{ii} t}$.  We could actually write this:
+\[
+ \left[ \begin{array}{c}
+         v_1(t) \\
+         v_2(t) \\
+       \end{array} \right] = 
+\left[ \begin{array}{cc}
+         e^{J_{11}t} & 0 \\
+         0 & e^{J_{22}t} \\  
+       \end{array} \right]
+\left[ \begin{array}{c}
+         v_1(0) \\
+         v_2(0) \\
+       \end{array} \right] .
+\]
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Prove that for a diagonal matrix $\Lambda$ whose $i,i$-th entry is $\lambda_i$, $\Lambda^n$ is a diagonal matrix whose 
+$i,i$-th entry is $\lambda_i^n$ (for integer $n$).
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Let $\Lambda$ be a diagonal matrix with $i,i$-th entry $\lambda_i$.  Let $A = I + \Lambda t + \frac{1}{2!}\Lambda^2 t^2 + \frac{1}{3!}\Lambda^3 t^3 + \cdots$.
+Prove that $A$ is a diagonal matrix with $i,i$-th entry $e^{\lambda_i t}$; this is just the Taylor series expansion of an exponential.  The mathematicians use this to define what is meant by $e^{\Lambda t}$.
+
+The key to all this turns out to be the
+eigen decomposition we saw earlier.  Returning to an arbitrary matrix of real elements $J$, let's let $\Lambda$ be the diagonal matrix of eigenvalues, and $S$ be the matrix of eigenvectors
+in the right order.  We're assuming we have distinct eigenvalues, that none of them are zero (i.e., the matrix is not singular), and
+that the matrix $S$ is not singular either.   So given all this we have $J = S\Lambda S^{-1}$.  Let's look at 
+\[
+A = I + Jt + \frac{1}{2!}J^2t^2 + \frac{1}{3!}J^3t^3 + \frac{1}{4!}J^4t^4 + \cdots .
+\]
+then
+\[
+A = SS^{-1} + S\Lambda S^{-1}t + \frac{1}{2!}S\Lambda S^{-1} S \Lambda S^{-1}t^2 + \frac{1}{3!}S\Lambda S^{-1} S \Lambda S^{-1} S \Lambda S^{-1}t^3 + \frac{1}{4!}S\Lambda S^{-1} S \Lambda S^{-1} S \Lambda S^{-1} S \Lambda S^{-1}t^4 + \cdots .
+\]
+The same cancellation magic works again:
+\[
+A = SS^{-1}+S\Lambda S^{-1}t + \frac{1}{2!}S\Lambda \Lambda S^{-1}t^2 + \frac{1}{3!}S\Lambda \Lambda \Lambda S^{-1}t^3 + \frac{1}{4!}S\Lambda \Lambda \Lambda \Lambda S^{-1}t^4 + \cdots .
+\]
+So
+\[
+A = SS^{-1} + S\Lambda S^{-1} t + \frac{1}{2!}S\Lambda^2 t^2 S^{-1} + \frac{1}{3!}S\Lambda^3 t^3 S^{-1} + \frac{1}{4!}S\Lambda^4 t^4 S^{-1} + \cdots .
+\]
+We can factor an $S$ off the front:
+\[
+A = S\big(S^{-1} + \Lambda t S^{-1} + \frac{1}{2!}\Lambda^2 t^2 S^{-1} + \frac{1}{3!}\Lambda^3 t^3 S^{-1} + \frac{1}{4!}\Lambda^4 t^4 S^{-1} + \cdots\big) 
+\]
+and an $S^{-1}$ off the back:
+\[
+A = S\big(I + \Lambda t + \frac{1}{2!}\Lambda^2 t^2  + \frac{1}{3!}\Lambda^3 t^3 + \frac{1}{4!}\Lambda^4 t^4 + \cdots\big) S^{-1}
+\]
+The thing in parentheses is just $e^{\Lambda t}$; it's a diagonal matrix.  This  equation is what the mathematicians use
+to actually define $e^A$ for a matrix $A$; we've assumed we can diagonalize the matrix.
+
+Back to the equation: we had $d\mbox{\rm \bf v}/dt = \mbox{\rm \bf Jv}$.  If $\mbox{\rm \bf J} = S\Lambda S^{-1}$, we get
+$d\mbox{\rm \bf v}/dt = S \Lambda S^{-1} \mbox{\rm \bf v}$.  Multiply by $S^{-1}$ on both sides, and you have
+$d(S^{-1}\mbox{\rm \bf v})/dt =  \Lambda S^{-1} \mbox{\rm \bf v}$. If we go ahead and write $w = S^{-1}\mbox{\rm \bf v}$, we get
+$dw/dt = \Lambda w$, and we've already solved this equation.  Just as before, multiplying by $S^{-1}$ converts $\mbox{\rm \bf v}$
+into a linear combination of the eigenvectors of $J$.  The vector of these new coefficients (the coefficients in the linear 
+combination of eigenvectors) obeys the much simpler equation $dw/dt = \Lambda w$, and since $\Lambda$ is diagonal, we can
+write $dw_i/dt = \lambda_i w_i$ and $w_i(t) = w_i(0) e^{\lambda_i t}$.  
+
+Now, when we looked at raising matrices to powers, we were able to gloss over the fact that the eigenvalues can in general be
+complex, because the Perron-Frobenius theorem guarantees that the eigenvector of largest magnitude is real and positive (when
+the matrix has positive elements).  If that largest eigenvalue was bigger than 1, the matrix powers grew, otherwise the matrix
+powers would eventually become arbitrarily small.  Unfortunately, here in the continuous world, we're not so lucky and we can't
+gloss over the issue of complex-valued eigenvalues so easily.  We'll have to do a whirlwind tour of it and leave the details
+to your further mathematical study!
+
+So let's think about an equation of the form $w_i(t) = w_i(0) e^{\lambda_i t}$.  If $\lambda_i$ is real and positive, then
+$e^{\lambda_i t}$ grows without bound.  Clearly, if {\it any} eigenvalue is real and positive, the component $w_i(t)$ is
+going to grow without bound, and when we have a component growing without bound, the original vector 
+$\mbox{\bf \rm v}$ can't be approaching zero.  This is guaranteed if the eigenvectors are linearly independent, and this fact is
+what we're assuming when we say the matrix can be diagonalized (written in the form $S \Lambda S^{-1}$). Sometimes matrices
+cannot be diagonalized, and the nondiagonalizable case is in fact interesting and important.  In those cases, solutions
+based on the {\it Jordan normal form} can be produced. For now, we'll omit discussion of this point.  For now, we see that
+the solution will diverge if any eigenvalue is real and positive.  
+
+If an eigenvalue is real and negative, then we have a solution that behaves like $e^{\lambda_i t}$  with $\lambda_i < 0$. This
+solution decays away; if all the eigenvalues are real and negative, then the whole solution must decay away to zero.  This
+is guaranteed; if all the components $w_i$ decay to zero, then any linear combination of them (the original vector!) has to
+become zero as well.
+
+Now, the eigenvalues can also be complex.  Because the entries of the matrix are real, the characteristic polynomial
+from whence we derive the eigenvalues has real coefficients too, and this tells us that complex eigenvalues come in 
+complex conjugate pairs.  For example, look at the matrix
+\begin{equation}
+\label{eq:jjim}
+J = \left[ \begin{array}{cc}
+         1 & -1 \\
+         1 & 1 \\  
+       \end{array} \right]
+\end{equation}
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Prove that the eigenvalues of $J$ in Equation~\ref{eq:jjim} are $1+i$ and $1-i$.  Show that the eigenvectors can be written
+$[1,-i]^T$ and $[1,i]^T$.  Show 
+\[
+\left[ \begin{array}{cc}
+         1 & 1 \\
+         -i & i \\  
+       \end{array} \right] ^{-1} =
+\frac{1}{2} \left[ \begin{array}{cc}
+         1 & i \\
+         1 & -i \\  
+       \end{array} \right] .
+\]
+Verify your computation in R using \verb+eigen+ to find the eigenvalues, and \verb+solve+ for matrix inversion or \verb+%*%+ for
+matrix multiplication. Note that entering a complex valued literal in R requires a numeric part before the $i$: the
+square root of -1 is entered \verb+1i+, not just \verb+i+.  
+
+Let's back up a little so we don't lose track.  Imagine we're looking at the system $dv_1/dt = v_1 - v_2$, 
+$dv_2/dt = v_1 + v_2$.  This system has the matrix given in Equation~\ref{eq:jjim}.  Suppose we started at the
+initial condition $v_1(0) = 2$ and $v_2(0) = -1$.  We can write 
+\[
+\left[ \begin{array}{c}
+         v_1(t) \\
+         v_2(t) \\
+       \end{array} \right] = \frac{1}{2}
+\left[ \begin{array}{cc}
+         1 & 1 \\
+         -i & i \\  
+       \end{array} \right]
+\left[ \begin{array}{cc}
+         e^{(1+i)t} & 0 \\
+         0 & e^{(1-i)t} \\
+       \end{array} \right]
+\left[ \begin{array}{cc}
+         1 & i \\
+         1 & -i \\  
+       \end{array} \right] 
+\left[ \begin{array}{c}
+         v_1(0) \\
+         v_2(0) \\
+       \end{array} \right]
+\] 
+If you multiply all this out, what you get on the right hand side is
+\begin{equation}
+\label{eq:eqk}
+K = \frac{1}{2} \left[ \begin{array}{cc}
+         e^{(1+i)t}+e^{(1-i)t} & i(e^{(1+i)t}-e^{(1-i)t}) \\
+         -i(e^{(1+i)t}-e^{(1-i)t}) & e^{(1+i)t}+e^{(1-i)t} \\  
+       \end{array} \right] .
+\end{equation}
+
+Let's look first at $e^{(1+i)t}+e^{(1-i)t} = e^t e^{it} + e^t e^{-it} = e^t (e^{it}+e^{-it})$.  
+
+We're not going to get any further unless we just deal with $e^{it}$, a complex exponential.  If we take for granted that
+a power series makes sense for this, you can expand all this out in a Taylor series:
+\[
+e^{it} = 1 + it + \frac{1}{2!} (it)^2 + \frac{1}{3!} (it)^3 +\frac{1}{4!} (it)^4 +\frac{1}{5!} (it)^5 + \cdots
+\]
+which can be written
+\begin{eqnarray*}
+e^{it} & = & 1 - \frac{1}{2!} t^2 + \frac{1}{4!} (t)^4 + \cdots \\
+\quad + i\Big( t - \frac{1}{3!} (t)^3 + \frac{1}{5!} (t)^5 + \cdots \Big)
+\end{eqnarray*}
+The first part is the power series for the cosine, and the second for the sine.  So 
+\[
+e^{it} = \cos t + i \sin t .
+\]
+If you set $t=\pi$, you get $e^{i \pi} = -1$, or $1 + e^{i \pi} = 0$, a formula that has been called one of the most remarkable
+facts in mathematics, relating as it does the five most important numbers in analysis.  More generally 
+$e^{i\omega t} = \cos \omega t + i \sin \omega t$, and also $e^{-it} = \cos t - i \sin t$.  So let's go back to where we
+were: $e^{(1+i)t}+e^{(1-i)t} = e^t (e^{it}+e^{-it})$.  Now we see that
+\[
+e^{it}+e^{-it} = \cos t + i \sin t + \cos t - i \sin t = 2 \cos t .
+\]
+So $e^{(1+i)t}+e^{(1-i)t} = 2 e^t \cos t$.  We're left with a {\it real quantity}---all the imaginary numbers disappeared. But
+we are left with something other than the pure exponentials we're used to; the complex exponentials did really introduce 
+something new: {\it oscillatory behavior}.
+
+Let's return to the rest of what we called $K$ in Equation~\ref{eq:eqk}.  Now we see that
+$i(e^{(1+i)t}-e^{(1-i)^t}) = ie^t (\cos t + i \sin t - \cos t - (- i\sin t))$.  This becomes
+$i(e^{(1+i)t}-e^{(1-i)t}) = i e^t 2i \sin t = - 2 e^t \sin t$.  Again---the imaginary terms actually vanished.
+So the actual solution is 
+\[
+\left[ \begin{array}{c}
+         v_1(t) \\
+         v_2(t) \\
+       \end{array} \right] = e^t 
+\left[ \begin{array}{cc}
+         \cos t & - \sin t \\
+         \sin t & \cos t \\  
+       \end{array} \right]
+\left[ \begin{array}{c}
+         2 \\
+         -1 \\
+       \end{array} \right]
+\]
+Does it bother you we are working with negative state variables? It shouldn't, because all this was motivated by looking
+at discrepancies above or below some equilibrium.  There's nothing wrong with being a little bit below some positive
+equilibrium.  The solutions are $v_1(t) = e^t (2 \cos t + \sin t)$ and $v_2(t) = e^t (2 \sin t - \cos t)$.  As an exercise,
+verify that these in fact are the solution to the differential equation system $dv_1/dt = v_1 - v_2$, 
+$dv_2/dt = v_1 + v_2$ with initial conditions $v_1(0) = 2$ and $v_2(0) = -1$.  
+
+Qualitatively, we see that the result of complex conjugate eigenvalues is to give you an exponential times some terms
+involving sines and cosines.  No matter how big $t$ is, the sines and cosines are never outside the range -1 to 1.  But
+if you multiply that by $e^t$, you get something whose swings get bigger and bigger.  The {\it real part} of the complex
+conjugate eigenvalue determines this; because the real part was +1, we got a factor of $e^t$, which grows and grows.  If
+we had an eigenvalue with a negative real part, we would be multiplying by something like $e^{-kt}$, and this gets smaller
+and smaller.  You have oscillation, but the swings get smaller and smaller and the motion damps away to zero.
+
+So without going through the proof of the more general case, you see the behavior illustrated.  If {\it any} eigenvalue
+has positive real part, the motion increases away from zero over time.  It may oscillate and the state variables may
+take on a zero value from time to time, but the point on the phase plane gets farther and farther from zero.  If {\it all}
+eigenvalues have negative real parts, the motion damps away to zero.
+
+Returning to our stability analysis, we can find that when all the eigenvalues of the Jacobian evaluated at an 
+equilibrium have negative real parts, the equilibrium is locally asymptotically stable.  When even one eigenvalue has
+positive real part, the equilibrium is unstable.  If all the eigenvalues have zero real parts, we really can't tell using
+this method whether the equilibrium is unstable or not.
+
+The case of pure imaginary eigenvalues leads to oscillations that do not damp out.  We multiply the sines and cosines by
+$e^0=1$.  This is an example of what is called {\it neutral oscillation} and some interesting models exhibit this, but we
+won't say more about it.
+
+Let's now return to the stability analysis of the no-disease equilibrium.  Let's find out what the Jacobian matrix of the
+system is, and evaluate it at the no-disease equilibrium.  From Equation~\ref{eq:defjac},
+\begin{equation}
+\label{eq:jnde}
+\mbox{\bf J}_0 = \left[ \begin{array}{cc}
+         \frac{\partial{}f}{\partial{}\xi}(\bar{\xi},\bar{\eta}) & \frac{\partial{}f}{\partial{}\eta}(\bar{\xi},\bar{\eta}) \\
+         \frac{\partial{}g}{\partial{}\xi}(\bar{\xi},\bar{\eta}) & \frac{\partial{}g}{\partial{}\eta}(\bar{\xi},\bar{\eta}) \\  
+       \end{array} \right] = 
+ \left[ \begin{array}{cc}
+         -1 & -\beta/\mu \\
+         0 & \beta/\mu - 1 \\  
+       \end{array} \right] .
+\end{equation}
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Find the derivative of $f(\xi,\eta) = 1-\frac{\beta}{\mu}\frac{\xi \eta}{\eta + \xi} - \xi$ with respect to
+$\xi$.  {\it Ans.} $\partial f/\partial \xi = -1 + \eta \xi/(\eta + \xi)^2 (\beta/\mu) - (\beta/\mu) \eta/(\eta + \xi)$.
+Find $\partial f/\partial \eta$, $\partial g/\partial \xi$, and $\partial g/\partial \eta$.  Substitute in the no-disease
+equilibrium values $\xi=1$, $\eta=0$ to prove Equation~\ref{eq:jnde}.
+
+The eigenvalues of $J_0$ are $-1$ and $\beta/\mu - 1$, as you can see by working through the characteristic polynomial by
+yourself.  In this case, that zero helps a lot.  If you have a matrix 
+\[
+U = \left[ \begin{array}{cc}
+         a & b \\
+         0 & d \\  
+       \end{array} \right] ,
+\]
+the characteristic polynomial is actually $(a-\lambda)(d-\lambda)$, and the zeros of that are just $a$ and $d$!  In fact, a
+much more powerful result is true: it turns out that when a matrix is {\it upper triangular}, the eigenvalues lie on the
+diagonal.  An upper triangular matrix is a matrix whose $i,j$-th element $a_{ij}$ is zero below the diagonal; 
+if $i > j$, $a_{ij}=0$.  According to this, a diagonal matrix actually counts as upper triangular too, and we already know
+that the eigenvalues of a diagonal matrix are on the diagonal.  So for $J_0$, we can just read the eigenvalues right out of
+the matrix, because $J_0$ is upper triangular.  So the eigenvalues are just $-1$ and $\beta/\mu - 1$.  The system is 
+stable if and only if all the eigenvalues have real parts that are negative, so to be stable we need to have $\beta/\mu-1<0$,
+i.e. $R_0<1$.  More complex epidemic models often use the fact that the Jacobian evaluated at the no-disease equilibrium is
+block triangular, a concept we'll skip for now. 
+
+\subsection*{A simple SIS model}
+In an SIS model, susceptibles may become infected, but become susceptible upon recovery again. Such models
+have been used for gonorrhea (e.g. Hethcote 1984) and trachoma.  In some cases, diseases that seem to
+operate in an SIS fashion may really be better thought of as involving many strains; a person infected by
+one strain does not become immune at all to the other strains.  So letting $X$ be the number of susceptibles
+and $Y$ the number infected, we have
+\[
+\frac{dX}{dt} = - \beta X Y/N + \rho Y ,
+\]
+together with $X+Y=N$.  .
+
+As in the previous section, this system has a sharply different behavior from the first SI model we looked
+at, but is similar in some ways to the model we just examined.  In this case, the system has simpler behavior because the
+population size is fixed.
+
+Let's nondimensionalize the system.  The only natural scale for quantities of type \verb+PERSON+ seems to be $N$, the total
+population size.  So let's let $X=Nx$ and $Y=Ny$, where $x$ and $y$ are our new dimensionless person variables.  Really they
+are just the fraction susceptible and infected, respectively.  For time, let's consider using $1/\rho$ to scale time.  So
+let $\theta = \rho t$.  Actually with a constant $N$ we can just divide both sides by it; working with $y$,
+\[
+\frac{dy}{dt} = \beta x y - \rho y .
+\]
+We wind up with
+\[
+\frac{dy}{d\theta} = \frac{1}{\rho}\big(\beta x y - \rho y\big) = \big(R_0 x y - y\big) = (R_0 x-1)y .
+\]
+We took the liberty of simply identifying $R_0=\beta/\rho$, and you can prove that this is true using methods from the
+previous section.  Since $x=1-y$,
+\[
+\frac{dy}{d\theta} =  (R_0 (1-y)-1)y = (R_0-yR_0-1)y .
+\]
+This is actually the logistic equation again!  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+Use the solution to the logistic equation to write the analytical solution to this problem.  
+
+%\subsection{A simple SIR model, no turnover}
+%\subsection{A simple SIR model, turnover}
+%\subsection{A simple SIRS model}
+%\subsection{A simple model with a latent stage}
+%\subsection{Using exponentials to approximate general incubation periods}
+%\subsection{Fast progressors}
+%\subsection{Vertical transmission}
+%\subsection{Multiple regions}
+%\subsection{Changes in behavior}
+%\subsection{Vector-borne disease}
+%\subsection{Water-borne disease}
+
+%\section*{Specific applications}
+%\subsection{Influenza}
+%\subsection{Smallpox}
+%\subsection{Measles}
+%\subsection{Rubella}
+%\subsection{HIV/AIDS}
+%\subsection{Tuberculosis}
+%\subsection{Malaria}
+%\subsection{Trachoma}
+
+\section*{References}
+\begin{description}
+\item[Blickle T, Lakatos BG, Mih{\'a}lyk{\'o} C, Ulbert Z.] ``The hyperbolic tangent distribution family'',
+{\it Powder Technology} {\bf 97}:100--108, 1986.
+
+\item[Hethcote HW, Yorke JA.] Gonorrhea transmission dynamics and control. Berlin: Springer-Verlag, 1984.
+
+\end{description}
+
+\vfill
+\end{document}

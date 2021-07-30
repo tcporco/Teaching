@@ -1,0 +1,1016 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\setlength{\parindent}{0.6cm}
+
+\begin{document}
+
+\section*{Mathematical modeling of infectious diseases, lecture 14}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section*{Continuous random variables}
+Before we embark on our study of continuous time epidemic processes, we will
+begin by reviewing continuous random variables.
+
+Before, we worked with random quantities defined in terms of a discrete
+state space.  For instance, we considered finite spaces, such as the number of 
+heads when tossing a coin (and because this has only two outcomes, we speak
+of a Bernoulli trial, or a Bernoulli random variable).  We considered larger
+finite spaces, such as the number of spots showing on a die after it is
+rolled, or the number of individuals out of an exposed cohort who become 
+infected with some agent.
+
+In fact, such finite state spaces can get very large indeed.  Suppose we have a 
+large number of individuals, say $N$.  Consider the set $W$ of all possible 
+partnership arrangements of these individuals; how
+large is this set (how many members does it have, or, to use the mathematical
+jargon, what is its {\it cardinality} \#$(W)$)?  If we had a very small group, say
+consisting of only four individuals A, B, C, and D, then there are ${4 \choose 2} = 6$ possible pairs.  We can enumerate them: AB, AC, AD, BC, BD, and CD.  Each
+of these partnerships may or may not exist, and so there must be $2^6$ possible
+partnership configurations.  In general, if we have a population of size $N$,
+there must be $2^{{N \choose 2}}$ possible partnership configurations.  If
+$N=50,000$, say, approximately the MSM population of San Francisco, then how
+many partnership configurations are there?  Since 
+\[
+{50000 \choose 2} = \frac{50000!}{49998! 2!} = \frac{50000 \times 49999 \times 49998!}{49998!\, 2!} = 1249975000 ,
+\]
+the number of partnership arrangements is $2^{1249975000}$.  What does this mean
+in terms of numbers we're more familiar with?  For instance, can we express
+this as a power of ten?  If we have an equation $2^x = 10^y$, taking the
+logarithm (it does not matter to what base, so let's use natural logarithms)
+of both sides gives
+\[
+\log (2^x) = \log (10^y) ,
+\]
+so that
+\[
+x \log 2 = y \log 10 .
+\]
+So $y=x (\log 2/\log 10)$.  Since $\log 2/\log 10 \approx 0.30103$, the number
+of partnership arrangements is about $10^{376279969}$.  Some writers put the
+number of {\it subatomic particles} in the {\it observable universe} at a 
+paltry $10^{79}$ or so, so the number of partnership arrangements for 
+San Francisco MSM's is so enormous as to exhaust the standard rhetoric about how
+the number escapes our comprehension, etc.
+
+Despite this, this set of all possible partnership arrangments is still
+finite.  Beyond this lie the countably infinite state spaces, such as
+$0, 1, 2, \ldots$.  This is the state space of the geometric distribution
+(which gave us a waiting time for the first success in a sequence of
+Bernoulli trials), or the Poisson distribution.  Many other such distributions
+exist, and we describe them all using a sequence of numbers $p_i$ so that
+$\sum_{i=0}^{\infty}p_i = 1$.  
+
+With finite state spaces $\Omega$, we could always define a {\it discrete uniform} 
+distribution.  We could always let $N=\mbox{\#}(\Omega)$, and have a distribution 
+such that $P(\{\omega_i\})=1/N$ for all $i=1, 2, \ldots, N$.  But for an
+infinite sample space, there is no uniform distribution.  Suppose that we
+assign $P(\{\omega_i\})=\epsilon$, where $\epsilon>0$.  By the axiom of
+countable additivity, we have
+\[
+\sum_{i=1}^{\infty} P(A_i) = P\Big(\cup_{i=1}A_i\Big)
+\]
+when the $A_i$'s are disjoint ($A_i \cap A_j = \emptyset$ whenever $i \neq j$).
+Since all the single-point sets $\{\omega_1\}, \{\omega_2\}, \ldots$ are
+disjoint and their union is the entire sample space, we must have
+\[
+\sum_{i=1}^{\infty} \epsilon = P(\Omega) = 1 .
+\]
+which is not possible for any $\epsilon$ whatever.  The basic problem here is
+that thanks to countable additivity, any positive probability you try to give
+to the single-element subsets of $\Omega$ makes it impossible to have a finite
+value 1 for the probability of the whole sample space; you just can't add up
+$\epsilon$ infinitely many times and get anything finite.  On the other hand,
+if you choose $\epsilon=0$, then you get $\sum_{i=1}^{\infty}0=0$; adding up
+a sequence of zero's that stretches on forever gives you zero.
+
+By the way, there's no fundamental problem in considering a sample space
+that goes on forever ``both ways'', for instance, taking the values
+$\ldots, -3, -2, -1, 0, 1, 2, 3, \ldots$.  You can put these into one-to-one
+correspondence with $0, 1, 2, \ldots$, by just associating 0 with 0, 1 with
+1, -1 with 2, 2 with 3, -2 with 4, etc.  
+
+But continuous random variables take values on the real number line, and this
+leads to some difficulties.  The real number line is {\it uncountable}; it is
+infinite, so infinite that it cannot even be placed into one-to-one 
+correspondence with the integers.  In such a vast space, trying to specify a
+distribution by giving the probability of each single-event set turns out to
+be useless; instead, the mathematicians showed that you can simply define the
+probability that a random variable will occur in each possible interval.  And
+this can be done in a consistent way by just defining the cumulative
+distribution function $F(y) = P(Y\leq y)$ for the random variable $Y$.  Then
+$P(a < Y \leq b) = F(b) - F(a)$.  It can be shown that 
+\[
+\lim_{y \rightarrow -\infty} F(y) = 0 
+\]
+and
+\[
+\lim_{y \rightarrow \infty} F(y) = 1 .
+\]
+
+When $F$ has a derivative everywhere, the {\it probability density function}
+$f(y) = \frac{dF}{dy}$ is defined.  Then
+\[
+P(Y \in [a,b]) = \int_{a}^{b} f(y) dy = F(b) - F(a) .
+\]
+Since the integral vanishes if the upper and lower endpoints are the same,
+\[
+P(Y \in [a,a]) = P(Y=a) = F(a)-F(a) = 0.
+\]
+So the probability of any particular value is actually zero!  Worse, the 
+union of all these sets of zero probability is the sample space whose 
+probability is one.  There is no paradox, though---the sample space is
+an uncountable union, and the axiom of countable additivity does not apply.
+
+The foundation case for continuous random variables is the {\it uniform
+distribution} (a.k.a. {\it Lebesgue measure} in the math books) on the unit 
+interval $[0,1]$.  If $U$ is a uniform
+random variable on $[0,1]$, the probability that $U$ will fall into an
+interval $[a,b]$ (or for that matter, $(a,b]$, $(a,b)$, or $[a,b)$) is
+equal to the length of the interval: $P(U \in [a,b]) = P(a \leq U \leq b) = b-a$ (with $a$ and $b$ both in the unit interval).  All other continuous random
+variables are transformations of this.
+
+Sometimes in applications you see {\it mixed} random variables.  Suppose that
+we have $U$, a uniform random variable on $[0,1]$, and suppose we also have 
+a coin we toss, with $X$ the number of heads (zero, or one) on the toss.
+If $Y = U/2 + X/2$, we have a mixed random variable.  The graph of the 
+cumulative distribution function of variables like this has at least one 
+jump in it, so there is no density in the ordinary sense at these places.  
+Random variables like this sometimes occur when considering censored failure
+times.  
+
+The upshot of all this is that when considering continuous random variables,
+we'll just work with the cumulative distribution function or the probability
+density function.  
+
+{\bf Exercise.} What is the cumulative distribution function of the 
+uniform distribution on $[0,1]$?  Plot this function.  What is the 
+probability density?
+
+{\bf Exercise.} A uniform distribution on an arbitrary interval $[c,d]$ assigns
+equal probability to equal length intervals that are contained within
+$[c,d]$.  Thus, $P([a,b])=(b-a)/(d-c)$ provided $c \leq a \leq b \leq d$.  
+What is the probability density? What is the cumulative distribution 
+function?
+
+We can simulate from the uniform distribution, using R.  It's worth, however,
+keeping in mind that we can't really work with real numbers.  An arbitrary
+real number contains infinitely many digits and may be considered to have
+an infinite amount of information in some sense.  We never work with such
+objects.  On digital computers, we work with a {\it finite} set of numbers
+and operations that are meant to approximate the real numbers.  That said, 
+let's see what it looks like to look at uniform random variates:
+<<>>=
+vals <- runif(20)
+vals
+@
+This gives us twenty standard uniform random variables.
+Here is a histogram of the values of one thousand such variates.
+\begin{figure}
+  \centering
+<<fig=true>>=
+hist(runif(1000))
+@
+\end{figure}
+
+{\bf Exercise.} Consider the interval $(0.12,0.22)$.  What is the probability
+that a standard uniform random variable takes values in this interval?  Generate
+fifty uniform random variates, and determine the relative frequency of being
+in the interval $(0.12,0.22)$; how does this compare with the probability?
+Repeat with five hundred, with five thousand variates.
+
+An important continuous random variable you will be familiar with from
+statistics is the normal distribution (or Gaussian).  Normal distributions
+have probability density functions like $e^{-x^2}$.  The
+{\it standard normal} distribution has density
+\[
+f_Z(x) = \frac{1}{\sqrt{2 \pi}} e^{-\frac{x^2}{2}} .
+\]
+
+\section*{The binomial waiting process and the exponential distribution}
+Suppose that we considering a waiting time $T$ for something to happen, say a 
+patient to arrive at a clinic.  We're considering $T$ as a continuous
+random variable.
+Let's say we begin at time 0, and we want to know the chance
+that we have seen the patient by time $t_0$, that is, we want to 
+know $P(T \leq t_0)$, the cumulative distribution function of $T$.  We know
+$P(T \leq w) = 0$ whenever $w < 0$, but what about the rest of it? 
+
+We want to assume that every
+little interval is the same as any other from the standpoint of arrivals.
+Let's divide the period from 0 to $t_0$ into little intervals
+of the same length, and say that the probability that the patient
+arrives in one particular little interval is $p$.  I want to put $N$ little
+intervals in $[0,1]$, so each has length $1/N$.  Then going up to time $t_0$,
+we have $\lfloor Nt_0 \rfloor$ little intervals.  (Remember 
+$\lfloor x \rfloor$ is the greatest integer in $x$, sometimes called the
+{\it floor} function.  Why this little technicality?  Say $t_0=2.802$ and
+$N=10$.  we can only get 28 little intervals in, and we have a tiny bit 
+left over.  This left over bit becomes as close to zero as we want as we
+make $N$ big enough, and we'll just make the approximation $\lfloor Nt_0 \rfloor \approx Nt_0$.)  
+
+Now we have a sequence of independent, identically distributed Bernoulli
+trials.  Just like we did when we considered the Poisson distribution, let's fix
+the expected number of successes between 0 and 1 as $Np=\lambda$, and write 
+$N \rightarrow \infty$.
+Of course, the expected number of successes between 0 and $T$ is going to be
+$\lambda t_0$, since there are approximately $Nt_0$ intervals, with probability $p$
+per interval.  Using the standard formula for the binomial, we get the
+expected number of successes as $Npt_0$, which becomes $\lambda t_0$ in the limit.
+Thus, we expect to see a Poisson number of successes with mean 
+$\lambda t_0$ (remember, $\lambda$ is the number of successes 
+{\it per unit time}, so the notation is different than we used before.)
+
+Instead of trying to directly compute $P(T \leq t_0)$, we're going to 
+compute $P(T > t_0)$ instead, and then write $P(T \leq t_0) = 1-P(T > t_0)$.
+According to the geometric distribution, the chance that the first success
+has not happened by the $j$-th trial is $(1-p)^j$.  So what is the chance
+that the first success hasn't happened by time $t_0$?  Time $t_0$ corresponds 
+to the $Nt_0$-th trial (again ignoring the small discrepancy at the end, which
+we know goes to zero as $N$ becomes arbitrarily large).  So the chance
+we haven't seen the first success yet by time $t_0$ is $(1-p)^{Nt_0}$.  But
+remember, we will be assuming $p=\lambda/N$ and taking $N \rightarrow \infty$.
+So, we have
+\[
+P(T > t_0) = \lim_{N \rightarrow \infty} (1-\frac{\lambda}{N})^{Nt_0} .
+\]
+We've seen this sort of thing before:
+\begin{eqnarray*}
+P(T > t_0) & = & \lim_{N \rightarrow \infty} \left( \Big(1 - \frac{\lambda}{N}\Big)^N \right)^t_0 \\
+& = & \left( \lim_{N \rightarrow \infty} \big(1-\frac{\lambda}{N}\big)^N \right)^{t_0} \\
+\end{eqnarray*}
+where we used continuity of $a^x$ in $x$ to move the limit inside the power.
+So now, let's just look at 
+\[
+L = \lim_{N \rightarrow \infty} \big(1-\frac{\lambda}{N}\big)^N .
+\]
+Taking logarithms (as always, natural logarithms unless we say otherwise), 
+\[
+\log L = \log\Big( \lim_{N \rightarrow \infty} \big(1-\frac{\lambda}{N}\big)^N \Big) . 
+\]
+Using continuity again (of the logarithm), we have
+\begin{eqnarray*}
+\log L & = & \lim_{N \rightarrow \infty} \log\Big(\big(1-\frac{\lambda}{N}\big)^N\Big) \\
+& = & \lim_{N \rightarrow \infty} N \log\big(1-\frac{\lambda}{N}\big) \\
+& = & \lim_{N \rightarrow \infty} \frac{\log\big(1-\frac{\lambda}{N}\big)}{1/N} \\
+& = & \lim_{x \rightarrow 0} \frac{\log(1-\lambda x)}{x} . \\
+\end{eqnarray*}
+Since the numerator and denominator both approach 0, this is the indeterminate
+form 0/0.  We use L'H{\^o}pital's Rule to find the limit:
+\begin{eqnarray*}
+\log L & = & \lim_{x \rightarrow 0} \frac{\frac{d}{dx} \log(1-\lambda x)}{\frac{d}{dx} x} \\
+& = & \lim_{x \rightarrow 0} \frac{\frac{1}{1-\lambda x}(-\lambda)}{1} \\
+& = & - \lambda .
+\end{eqnarray*}
+So
+\[
+L = e^{-\lambda} .
+\]
+But we're not done:
+\[
+P(T > t_0) = L^{t_0} = (e^{-\lambda})^{t_0} = e^{-\lambda t_0} .
+\]
+So the cumulative distribution function is
+\[
+P(T \leq t_0) = 1-e^{-\lambda t_0} .
+\]
+There's nothing really special about $t_0$, so we can write it in terms of
+$t$ instead:
+\begin{equation}
+\label{eq:expcdf}
+F_T(t) = P(T \leq t) = 1-e^{- \lambda t} .
+\end{equation}
+A random variable $T$ whose cumulative distribution function is given by 
+Equation~(\ref{eq:expcdf}) is called an {\it exponential random variable}
+(remember that for $t<0$, we have $F_T(t)=0$).  This distribution, or really
+family of distributions, has a parameter $\lambda$, which we'll learn more
+about shortly.
+
+The quantity $P(T>t)$, for nonnegative random variables, comes up frequently
+enough to have a name, {\it the survival function}.  The survival function
+has the same information as the cumulative distribution function; if you
+know one, you can just compute the other.  Many books, but not all, use $S(t)$ to refer
+to the survival function.
+
+What we've seen here is that in the Poisson limit, the geometric waiting time
+for the first success becomes an exponential waiting time as we pass to the
+continuum limit.
+
+We want to know more about the exponential distribution, such as its expected
+value.  But we can go ahead and compute the probability density function now,
+by differentiating the cumulative distribution function:
+\[
+f_T(t) = \frac{d}{dt} F_T(t) = \frac{d}{dt} (1-e^{- \lambda t}) = - (- \lambda e^{- \lambda t}) = \lambda e^{- \lambda t} .
+\]
+
+Here is a graph of the probability density function of the exponential, with
+$\lambda=1$ in black, $\lambda=2$ in blue, and $\lambda=0.5$ in red.
+\begin{figure}
+  \centering
+<<fig=true>>=
+xs <- seq(0,5,by=1/128)
+plot(xs,dexp(xs,rate=1),type="l",ylim=c(0,2),xlab="x",ylab="Density of exponential random variable")
+points(xs,dexp(xs,rate=2),type="l",col="blue")
+points(xs,dexp(xs,rate=0.5),type="l",col="red")
+@
+\end{figure}
+
+{\bf Exercise.}  Assume $\lambda=1$.  What is $P(T<-1)$? $P(T>0)$? $P(0 < T < 1)$?
+
+{\bf Exercise.}  Plot $P(0 < T < 0.1)$ as $\lambda$ ranges from 0.01 to 10.  What does this mean?
+
+{\bf Exercise.~~}Suppose that a certain disease is fatal after time $T_0$ time has elapsed from the 
+beginning, but that can be cured if it is caught in time.  Suppose that there is an exponential waiting
+time from onset of disease until diagnosis, and that the hazard of diagnosis is $\delta$.  What is the
+probability of diagnosing the disease before time $T_0$?\newline
+
+\section*{The mean of a continuous random variable}
+We know that for a discrete random variable $X$, if $P(X=x)=p_x$, the 
+expected value $EX=\sum_x{x p_x}$.  What happens in the continuous case?
+
+Let's suppose now that $X$ is continuous, and has probability density function
+$f_X(x)$.  We're going to break up the range of $X$ into tiny little intervals
+of length $\Delta x$.  What is the chance that $X$ is in a tiny interval
+$(x,x+\Delta x]$?  By definition,
+\[
+P(X \in (x,x+\Delta x]) = \int_{x}^{x+\Delta x} f_X(x) dx .
+\]
+If we have a tiny narrow little interval, we can just approximate the
+integral by
+\[
+P(X \in (x, x+\Delta x]) = f_X(x)\, \Delta x .
+\]
+So the probability density actually gives you the chance per unit length of
+being in a tiny interval at $x$.  Since $\Delta x$ is really tiny, all the
+values in the interval $(x, x+\Delta x]$ are about equal to $x$, so we
+could write
+\[
+EX \approx \sum_x x f_X(x) \, \Delta x .
+\]
+As you might guess (expect?), as we take $\Delta x$ to zero, we will be 
+forming the limit of Riemann sums, and this will become
+\[
+EX = \int_{- \infty}^{\infty} x f_X(x) dx .
+\]
+This can be considered the {\it definition} of the expected value of a
+continuous random variable.
+
+Let's try this for the exponential distribution.  With $T$ as an
+exponential random variable, lets first write
+\[
+ET = \int_{- \infty}^0 t f_T(t) dt + \int_{0}^{\infty} t f_T(t) dt .
+\]
+But the density of the exponential vanishes for negative values of $t$, so
+the first term is zero. So
+\[
+ET = \int_0^{\infty} t f_T(t) dt = \int_0^{\infty} t \lambda e^{-\lambda t} dt .
+\]
+We can use integration by parts to find the value of this integral.
+Let $u=\lambda t$ and $dv = e^{-\lambda t}$; then $du = \lambda dt$ and
+$v = -(1/\lambda) e^{-\lambda t}$.  We find
+\[
+ET = \left[- \lambda t (1/\lambda) e^{- \lambda t}\right]_{0}^{\infty} - \int_0^{\infty} (-\frac{1}{\lambda}) e^{-\lambda t} \lambda dt . 
+\]
+Let's take this piece by piece.  We first need to look at
+\[
+t e^{-\lambda t}
+\]
+when $t=0$, and this is simply 0.  Then we  need to know what this is as
+$t \rightarrow \infty$ is:
+\[
+L = \lim_{t \rightarrow \infty} t e^{-\lambda t} .
+\]
+This is a $0 \times \infty$ indeterminate form.  Let's write
+\[
+L = \lim_{t \rightarrow \infty} \frac{t}{e^{\lambda t}} .
+\]
+Now it is in the form $\infty/\infty$, and L'H{\^o}pital's Rule applies
+again:
+\[
+L = \lim_{t \rightarrow \infty} \frac{\frac{d}{dt} t}{\frac{d}{dt}e^{\lambda t}} =\lim_{t \rightarrow \infty} \frac{1}{\lambda e^{\lambda t}} = 0 .
+\]
+
+{\bf Exercise.~~} Prove $\lim_{t \rightarrow \infty} t^n e^{- \lambda t}=0$ for
+any $n$.  
+
+All that's left now is 
+\[
+ET = \int_0^{\infty} e^{- \lambda t} dt = -\frac{1}{\lambda}\left[e^{-\lambda t}\right]_0^{\infty} = - \frac{1}{\lambda} (0-1) = \frac{1}{\lambda} .
+\]
+So the mean of an exponential is $1/\lambda$.
+
+For exponential distributions, $\lambda$ is sometimes called the {\it rate} parameter.  The mean is the reciprocal of the rate.
+
+To simulate from exponential distributions in R, we may use the command
+\verb+rexp+, with the option $\verb+rate+$ to set the rate.  For instance,
+suppose we wish to simulate the recovery time from an infection using an
+exponential distribution.  Let's say the mean recovery time is four days, 
+which corresponds to a rate of 0.25 per day.  In R, we have
+<<>>=
+rectime <- rexp(1, rate=0.25)
+rectime
+@
+Here, the initial \verb+1+ tells us we want a single exponential variate, and
+\verb+rate=0.25+ specifies the rate.  Let's generate twenty such random
+variables, independent of each other:
+<<>>=
+rectimes <- rexp(20, rate=0.25)
+rectimes
+@
+{\bf Exercise.}  Compute the mean of fifty, five hundred, five thousand
+exponential random variates with rate 0.25.  How does the sample mean of these
+compare to the expected value?\newline
+
+{\bf Exercise.}  Suppose that one thousand individuals are infected at the same
+time with a disease whose incubation period is assumed to be exponential with
+mean ten years.  What is the expected number of cases in the first year? the
+second year?
+
+{\bf Exercise.}  What is the chance that an exponential random variable will
+take a value less than or equal to its mean?  {\it Ans. $(e-1)/e \approx 0.632$}.
+
+{\bf Exercise.}  Let $T$ be an exponential random variable with rate $\lambda$.
+Consider the intervals between $0$, $\theta$, $2 \theta$, etc.  If
+$T \in [(i-1) \theta, i \theta)$, let $Y=i, (i=1, 2, \ldots)$.  Show that
+$Y$ is geometric, and find the associated probability.  {\it Ans. the
+chance of success is $1-e^{-\lambda \theta}$ associated with the geometric.}
+
+{\bf Exercise.} Show that the mean of a standard normal variable is zero.
+
+\section*{The memoryless property}
+Suppose we have a waiting time random variable $W$, and we know that $W>w_0$.
+For instance, $W$ might be the waiting time until death from a certain 
+disease.  If we know the person has survived for time $w_0$, we know that
+$W>w_0$.  We can ask questions about $W$ given $W>w_0$.  Let's say that the
+density function of $W$ is $f_W(w)$.
+
+%For instance, what is the chance that $W$ will be in a tiny interval $[x, x+\Delta x)$, with $x>w_0$?  Let's find out:
+\[
+P(x \leq W < x + \Delta x | W>w_0)  = \frac{P(x \leq W < x + \Delta x \cap w_0 < W)}{P(w_0 < W)} 
+\]
+just using the definition of conditional probability.  Now,
+$x \leq W < x + \Delta x$ implies $W > w_0$, since we're assuming $x>w_0$.  So 
+this becomes
+\[
+P(x \leq W < x + \Delta x | W > w_0) = \frac{P(x \leq W < x + \Delta x)}{P(w_0<W)} .
+\]
+Using the definition of the density,
+\[
+P(x \leq W < x + \Delta x | W > w_0) = \frac{f_W(x)\, \Delta x}{P(w_0<W)} 
+\]
+since the interval is located starting at $x$.  Of course, for $x<w_0$, 
+this probability is zero.  We can think of this as the {\it conditional 
+density} given $W>w_0$, and imagine that we just took the part of the 
+probability density function from $w_0$ on up, and scaled it up so that the
+are under that part was one.  
+
+Let's do an example.  Suppose that the waiting time $W$ was the absolute value
+of a normal random variable, so that $W$ has density 0 for $(- \infty, 0)$ and
+\[
+\sqrt{\frac{2}{\pi}} e^{-\frac{x^2}{2}} .
+\]
+from 0 on up.
+
+{\bf Exercise.~~} Show the mean of $W$ is $\sqrt{2/\pi}$.  
+
+Here is a plot of the density function $f_W(x)$ for our $W$.
+\begin{figure}
+  \centering
+<<fig=true>>=
+xs <- seq(0,4,by=1/128)
+plot(xs,2*dnorm(xs),type="l")
+@
+\end{figure}
+We can plot a histogram of values from this:
+\begin{figure}
+  \centering
+<<fig=true>>=
+hist1 <- hist(abs(rnorm(100000)),breaks=seq(0,6,by=0.2))
+@
+\end{figure}
+But then, let's consider repeating this, only showing values greater than
+2, say.  In other words, let $Y$ be a new random variable ranging from 2 on
+up, whose density is the conditional density of $W$ given that $W>2$.  One way
+to generate variates for $Y$ is to simply generate a bunch of $W$'s, and
+discard those that are less than two (a crude {\it rejection method}).
+Later we'll see how to
+be more efficient.
+<<>>=
+rw <- function(cut,size=100000) {
+  pb <- 2*(1-pnorm(cut))
+  if (pb<0.02) {
+  	stop("probability too small")
+  }
+  vs <- abs(rnorm(floor(100000/pb)))
+  vs1 <- vs[vs>cut]
+  len<-length(vs1)
+  if (len<size) {
+    nw <- rep(NA,size-len)
+    for (ii in 1:length(nw)) {
+      nw[ii] <- abs(rnorm(1))
+      while (abs(nw[ii])<cut) {
+      	nw[ii] <- abs(rnorm(1))
+      }
+    }
+    vs <- c(vs1,nw)
+  } else {
+  	vs <- vs1[1:size]
+  }
+  if (length(vs)!=size) {
+  	stop("error--bad size of vs")
+  }
+  vs
+}
+@
+Now, calling \verb+rw(2)+ will generate us random variates from the
+distribution of $Y$, i.e. from the absolute
+value of a standard normal distribution, conditional on being greater than 2.
+\begin{figure}
+  \centering
+<<fig=true>>=
+vals2 <- rw(2)
+hist(vals2,breaks=hist1$breaks)
+@
+\end{figure}
+Here, we used the same breaks as for the previous histogram so that the 
+horizontal axes would be comparable.  
+
+Remember, this second histogram shows random waiting times greater than 2.  What if we wanted to plot the {\it extra} waiting time,
+over and beyond 2; we could just subtract off the 2:
+\begin{figure}
+  \centering
+<<fig=true>>=
+hist(vals2-2)
+@
+\end{figure}
+At the beginning, we know you expect to wait on average until about time
+$\sqrt{2/\pi}$, or 0.798 or so.  But if you've waited until time 2, it's possible
+to use the density of $Y$ to show that you will only have to wait an additional
+0.373 or so units.  If you had a choice between waiting from the beginning, or
+starting to wait at time 2 given that it hadn't happened yet, you'd pick the
+latter.  
+
+So the conditional distribution starting at time 2 is in fact quite different
+than the distribution starting at time 0, a fact we can see from the 
+difference in means.  
+
+Let $T$ be an exponential random variable with rate $\lambda$, and let's 
+determine the conditional density given that the event has not happened
+by time $t_0$.  First, we'll have to find the probability of being greater
+than $t_0$:
+\[
+P(T>t_0) = e^{-\lambda t_0} .
+\]
+Then the density $f_{T|T>t_0}(t)$ of $T$ is
+\[
+f_{T|T>t_0}(t) = \left\{
+\begin{array}{rr}
+0 & \quad t < t_0 \\
+\lambda e^{- \lambda (t-t_0)} & \quad t\geq t_0 
+\end{array} \right.
+\]
+It's not a large step to see that if we define $Y$ to be the extra time you wait provided you have to
+wait beyond $t_0$, the density must be
+\[
+f_{Y}(t) = \left\{
+\begin{array}{rr}
+0 & \quad t < 0 \\
+\lambda e^{- \lambda (t)} & \quad t\geq 0 
+\end{array} \right.
+\]
+But this is just the same distribution that $T$ has!  In other words, the distribution in the future,
+conditional on the event not having happened yet, is always the same!  That you've waited until $t_0$,
+for an exponential, doesn't matter; the waiting time distribution is the same.  This is called the
+{\it memoryless} property, and it turns out that the exponential is the only continuous distribution that has it.
+
+Here's another way to think about what the memoryless property means.  Consider some random variable $T$, and
+let's think about the chance
+of surviving up to time $t$ (the chance the event hasn't happened by time $t$); this is $S(t) = \int_t^{\infty} f_T(t) dt$.  Now, look at some time $t_0$ that is before $t$, i.e, $0 < t_0 < t$.  The
+chance of surviving up to $t_0$ is just $S(t_0)$.  Now consider the chance of surviving on up to time
+$t$ given that you have survived up to time $t_0$.  In general, this is 
+\[
+\frac{\int_{t}^{\infty} f_T(t) dt}{S(t_0)} .
+\]
+But if we insist that $T$ has to be memoryless, this actually has to be the chance that you would survive
+the duration $t-t_0$ if you started from the beginning, i.e. $S(t-t_0)$.  The chance you survive to
+time $t$ must be the chance of surviving to time $t_0$ times the chance of surviving on to $t$ given that
+you survive to time $t_0$, just by conditional probability.  So memorylessness of $T$ means
+$S(t) = S(t_0) S(t-t_0)$.  With a substitution of $u=t-t_0$ and $v=t_0$, we can write this 
+$S(u)S(v) = S(u+v)$.  This is a fact that has to be satisfied by the survival function of any
+memoryless distribution.
+
+The equation $S(u)S(v)=S(u+v)$, giving a relationship between values of the unknown function $S$, is
+called a {\it functional equation}.  It's easy to see that an exponential function satisfies this
+functional equation: let $S(x)=e^{Kx}$.  Then we substitute into both sides, so that
+\[
+e^{Ku}e^{Kv} = e^{K(u+v)},
+\]
+which is true; of course, we need $K$ to be negative for this to reflect an actual survival function,
+but any $K$ will do as far as the functional equation is concerned.  But we already know the exponential is memoryless; are there any other solutions, 
+corresponding to memoryless distributions that aren't exponential?  
+It turns out that the general (nonzero) solution of this equation
+is in fact the exponential $e^{Kx}$, so the answer is no.  The only memoryless continuous
+distribution is the exponential (for more information on the functional equation, see p. 37--38, J. Acz{\'e}l, Lectures on Functional
+Equations and their Applications, Dover 2006).
+
+{\bf Exercise.}  Suppose that a
+population is growing with a constant doubling time of $t_d$.  If $N(t)$ is the number of individuals at
+time $t$, then $N(t+t_d)=2N(t)$ for all $t$.  What is the function $N(t)$?
+
+\section*{The hazard function}
+The probability density function of a waiting time distribution fully characterizes it.  For instance,
+if you have an estimate of the density of the distribution of the time to death, you can calculate the
+probability that an individual will die in some interval.  And if the interval is quite small, then we
+can simply multiply the probability density times the width of the interval (the usefulness of this
+approximation is in a way what is meant by ``small'').  For instance, the probability density of any
+realistic waiting time to death for a human population will be small near say age 120 years.  And this
+is true: the chance that any individual born will die around age 120 is quite small---most of us will not 
+survive nearly that long.  
+
+On the other hand, if a person is still alive at age 120, the probability of death in some interval near age
+120 might be quite high.  The {\it hazard} function is an alternative way to characterize a 
+probability distribution (for positive values) that reflects risk conditional on survival, or more
+generally, the probability an event is about to occur given that it hasn't happened already.
+
+The hazard $\mu(t)$ is defined for a nonnegative random variable $T$ by the equation
+\[
+\mu(t) \Delta t \approx P(T \in [t, t+\Delta t)|T \geq t) ,
+\]
+or formally,
+\[
+\mu(t) = \lim_{\Delta t \rightarrow 0+} \frac{P(T \in [t, t+\Delta t)|T \geq t)}{\Delta t} . 
+\]
+Since $T$ cannot be in the interval $[t,t+\Delta t)$ unless it is at least $t$ anyway, we can write
+\[
+P(T \in [t,t+\Delta t)|T \geq t) = \frac{T \in t+\Delta t \cap T \geq t}{P(T \geq t)} = \frac{T \in t+\Delta t}{S(t)} = \frac{f(t)\, \Delta t}{S(t)} .
+\]
+Therefore, 
+\[
+\mu(t) = \frac{f(t)}{S(t)}, 
+\]
+giving us an important way to express the hazard in terms of the density and survival function.
+
+For the exponential distribution, we already know $f(t) = \lambda e^{-\lambda t}$, and $S(t) = e^{-\lambda t}$.  So
+\[
+\mu(t) = \frac{\lambda e^{-\lambda t}}{e^{-\lambda t}} = \lambda . 
+\]
+The {\it exponential distribution corresponds to a constant hazard}.  In a way, this is just another statement of the memoryless property.
+
+But of course, in general, the hazard function is not constant.  Suppose we have some hazard function
+$\mu(t)$, for $0 \leq t$.  Consider the probability that the event has not happened by time $t+\Delta t$:
+\[
+P(T > t+\Delta t) = P(T>t)(1-\mu(t)\Delta t) ,
+\]
+This equation says that for the event to not have happened by $t+\Delta t$, it can't have happened by
+time $t$, and given that, it can't have happened in the interval $[t,t+Delta t)$.  But the risk of the
+event in the interval $[t,t+\Delta t)$ is just the hazard times the time at risk, $\Delta t$.
+We can expand out the right hand side, and rearrange, obtaining
+\[
+P(T > t+\Delta t) - P(T>t) = - \mu(t) P(T>t) \Delta t ,
+\]
+and then divide by $\Delta t$:
+\[
+\frac{P(T > t + \Delta t) - P(T>t)}{\Delta t}  = - \mu(t) P(T>t) .
+\]
+Since $P(T>t)=S(t)$, taking the limit as $\Delta t$ goes to zero gives us a differential equation for the survival function:
+\begin{equation}
+\label{eq:dsv}
+\frac{dS}{dt} = - \mu(t) S(t) .
+\end{equation}
+
+Here, we can see what happens if we put $\mu(t)=\lambda$, a constant.  We find
+\[
+\frac{dS}{dt} = - \lambda S(t) .
+\]
+Formally separating variables, 
+\[
+\frac{dS}{S} = - \lambda dt .
+\]
+Integrating from 0 to $t$:
+\[
+\int_{S(0)}^{S(t)} \frac{dS}{S}  = - \lambda \int_{0}^{t} dt
+\]
+\[
+\left[\log(S)\right]_{S(0)}^{S(t)} = -\lambda (t-0) .
+\]
+This yields
+\[
+\log\left(\frac{S(t)}{S(0)}\right) = - \lambda t .
+\]
+Taking exponentials of both sides, 
+\[
+\frac{S(t)}{S(0)} = e^{- \lambda t} ,
+\]
+and finally
+\[
+S(t) = S(0) e^{- \lambda t} .
+\]
+But what is $S(0)$?  This is the chance you haven't died before any time has elapsed; this has to be
+1.  So we have
+\[
+S(t) = e^{- \lambda t} ,
+\]
+the known survival function of the exponential.  So exponential distributions have constant hazard, and
+anything with a constant hazard is exponential.
+
+Let's suppose the hazard isn't constant.  Let's see what we get for arbitrary $\mu(t)$:
+\[
+\frac{dS}{dt}  = - \mu(t) S(t) .
+\]
+We can separate variables again:
+\[
+\frac{dS}{S} = - \mu(t) dt .
+\]
+So now integrating
+\[
+\int_{S(0)}^{S(t)} \frac{dS}{S} = - \int_{0}^{t} \mu(t') dt' ,
+\]
+where this time we used $t'$ as a dummy variable of integration to avoid any confusion with the $t$
+in the limits of integration.
+Once again, we find
+\[
+\left[\log(S) \right]_{S(0)}^{S(t)} = - \int_{0}^{t} \mu(t')\, dt' , 
+\]
+\[
+\log\left(\frac{S(t)}{S(0)}\right) = - \int_0^t \mu(t')\, dt' , 
+\]
+and
+\[
+\frac{S(t)}{S(0)} = e^{- \int_0^t \mu(t') \, dt'} ,
+\]
+and (again $S(0)=1$),
+\[
+S(t) = e^{- \int_0^t \mu(t') dt'} .
+\]
+This formula allows us to recover the survival function (and from there, the cumulative distribution
+function, and the density) if we know the hazard.
+
+Let's see what happens if we assume a linearly increasing hazard, say $\mu(t) = kt$.  Then we have
+$\int_0^t kt'\, dt' = \frac{1}{2}kt^2$.  So 
+\[
+S(t) = e^{- \frac{1}{2} kt^2} .
+\]
+This gives us a density of 
+\[
+f(t) = kt e^{- kt^2 / 2} .
+\]
+This turns out to be a special case of the {\it Weibull} distribution, which is commonly used in 
+survival and reliability applications.
+
+A Weibull random variable has hazard $\mu(t) = \lambda p (\lambda t)^{p-1}$, where $\lambda$ and $p$ are
+two parameters that characterize the family.  Here, $p>0$.\newline
+{\bf Exercise.~~}Show that when $p=1$, the Weibull distribution reduces to the exponential.\newline
+{\bf Exercise.~~}Show that when $p>1$, the hazard function increases; when $p<1$, the hazard decreases.\newline
+{\bf Exercise.~~}Prove that the survival function for a Weibull random variable in general is $S(t) = e^{-(\lambda t)^p}$.  \newline
+{\bf Exercise.~~}Prove that the probability density function for a Weibull random variable is $\lambda p (\lambda t)^{p-1}e^{-(\lambda t)^p}$.\newline
+{\bf Exercise$^*$.~~}Prove that the expected value of a Weibull random variable $T$ is $ET=\Gamma(1+1/p)/\lambda$ (requires knowledge of the Gamma function).\newline
+{\bf Exercise.~~}In the paper Cooley et al (1996), several distributions were fit to incubation time data
+for AIDS.  Note that data are only available for the first ten years or so of observation; treatments
+that subsequently became available change the distribution and make it difficult to extrapolate beyond the
+observation time, and the estimated incubation periods differ in their extrapolation.  One function given
+in the paper is a Weibull with $\lambda=0.089$ and $p=2.3$.  Observe that the function \verb+rweibull+
+in R will allow you to simulate random variables with a Weibull distribution; the {\it shape parameter} $a$
+in \verb+rweibull+ corresponds to our $p$, and the scale parameter $b$ in R to $1/\lambda$ here.  Use
+\verb+rweibull+ to generate one thousand variates from this distribution; plot the histogram.  Show that
+the expected value according to this distribution is approximately 9.954 years (note: \verb+gamma(x)+ in
+R computes values of the gamma function).  How does the mean of your sample correspond to the expected
+value?  Plot the density function and the hazard function of this Weibull distribution.  What does the
+model say about the hazard extrapolating beyond 10 years?  \newline
+
+\section*{Competing risks}
+Suppose that an individual were exposed to two different risks that are independent.  Let's stay away from
+survival applications for the moment, and consider the incidence of two different diseases that are completely unrelated.  Let's let $T_1$ be the event time for the incidence of the first disease, and $T_2$ the
+time of the second disease.  
+
+These two times are going to be assumed independent random variables.  What does this mean for continuous
+random variables?  Remember we can't usefully get much out of the probabilities of the single event sets here.  Instead, we will apply the multiplication rule to intervals, and write the standard definition that
+$T_1$ and $T_2$ are independent if for all intervals $I_1$ and $I_2$, 
+\[
+P(T_1 \in I_1 \cap T_2 \in I_2) = P(T_1 \in I_1) \times P(T_2 \in I_2) .
+\]
+To go much further, we need the definition of the {\it joint density} of $T_1$ and $T_2$.  Let's write the
+intervals explicitly, so that $I_1=[\theta_1,\theta'_1)$, and so forth.  A function
+$f_{12}(t_1, t_2)$ is the joint density of $T_1$ and $T_2$ if 
+\[
+P(T_1 \in (\theta_1,\theta'_1) \cap T_2 \in (\theta_2,\theta'_2)) = \int_{\theta_2}^{\theta'_2} \int_{\theta_1}^{\theta'_1} f_{12}(t_1,t_2)\, dt_1 \, dt_2 
+\]
+for all $(\theta_1, \theta'_1)$ and $(\theta_2,\theta'_2)$.  Let's denote the density of $T_1$ by $f_1(t)$, and the density of $T_2$ by $f_2(t)$.  Now, assuming independence and using this
+definition, we have that $T_1$ and $T_2$ are independent when and only when
+\[
+\int_{\theta_2}^{\theta'_2} \int_{\theta_1}^{\theta'_1} f_{12}(t_1,t_2)\, dt_1 \, dt_2 = \left( \int_{\theta_1}^{\theta'_1} f_1(t) dt\right) \times \left( \int_{\theta_2}^{\theta'_2} f_2(t) dt\right) .
+\]
+Now, this right hand term is the product of two integrals, and we wrote their dummy integration variable
+as $t$ both times.  But we could just as well actually write
+\[
+\int_{\theta_2}^{\theta'_2} \int_{\theta_1}^{\theta'_1} f_{12}(t_1,t_2)\, dt_1 \, dt_2 = \left( \int_{\theta_1}^{\theta'_1} f_1(t_1) dt_1\right) \times \left( \int_{\theta_2}^{\theta'_2} f_2(t_2) dt_2\right) .
+\]
+Although this is actually the same, it makes it clear how we can convert the product of the two 
+integrals into a double integral (leaving aside the various technicalities):
+\[
+\int_{\theta_2}^{\theta'_2} \int_{\theta_1}^{\theta'_1} f_{12}(t_1,t_2)\, dt_1 \, dt_2 =  \int_{\theta_1}^{\theta'_1} \int_{\theta_2}^{\theta'_2} f_1(t_1)  f_2(t_2)\, dt_2 \,dt_1 .
+\]
+We can write this
+\[
+\int_{\theta_2}^{\theta'_2} \int_{\theta_1}^{\theta'_1} (f_{12}(t_1,t_2) - f_1(t_1)f_2(t_2))\, dt_1 \, dt_2 .
+\]
+What does it mean to have a function, $h(t_1,t_2) = f_{12}(t_1,t_2) - f_1(t_1)f_2(t_2)$, whose integral vanishes on
+{\it every} rectangle?  It turns out that if $h$ is continuous, the only way
+the integral can vanish on every rectangle is if $h$ itself is zero everywhere.  If there were someplace,
+say $(t^*_1,t^*_2)$, where $h$ did not vanish, then by continuity there would be some tiny neighborhood
+of this point where $h$ did not vanish.  In other words, if $h(t^*_1,t^*_2)=\epsilon>0$, then if we're
+not far from $(t^*_1,t^*_2)$, $h$ can't be too far from $\epsilon$.  We're going to be able to find a small
+rectangle on which $h>0$, and the integral of a function that is greater than zero has got to be greater
+than zero.  But the integral has to vanish on every rectangle, so $h$ can't be positive.  For the same 
+reason it can't be negative; so anyway goes the outline of a proof.  So we find that for independent
+random variables $T_1$ and $T_2$, the joint density is the product of the marginal densities:
+\[
+f_{12}(t_1,t_2) = f_1(t_1) f_2(t_2) .
+\]
+
+Suppose that $T_1$ and $T_2$ are independent random variables with survival functions
+$S_1(t)$ and $S_2(t)$ respectively then.  What is the distribution of the first event time?
+In other words, let $T=\min(T_1,T_2)$.  What is the distribution of $T$?  It turns out that 
+$T>t$, for some $t$, when and only when $T_1>t$ and $T_2>t$.  Since $T$ is the smaller of $T_1$ and
+$T_2$, if {\it} is above $t$, then the larger one is too; so $T>t$ implies $T_1>t$ and $T_2>t$ (whichever
+one is smaller doesn't matter).  And conversely, if you know that both $T_1>t$ and $T_2>t$, then you
+know the smaller one is greater than $t$.  So $T>t$ is equivalent to $T_1>t \cap T_2>t$; these two
+describe the {\it same event}.  And the same event has the same probability:
+\[
+P(T>t) = P(T_1 > t \cap T_2 > t).
+\]
+Now using independence, 
+\[
+P(T>t) = P(T_1>t) P(T_2>t) .
+\]
+This shows that the survival function of the minimum of two independent events is the product of
+the survival functions:
+\[
+S_T(t) = S_1(t) S_2(t) .
+\]
+Here, $S_T(t)$ is the survival function of $T$.
+This equation is intuitively clear, since $S_T(t)$ is just the chance of escaping both events.  
+
+Let's let $\mu_T(t)$ be the hazard rate of $T$, $\mu_1(t)$ be the hazard rate of $T_1$, and
+$\mu_2(t)$ be the hazard rate of $T_2$.  Now, since the density $f_T(t) = \frac{d}{dt}F_T(t) = - \frac{d}{dt}S_T(t)$,
+\[
+\frac{d}{dt} S_T(t) = S_1(t) \frac{d}{dt} S_2(t) + S_2(t) \frac{d}{dt} S_1(t) 
+\]
+implies
+\[
+ f_T(t) = S_1(t) f_2(t) + f_1(t) S_2(t) . 
+\]
+Since $\mu_T(t) = \frac{f_T(t)}{S_T(t)}$ and so forth,
+\[
+\mu_T(t) = \frac{f_T(t)}{S_T(t)} = \frac{S_1(t) f_2(t) + f_1(t) S_2(t)}{S_T(t)} = 
+\frac{f_2(t)}{S_2(t)} + \frac{f_1(t)}{S_1(t)} .
+\]
+Therefore,
+\[
+\mu_T(t) = \mu_1(t) + \mu_2(t) .
+\]
+Thus, the hazard for the minimum of two independent events equals the sum of the hazards.
+
+Note that when we are considering competing risks, only one of which can actually happen (like death
+due to two different causes), then we can still use the above framework.  Suppose $T_1$ denotes the
+time of death due to one disease, and $T_2$ denotes the time of death due to some other cause.  Then
+the actual time of death is $T=\min(T_1,T_2)$.  If $T=T_1$, then we can still think of $T_2$ as a
+{\it counterfactual}, a random variable which is unobservable.
+
+{\bf Exercise.~~}Show that the hazard for the minimum of any number $N$ of independent events equals the
+sum of the hazards.\newline
+{\bf Exercise.~~}Let $T_1$ be exponential with hazard (rate) $\mu_1$ (constant) and let $T_2$ be 
+exponential with hazard $\mu_2$ (another constant).  Let $T=\min(T_1,T_2)$.  Show that $T$ is
+exponential, and determine the hazard.\newline
+{\bf Exercise.~~}Suppose that $N$ individuals in a population are subjected to an exponential waiting
+time until death, and that each individual has hazard $\lambda$ (constant).  What is the distribution
+of the waiting time until the first death?\newline
+{\bf Exercise.~~}Suppose that there are $N$ individuals in a population, and that for each individual,
+there is an exponential waiting time until the individual divides in two.  Let the hazard for this
+process be denoted $b$, where $b$ is a constant.  What is the distribution of the waiting time until the
+first birth?\newline
+{\bf Exercise.~~}Suppose that there are $N$ individuals in a population, and that for each individual,
+there is an exponential waiting time for a birth, with hazard $b$, and that there is an independent
+risk of death, with hazard $\mu$ (also constant).  What is the distribution of the waiting time until the
+first birth or death in the population?\newline
+{\bf Exercise.~~}Suppose the hazard of diagnosis is proportional to a {\it severity of disease} variable,
+which is assumed to linearly increase with time if a person is not diagnosed or treated.  Suppose that
+the probability of death is also proportional to the severity of disease, and that the probability of
+diagnosis and death are conditionally independent given the severity of disease.  Let $T_1$ be the
+death time and $T_2$ be the diagnosis time.  Find the joint density of $T_1$ and $T_2$.  Are these 
+independent competing risks?
+
+Let's determine the ultimate outcome in a simple exponential competing risk example.  Suppose once
+again that we are considering death from disease 1 or 2.  Let $T_1$ be the time of death due to disease
+1 and $T_2$ the time of death due to disease 2.  Whichever one of these is smallest corresponds to the
+time of the actual death; if $T_1<T_2$, then the person dies of disease 1, and if $T_1>T_2$, then the
+person dies of disease 2.  We are going to assume independent competing exponential risks.  (Why don't
+we have to worry about the case $T_1=T_2$?)  Suppose the hazard of $T_1$ is $\mu_1$ and the hazard for
+$T_2$ is $\mu_2$.  
+
+We already know that the overall event time $T=\min(T_1,T_2)$ is exponential with hazard $\mu_1+\mu_2$.
+What is the probability that $T_1>T_2$?  We're going to do this in two ways.
+
+First, let's consider the joint density
+\[
+f_{12}(t_1,t_2) = \mu_1 \mu_2 e^{-\mu_1 t_1-\mu_2 t_2}.
+\]
+The most straightforward thing to do is just integrate this over the region where $T_1>T_2$.  Thus
+\[
+P(T_1 > T_2) = \mu_1 \mu_2 \int_0^{\infty} \int_0^{t_1} e^{-\mu_1 t_1} e^{-\mu_2 t_2} \, dt_2 dt_1 .
+\]
+Moving terms in $t_1$ outside the inner integral,
+\[
+P(T_1 > T_2) = \mu_1 \mu_2 \int_0^{\infty} e^{-\mu_1 t_1} \int_0^{t_1}  e^{-\mu_2 t_2} \, dt_2 dt_1 .
+\]
+But
+\[
+\int_0^{t_1} e^{-\mu_2 t_2} \, dt_2 = \frac{1-e^{-\mu_2 t_1}}{\mu_2}, 
+\]
+so
+\[
+P(T_1 > T_2) = \mu_1 \mu_2 \int_0^{\infty} e^{-\mu_1 t_1}\frac{1-e^{-\mu_2 t_1}}{\mu_2}  dt_1 
+= \mu_1 \int_0^{\infty} e^{-\mu_1 t_1} (1-e^{-\mu_2 t_1}) \, dt_1 .
+\]
+This gives two terms:
+\[
+P(T_1 > T_2) = \mu_1 \int_0^{\infty} e^{-\mu_1 t_1} \, dt_1 - \mu_1 \int_0^{\infty} e^{-(\mu_1+\mu_2)t_1} \, dt_1 .
+\]
+This yields
+\[
+P(T_1 > T_2) = 1 - \frac{\mu_1}{\mu_1+\mu_2} = \frac{\mu_2}{\mu_1+\mu_2} .
+\]
+In other words, 
+\[
+P(T_2 < T_1) = \frac{\mu_2}{\mu_1+\mu_2} .
+\]
+We could just as well have solved the same problem with the indices exchanged, so
+\[
+P(T_1 < T_2) = \frac{\mu_1}{\mu_1+\mu_2} .
+\]
+Thus, the chance that $T_2$ will be smallest---and that disease 2 is the cause of death---is the ratio
+of the hazard for disease 2 to the total hazard.
+
+{\bf Exercise.~~}Suppose the hazard of mortality for tuberculosis is 0.5 per year, and that the hazard for
+diagnosis (assumed independent) is 2 per year.  What is the chance of death before diagnosis given these
+assumptions?
+
+Let's take a look at the competing risk problem another way.  Let $S$ be the probability that the person
+has not died; this is just the survival function of $T$.  Let $M_1$ be the probability that the person 
+has died of cause 1 by time t, and $M_2(t)$ the probability that the person has died of cause 2 by time $t$.
+We can write
+\[
+S(t+\Delta t) = S(t)(1-\mu_1 \Delta t - \mu_2 \Delta t) ,
+\]
+since the chance that $T_1$ and $T_2$ would both fall inside a tiny interval is negligible.
+Also,
+\[
+M_1(t+\Delta t) = M_1(t) + S(t)\mu_1 \Delta t .
+\]
+Similarly, 
+\[
+M_2(t+\Delta t) = M_2(t) + S(t)\mu_2 \Delta t .
+\]
+We know that the first of these three equations is going to lead to a differential equation for $S(t)$,
+and that we will be able to solve it to obtain
+\[
+S(t) = e^{-(\mu_1+\mu_2)t} .
+\]
+From the second, we find
+\[
+\frac{dM_1}{dt} = \mu_1 S(t) .
+\]
+We can just integrate this:
+\[
+M_1(t) - M_1(0) = \mu_1 \int_0^{t} S(t)\, dt.
+\]
+Remembering that at the beginning, nobody has died of anything, so $M_1(0)=0$.  Therefore, it must be
+that
+\[
+M_1(t) = \mu_1 \frac{1-e^{-(\mu_1+\mu_2)t}}{\mu_1+\mu_2} .
+\]
+In the long run, i.e. as $t \rightarrow \infty$, the exponential term goes to zero, so
+\[
+M_1(\infty) = \frac{\mu_1}{\mu_1+\mu_2} .
+\]
+This is the same as $P(T_1<T_2)$, and again gives the chance that the person dies of cause 1.
+
+{\bf Exercise.~~}Suppose you have a population of one million, and that each individual has a hazard of
+mortality of one per unit time, and that all are independent.  
+Show that you can simulate the first event by drawing a single 
+exponential random variable to determine the time of the next death in the population, and a single
+random sampling of the population to determine who died.  What is the expected number to die in a small
+period of time, say $\Delta t=1/100$?  \newline
+
+
+
+\section*{References}
+Cooley PC, Myers LE, Hamill DN. 1996. A meta-analysis of estimates of the AIDS incubation distribution. European Journal of Epidemiology 12:229--235.\newline
+
+
+\vfill
+\end{document}

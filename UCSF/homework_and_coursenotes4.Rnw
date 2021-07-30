@@ -1,0 +1,861 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+<<echo=FALSE,results='hide'>>=
+opts_chunk$set(fig.path='hw4/')
+library(ggplot2)
+@
+
+\section*{Lecture 4}
+Version 1.1---modified 16 Feb 2019, 1602
+
+This week, we're going to take a step back and use some of what we learned to look
+at data.  At the end we'll do a little more review and preparation for next week's
+model: the Galton-Watson process.
+
+<<results='hide',echo=FALSE>>=
+library("reshape2")
+library("plyr")
+catb <- rbind(c(143,154,141,149,134,156,178,132,136,114),    #Alameda
+              rep(0,10),                                     #Alpine
+              c(0,0,0,0,0,0,1,0,1,0),                        #Amador
+              c(4,10,5,6,4,4,9,1,6,5),                       #Berkeley
+              c(4,3,3,3,3,2,2,0,4,4),                        #Butte
+              c(0,0,0,1,0,2,0,1,1,0),                        #Calaveras
+              c(0,0,2,0,1,0,3,0,2,0),                        #Colusa
+              c(64,58,50,51,79,47,33,60,55,57),              #Contra Costa
+              c(0,0,1,0,0,1,0,0,0,0),                        #Del Norte
+              c(3,4,4,3,4,1,1,3,2,1),                        #El Dorado
+              c(102,69,62,41,75,66,55,46,34,39),             #Fresno
+              c(0,0,1,2,1,0,1,0,3,1),                        #Glenn
+              c(4,4,1,0,0,2,1,1,5,2),                        #Humboldt
+              c(31,32,33,29,21,36,24,27,30,38),              #Imperial
+              c(0,0,0,1,0,0,1,0,0,0),                        #Inyo
+              c(36,42,41,38,50,41,35,40,34,28),              #Kern
+              c(3,9,2,6,5,4,4,6,5,6),                        #Kings
+              c(3,0,1,1,2,0,2,1,2,2),                        #Lake
+              c(0,2,0,0,0,1,0,0,2,0),                        #Lassen
+              c(54,53,39,39,47,44,42,29,34,38),              #Long Beach
+              c(928,904,879,815,790,702,674,680,625,666),    #Los Angeles
+              c(5,9,3,1,20,8,3,12,10,5),                     #Madera
+              c(13,10,6,16,6,14,11,12,15,13),                #Marin
+              c(0,0,0,0,0,0,0,0,0,0),                        #Mariposa
+              c(1,2,4,3,4,3,0,2,2,1),                        #Mendocino
+              c(8,8,9,5,5,11,6,6,19,12),                     #Merced
+              c(0,0,0,0,0,0,0,0,0,0),                        #Modoc
+              c(0,0,0,0,0,0,0,0,0,0),                        #Mono
+              c(29,37,29,22,24,16,21,25,18,17),              #Monterey
+              c(8,3,7,7,3,8,6,6,3,3),                        #Napa
+              c(1,2,2,0,3,0,0,1,1,0),                        #Nevada
+              c(230,242,226,217,210,197,224,209,192,187),    #Orange
+              c(12,15,7,5,6,3,5,5,11,5),                     #Pasadena
+              c(2,5,6,14,2,7,3,6,6,6),                       #Placer
+              c(0,0,0,0,0,0,0,0,0,0),                        #Plumas
+              c(75,60,74,80,79,69,74,68,57,54),              #Riverside
+              c(157,142,97,109,110,98,64,75,63,84),          #Sacramento
+              c(2,0,1,0,1,0,1,3,0,1),                        #San Benito
+              c(68,63,58,59,74,76,60,53,58,57),              #San Bernardino
+              c(320,305,315,280,264,223,222,263,234,206),    #San Diego
+              c(135,132,120,143,118,115,98,108,116,107),     #San Francisco
+              c(65,63,78,51,66,76,46,44,44,43),              #San Joaquin
+              c(3,8,2,3,1,3,4,6,3,4),                        #San Luis Obispo
+              c(56,62,78,89,64,66,59,59,54,58),              #San Mateo
+              c(18,26,15,14,34,22,30,21,24,26),              #Santa Barbara
+              c(202,199,228,240,197,197,193,180,176,181),    #Santa Clara
+              c(9,10,6,10,10,5,10,10,7,5),                   #Santa Cruz
+              c(4,6,5,4,2,1,2,0,1,4),                        #Shasta
+              c(0,0,0,0,0,0,0,0,0,0),                        #Sierra
+              c(0,1,0,0,0,0,0,0,0,0),                        #Siskiyou
+              c(42,38,26,37,33,23,20,34,17,13),              #Solano
+              c(21,11,14,13,9,9,9,13,14,8),                  #Sonoma
+              c(19,11,16,16,20,20,16,9,7,10),                #Stanislaus
+              c(0,1,3,1,6,1,4,6,5,4),                        #Sutter
+              c(1,4,2,4,1,2,0,1,0,0),                        #Tehama
+              c(0,0,1,0,0,0,0,0,0,0),                        #Trinity
+              c(21,15,21,25,33,24,26,20,12,16),              #Tulare
+              c(1,0,0,0,0,1,0,0,0,0),                        #Tuolumne
+              c(72,55,49,57,65,48,33,35,34,27),              #Ventura
+              c(5,9,3,9,8,12,8,3,3,6),                       #Yolo
+              c(7,2,0,6,5,0,1,1,2,5))                        #Yuba
+
+cacty <- c("Alameda", "Alpine", "Amador", "Berkeley", "Butte", "Calaveras", "Colusa", "ContraCosta",
+   "DelNorte", "ElDorado", "Fresno", "Glenn", "Humboldt", "Imperial", "Inyo", "Kern", "Kings",
+   "Lake", "Lassen", "LongBeach", "LosAngeles", "Madera", "Marin", "Mariposa", "Mendocino", "Merced",
+   "Modoc", "Mono", "Monterey", "Napa", "Nevada", "Orange", "Pasadena", "Placer", "Plumas", "Riverside",
+   "Sacramento", "SanBenito", "SanBernardino", "SanDiego", "SanFrancisco", "SanJoaquin", "SanLuisObispo",
+   "SanMateo", "SantaBarbara", "SantaClara", "SantaCruz", "Shasta", "Sierra", "Siskiyou", "Solano",
+   "Sonoma", "Stanislaus", "Sutter", "Tehama", "Trinity", "Tulare", "Tuolumne", "Ventura", "Yolo", "Yuba")
+catb <- as.data.frame(t(catb))
+names(catb) <- cacty
+catb$year <- 2004:2013
+
+catbr <- rbind(
+   c(10.5,11.4,10.4,10.9,9.7,11.2,12.7,9.4,9.6,7.9),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,9.5,4.6,5.5,0,0,8.0,0,5.2,4.3),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(6.4,5.8,4.9,5.0,7.6,4.5,3.1,5.7,5.1,5.3),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(11.9,7.9,7.0,4.6,8.2,7.1,5.9,4.9,3.6,4.1),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,3.7,0),
+   c(20.1,20.3,20.3,17.4,12.3,20.8,13.7,15.2,16.8,21.2),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(4.9,5.5,5.2,4.7,6.1,4.9,4.2,4.7,4.0,3.2),
+   c(0,6.2,0,4.0,3.3,0,0,4.0,3.3,4.0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(11.4,11.3,8.4,8.4,10.1,9.5,9.1,6.2,7.3,8.1),
+   c(10.1,9.8,9.6,8.9,8.6,7.6,7.3,7.3,6.7,7.1),
+   c(3.7,6.4,0,0,13.4,5.3,0,7.9,6.6,3.3),
+   c(5.3,4.1,2.4,6.4,2.4,5.6,4.4,4.7,5.9,5.1),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(3.4,3.3,3.7,2.0,2.0,4.3,2.3,2.3,7.3,4.6),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(7.1,9.1,7.1,5.4,5.8,3.9,5.0,6.0,4.3,4.0),
+   c(6.1,0,5.3,5.3,0,5.9,4.4,4.4,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(7.8,8.2,7.6,7.3,7.0,6.6,7.4,6.9,6.2,6.0),
+   c(8.7,10.9,5.1,3.7,4.4,0,3.7,3.6,7.9,3.5),
+   c(0,1.6,1.9,4.2,0,2.0,0,1.7,1.7,1.6),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(4.0,3.1,3.7,3.8,3.7,3.2,3.4,3.1,2.5,2.4),
+   c(11.7,10.5,7.1,7.9,7.9,6.9,4.5,5.2,4.4,5.8),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(3.6,3.2,2.9,2.9,3.7,3.8,2.9,2.6,2.8,2.7),
+   c(10.8,10.3,10.6,9.3,8.7,7.2,7.2,8.4,7.4,6.5),
+   c(17.3,16.9,15.3,18.1,14.8,14.3,12.2,13.3,14.1,12.9),
+   c(10.2,9.7,11.8,7.6,9.8,11.2,6.7,6.4,6.3,6.1),
+   c(0,3.1,0,0,0,0,0,2.2,0,0),
+   c(8.0,8.9,11.2,12.6,9.0,9.2,8.2,8.1,7.3,7.8),
+   c(4.4,6.3,3.6,3.4,8.1,5.2,7.1,4.9,5.6,6.0),
+   c(11.9,11.7,13.3,13.8,11.2,11.1,10.8,10.0,9.6,9.8),
+   c(3.5,3.9,2.3,3.9,3.8,1.9,3.8,3.8,2.6,1.8),
+   c(0,3.4,2.9,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(10.2,9.3,6.3,9.0,8.0,5.6,4.8,8.2,4.1,3.1),
+   c(4.5,2.3,3.0,2.7,1.9,1.9,1.9,2.7,2.9,1.6),
+   c(3.9,2.2,3.2,3.1,3.9,3.9,3.1,1.7,1.3,1.9),
+   c(0,0,0,0,6.4,0,0,6.3,5.2,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(5.3,3.7,5.0,5.9,7.6,5.5,5.9,4.5,2.7,3.5),
+   c(0,0,0,0,0,0,0,0,0,0),
+   c(9.1,6.9,6.1,7.1,8.0,5.9,4.0,4.2,4.1,3.2),
+   c(2.7,4.8,0,4.6,4.0,6.0,4.0,0,0,2.9),
+   c(10.7,0,0,8.5,7.0,0,0,0,0,6.8))
+tb.hist <- c(3492,3442,3719,3468,4212,4889,5273,5382,5173,4860,4675,4313,4059,3855,3608,3297,3332,3169,3227)
+tb.year <- 1985:2003
+tbh <- ddply(cm,.(year),function(ds)sum(ds$count))
+tbh <- rbind(data.frame(year=tb.year,V1=tb.hist),tbh)
+tbh$cm3 <- filter(tbh[,2],rep(1/3,3))
+tbh$lm3 <- filter(tbh[,2],rep(1/3,3),sides=1)
+
+tmp <- catbr
+catbr <- as.data.frame(t(catbr))
+names(catbr) <- cacty
+catbr$year <- 2004:2013
+gono <- structure(list(County = c("Alameda", "Alpine", "Amador", "Butte", 
+"Calaveras", "Colusa", "ContraCosta", "DelNorte", "ElDorado", 
+"Fresno", "Glenn", "Humboldt", "Imperial", "Inyo", "Kern", "Kings", 
+"Lake", "Lassen", "LosAngeles", "Madera", "Marin", "Mariposa", 
+"Mendocino", "Merced", "Modoc", "Mono", "Monterey", "Napa", "Nevada", 
+"Orange", "Placer", "Plumas", "Riverside", "Sacramento", "SanBenito", 
+"SanBernardino", "SanDiego", "SanFrancisco", "SanJoaquin", "SanLuisObispo", 
+"SanMateo", "SantaBarbara", "SantaClara", "SantaCruz", "Shasta", 
+"Sierra", "Siskiyou", "Solano", "Sonoma", "Stanislaus", "Sutter", 
+"Tehama", "Trinity", "Tulare", "Tuolumne", "Ventura", "Yolo", 
+"Yuba"), cases2010 = c(1924L, 0L, 4L, 61L, 6L, 0L, 821L, 1L, 
+16L, 798L, 7L, 31L, 25L, 3L, 970L, 22L, 28L, 0L, 10022L, 83L, 
+66L, 1L, 15L, 76L, 0L, 2L, 81L, 28L, 7L, 1137L, 64L, 3L, 773L, 
+1889L, 9L, 1140L, 2023L, 1937L, 709L, 31L, 211L, 66L, 598L, 47L, 
+36L, 0L, 6L, 437L, 97L, 167L, 30L, 3L, 1L, 90L, 4L, 170L, 54L, 
+14L), rate2010 = c(127.1, 0, 10.6, 27.7, 13.2, 0, 78, 3.5, 8.8, 
+85.6, 24.9, 23, 14.3, 16.2, 115.3, 14.4, 43.3, 0, 102, 54.9, 
+26.1, 5.5, 17.1, 29.7, 0, 14.1, 19.5, 20.5, 7.1, 37.7, 18.3, 
+15.1, 35.3, 133, 16.3, 55.9, 65.2, 240.2, 103.3, 11.5, 29.3, 
+15.6, 33.5, 17.9, 20.3, 0, 13.4, 105.8, 20, 32.4, 31.7, 4.7, 
+7.3, 20.3, 7.3, 20.6, 26.8, 19.4), cases2011 = c(1508L, 0L, 5L, 
+49L, 4L, 1L, 862L, 1L, 14L, 1197L, 7L, 44L, 38L, 1L, 870L, 42L, 
+42L, 5L, 10088L, 74L, 72L, 0L, 22L, 61L, 0L, 0L, 91L, 24L, 14L, 
+972L, 77L, 2L, 896L, 1813L, 14L, 1403L, 2168L, 2251L, 623L, 50L, 
+236L, 104L, 641L, 81L, 45L, 1L, 10L, 266L, 134L, 136L, 24L, 9L, 
+1L, 94L, 15L, 211L, 47L, 23L), rate2011 = c(98.8, 0, 13.4, 22.2, 
+8.9, 4.7, 81.2, 3.5, 7.8, 127.4, 24.8, 32.6, 21.4, 5.4, 102.5, 
+27.7, 65.2, 14.4, 102.3, 48.7, 28.3, 0, 25, 23.5, 0, 0, 21.7, 
+17.4, 14.2, 31.9, 21.6, 10, 40.4, 126.8, 25, 68.3, 69.4, 276.7, 
+89.9, 18.5, 32.4, 24.4, 35.5, 30.5, 25.3, 31.8, 22.3, 64.2, 27.5, 
+26.2, 25.3, 14.2, 7.4, 21, 27.3, 25.4, 23.2, 31.7), cases2012 = c(1545L, 
+0L, 2L, 69L, 5L, 1L, 932L, 0L, 21L, 1504L, 8L, 66L, 35L, 1L, 
+1271L, 44L, 53L, 5L, 11963L, 110L, 82L, 4L, 19L, 99L, 2L, 0L, 
+208L, 29L, 13L, 1182L, 119L, 1L, 1175L, 2156L, 36L, 1865L, 2603L, 
+2480L, 720L, 84L, 265L, 170L, 1006L, 100L, 175L, 1L, 7L, 356L, 
+153L, 302L, 22L, 42L, 0L, 170L, 17L, 378L, 88L, 24L), rate2012 = c(100.4, 
+0, 5.5, 31.2, 11.1, 4.7, 87.2, 0, 11.5, 158.6, 28, 49, 19.6, 
+5.4, 148.5, 29.2, 82.5, 14.8, 120.3, 72.7, 32.3, 22.3, 21.5, 
+37.9, 21, 0, 49.4, 21, 13.3, 38.5, 33, 5, 52.2, 150.2, 63.6, 
+90.4, 82.5, 301.6, 103.2, 31, 36, 39.9, 55.1, 37.2, 98.1, 31.9, 
+15.5, 85, 31.3, 57.7, 22.8, 65.7, 0, 37.6, 31.5, 45.4, 42.9, 
+32.9), cases2013 = c(1860L, 0L, 6L, 143L, 10L, 9L, 873L, 0L, 
+38L, 1745L, 5L, 203L, 43L, 2L, 1567L, 91L, 25L, 5L, 13068L, 138L, 
+84L, 3L, 14L, 141L, 2L, 5L, 363L, 37L, 22L, 1452L, 108L, 3L, 
+1412L, 2228L, 26L, 2047L, 2871L, 2525L, 947L, 62L, 331L, 121L, 
+1129L, 134L, 248L, 2L, 20L, 417L, 255L, 552L, 72L, 60L, 2L, 292L, 
+16L, 333L, 141L, 56L), rate2013 = c(119, 0, 16.7, 64.6, 22.3, 
+41.5, 80.7, 0, 20.8, 182.3, 17.5, 150.7, 24, 10.8, 181, 60.5, 
+38.9, 14.8, 130.5, 90.3, 32.8, 16.8, 15.9, 53.7, 21.1, 34.5, 
+85.6, 26.6, 22.5, 46.8, 29.6, 15.2, 62.4, 154.1, 45.5, 98.7, 
+90.4, 303.9, 134.8, 22.8, 44.6, 28, 60.9, 49.5, 139.2, 64.2, 
+44.1, 98.6, 51.9, 104.8, 74.4, 93.6, 14.9, 64.1, 29.6, 39.7, 
+68.4, 76.7), cases2014 = c(2279L, 0L, 11L, 302L, 19L, 5L, 1024L, 
+16L, 51L, 1507L, 7L, 142L, 84L, 9L, 1542L, 149L, 67L, 12L, 15135L, 
+161L, 84L, 6L, 55L, 185L, 1L, 4L, 296L, 58L, 27L, 1796L, 144L, 
+3L, 1669L, 2223L, 21L, 2583L, 3401L, 3293L, 985L, 151L, 359L, 
+203L, 1515L, 176L, 377L, 1L, 30L, 591L, 216L, 788L, 84L, 76L, 
+7L, 390L, 23L, 360L, 193L, 78L), rate2014 = c(143.9, 0, 30.5, 
+134.9, 42.1, 23.1, 93.4, 56.7, 27.7, 155.8, 24.4, 105.5, 46.4, 
+48.4, 176.8, 99.5, 103.5, 35.7, 150.3, 104.4, 32.5, 33.6, 62.1, 
+69.8, 10.6, 27.5, 69.6, 41.3, 27.5, 57.3, 38.9, 15.2, 72.7, 152.2, 
+36.2, 123.5, 105.9, 393, 138.4, 55.2, 48, 46.5, 80.8, 64.7, 211.2, 
+32.3, 66.2, 138.2, 43.6, 148.6, 87.1, 118.3, 52.2, 84.9, 42.7, 
+42.6, 93.1, 106.2)), .Names = c("County", "cases2010", "rate2010", 
+"cases2011", "rate2011", "cases2012", "rate2012", "cases2013", 
+"rate2013", "cases2014", "rate2014"), class = "data.frame", row.names = c(NA, 
+-58L))
+cm <- melt(catb,id="year")
+names(cm)[names(cm)=="value"] <- "count"
+ctr <- melt(catbr,id="year")
+names(ctr)[names(ctr)=="value"] <- "rate"
+ctr <- merge(ctr,cm,by=c("year","variable"))
+ex1 <- ctr[ctr$year=="2013" & ctr$count>=30,]
+ex1$norcal <- c(1,1,0,0,0,0,0,0,1,0,0,1,1,1,1)
+@
+
+\section*{Holt-Winters forecasting}
+
+The following data are the reported yearly case counts for Tuberculosis in California since 1985.
+<<>>=
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California",na.rm=TRUE))
+@
+
+We'd like to produce some forecasts for the next year.  One idea is that recent events are more important or relevant
+than things in the far past.  Obviously this isn't true in general.  It's more a rule of thumb that's often helpful.  
+
+Our goal is to look at some simple ways to predict next year's case count, based on the time series.  
+
+The first, and most naive thing we could do, would be to just say next year's will be equal to this year's, or to the average
+of the last few years.  Of course that ignores the trend.  So we might take a couple of recent points (how many?) and draw 
+a line thru them, and just extrapolate forward.  We might feel this doesn't make good use of the available information.
+
+We could take moving averages; R provides a function called {\tt filter} for this.  For a three point centered moving
+average, we do this.  We show the centered moving average in red.
+\[
+y_{i} = \frac{x_{i-1}+x_i+x_{i+1}}{3}
+\]
+<<>>=
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California")+geom_point(data=tbh,aes(tbh[,1],tbh[,3],color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh[,3],color="red"),na.rm=TRUE) + theme(legend.position="none"))
+@
+This does smooth out irregularities in the sequence and is useful for some things.  But it isn't so great for forecasting since it
+isn't, strictly speaking, available at the ends.  We could work around that.  
+
+One idea is to just use the last three.  
+<<>>=
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California")+geom_point(data=tbh,aes(tbh[,1],tbh$lm3,color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh$lm3,color="red"),na.rm=TRUE) + theme(legend.position="none"))
+@
+Now, when it's rising consistently, the data are above their three year moving average; when it's falling, the data are below the 
+moving average.  
+
+One idea that tries to use more of the data but still to weight recent data more heavily is called the
+exponentially weighted moving average.  Remember our geometric series:
+\[
+\sum_{i=0}^\infty a^i = \frac{1}{1-a} 
+\]
+If we use weights $(1-a)a^i$, they will actually add up to 1 if we had an infinite amount of data going back into past eternity.  
+But in practice we can often go far enough back to where this is so close to 1 the difference is irrelevant to anything.  
+Let $\lambda=1-a$.  
+
+Then we have a moving average estimate of the current ``true value'' or level:
+\[
+\mu_\tau = \lambda x_\tau + \lambda (1-\lambda) x_{\tau-1} + \lambda (1-\lambda)^2 x_{\tau-2} + \cdots = 
+  \lambda \sum_{i=0}^{T} (1-\lambda)^i x_{\tau-i} .
+\]
+If $T$ is big enough those weights will sum to nearly 1 and be good enough.
+
+One nice thing about this is that we can construct a recursion:
+\[
+\mu_\tau = \lambda x_{\tau} + \sum_{i=1}^{T}(1-\lambda)^i x_{\tau-i} =
+ \lambda x_{\tau} + (1-\lambda)\sum_{j=0}^{j=T-1}(1-\lambda)^j x_{\tau-1-j} = \lambda x_{\tau} + (1-\lambda)\mu_{\tau-1} .
+\]
+with $\mu_0=0$ for example.
+
+In practice, what is usually done is to set
+\[
+\mu_1 = x_1 .
+\]
+Then
+\[
+\mu_{\tau} = \lambda x_\tau + (1-\lambda) \mu_{\tau - 1}
+\]
+for $\tau=2,3,\ldots$.  It turns out if you do this, your coefficients for any $\mu$ always add up {\it exactly} to 1, 
+not approximately.  I am following the discussion in Harvey.
+
+If you imagine that $m_\tau$ is the forecast value for $x_{\tau}$ given the series so far, we could write this
+as $\hat{x}_{\tau+1|\tau}$:
+\[
+\hat{x}_{\tau+1|\tau} = \lambda x_\tau + (1-\lambda) \hat{x}_{\tau|\tau-1} .
+\]
+Each time, we update the forecast by taking a weighted average of the last forecast and the new data.
+
+The problem with this idea, though, is it assumes a horizontal trend.  It doesn't extrapolate a trend forward!
+
+Suppose we extend the simple method above by having an estimated level $\mu_\tau$ and an estimated slope $b_\tau$
+at each time.  The idea is to forecast the future as a linear trend:
+\[
+\hat{x}_{\tau + k|\tau} = \mu_\tau + b_\tau k
+\]
+for $k=1,2,\ldots$.  
+We update and get the new estimated level for time $\tau$ by taking the last forecast of it (from one step ago)
+and making a weighted average of this forecast and the new data:
+\[
+\mu_\tau = \lambda_0 x_t + (1-\lambda_0) \hat{x}_{\tau|\tau-1} .
+\]
+Here,
+\[
+\hat{x}_{\tau|\tau-1} = \mu_{\tau-1} + b_{\tau-1} .
+\]
+To update the slope, take the past estimate $b_{\tau-1}$ and make a different weighted average of this slope
+with the change in the level:
+\[
+b_{\tau} = \lambda_1(\mu_\tau-\mu_{\tau-1}) + (1-\lambda_1) b_{\tau-1} .
+\]
+Traditionally, we take $\mu_2=x_2$, $b_2 = x_2-x_1$.  Here $\lambda_0$ and $\lambda_1$ are smoothing constants.
+This is known as the {\it Holt-Winters} procedure (discussion
+follows that in Harvey).  Thus, the Holt-Winters forecast method is based on simple linear recursions for the
+mean and slope.
+\stepcounter{exno}
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Let $\hat{e}_\tau$ be the one-step forecast error:
+\[
+\hat{e}_\tau = x_\tau - \hat{x}_{\tau|\tau-1} .
+\]
+Show the forecast can be conducted using these equations:
+\[
+\mu_\tau = \mu_{\tau-1} + b_{\tau-1} + \lambda_0 \hat{e}_\tau
+\]
+\[
+b_\tau = b_{\tau-1} + \lambda_0 \lambda_1 \hat{e}_\tau
+\]
+\ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Show that if the data $x_t$ lie along a straight line, the Holt-Winters forecasts will follow the line perfectly.
+\ding{122} \vskip 6pt
+
+Let's run the Holt-Winters filter on the tuberculosis data and see what we get.  R has a builtin function called
+{\tt HoltWinters} which we want to think about, but let's do it by hand first.
+<<>>=
+hw.filter <- function(xs,lam0,lam1,forecasttime=NA) {
+  lx <- length(xs)
+  if (lx < 3) {
+    stop("xs too short")
+  }
+  mu <- rep(NA,lx)
+  bb <- rep(NA,lx)
+  mu[2] <- xs[2]
+  bb[2] <- xs[2]-xs[1] 
+  for (ii in 3:lx) {
+    ehat <- xs[ii] - mu[ii-1] - bb[ii-1]
+    mu[ii] <- mu[ii-1]+bb[ii-1]+lam0*ehat
+    bb[ii] <- bb[ii-1]+lam0*lam1*ehat
+  }
+  if (is.na(forecasttime)) {
+    mu
+  } else {
+    mu[lx]+forecasttime*bb[lx]
+  }
+}
+@
+
+Let's try a few.
+<<>>=
+tbh$hw22 <- hw.filter(tbh[,2],0.2,0.2)
+tbh$hw55 <- hw.filter(tbh[,2],0.5,0.5)
+tbh$hw88 <- hw.filter(tbh[,2],0.8,0.8)
+tbh$hw25 <- hw.filter(tbh[,2],0.2,0.5)
+tbh$hw58 <- hw.filter(tbh[,2],0.5,0.8)
+tbh$hw82 <- hw.filter(tbh[,2],0.8,0.2)
+tbh$hw28 <- hw.filter(tbh[,2],0.2,0.8)
+tbh$hw52 <- hw.filter(tbh[,2],0.5,0.2)
+tbh$hw85 <- hw.filter(tbh[,2],0.8,0.5)
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California 0.2/0.2")+geom_point(data=tbh,aes(tbh[,1],tbh$hw22,color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh$hw22,color="red"),na.rm=TRUE) + theme(legend.position="none"))
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California 0.2/0.5")+geom_point(data=tbh,aes(tbh[,1],tbh$hw25,color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh$hw25,color="red"),na.rm=TRUE) + theme(legend.position="none"))
+
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California 0.5/0.2")+geom_point(data=tbh,aes(tbh[,1],tbh$hw52,color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh$hw52,color="red"),na.rm=TRUE) + theme(legend.position="none"))
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California 0.5/0.5")+geom_point(data=tbh,aes(tbh[,1],tbh$hw55,color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh$hw55,color="red"),na.rm=TRUE) + theme(legend.position="none"))
+@
+
+Let's see how the builtin function works.  It chooses what it thinks the best values are for you.
+<<>>=
+hwf <- HoltWinters(tbh[,2],gamma=FALSE)
+hwf
+tmp <- cbind(tbh[,1],tbh[,2],tbh[,1])
+tmp[1:2,3] <- NA
+tmp[3:dim(tmp)[1],3] <- hwf$fitted[,"level"]
+tmp <- as.data.frame(tmp)
+suppressWarnings(qplot(tmp[,1],tmp[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California HW fit")+geom_point(data=tmp,aes(tmp[,1],tmp[,3],color="red"),na.rm=TRUE) + geom_line(data=tmp,aes(tmp[,1],tmp[,3],color="red"),na.rm=TRUE) + theme(legend.position="none"))
+@
+What if we fit using only since the year 2000?
+<<>>=
+hwf2 <- HoltWinters(tbh[16:29,2],gamma=FALSE)
+hwf2
+tmp <- cbind(tbh[16:29,1],tbh[16:29,2],tbh[16:29,1])
+tmp[1:2,3] <- NA
+tmp[3:dim(tmp)[1],3] <- hwf2$fitted[,"level"]
+tmp <- as.data.frame(tmp)
+suppressWarnings(qplot(tmp[,1],tmp[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California HW fit")+geom_point(data=tmp,aes(tmp[,1],tmp[,3],color="red"),na.rm=TRUE) + geom_line(data=tmp,aes(tmp[,1],tmp[,3],color="red"),na.rm=TRUE) + theme(legend.position="none"))
+@
+
+According to R, their coefficients are interpreted according to these equations (I've redacted the seasonal stuff):
+\begin{verbatim}
+Yhat[t+h] = a[t] + h * b[t], 
+where a[t], b[t] are given by
+a[t] = α Y[t] + (1-α) (a[t-1] + b[t-1])
+b[t] = β (a[t] - a[t-1]) + (1-β) b[t-1]
+\end{verbatim}
+So with $a=\mu$, $b=b$, $\alpha=\lambda_0$, $\beta=\lambda_1$, $Y=x$, $t=\tau$, this is the same as above.
+Let's use the estimated parameters from the last part of the series, and use them on the whole series:
+<<>>=
+tbh$hwx <- hw.filter(tbh[,2],hwf2$alpha,hwf2$beta)
+suppressWarnings(qplot(tbh[,1],tbh[,2],ylim=c(0,6000),xlab="Year",ylab="TB Count",main="Reported Tuberculosis in California")+geom_point(data=tbh,aes(tbh[,1],tbh$hwx,color="red"),na.rm=TRUE) + geom_line(data=tbh,aes(tbh[,1],tbh$hwx,color="red"),na.rm=TRUE) + theme(legend.position="none"))
+@
+So apparently one issue was just that we were not starting the recurrences at the right place when we looked at the short series.
+
+What would our forecast for 2014 have been?
+<<>>=
+hw.filter(tbh[,2],hwf2$alpha,hwf2$beta,1)
+@
+The true answer, from the California DPH web site, was 2147.  
+
+Incidence of gonorrhea per year in California (source: CDPH).
+<<echo=FALSE,results='hide'>>=
+cag <- structure(list(year = 1913:2014, gono = c(117L, 467L, 695L, 1083L, 
+3006L, 4665L, 4570L, 5305L, 4709L, 5080L, 5704L, 5265L, 5391L, 
+5570L, 5348L, 5593L, 5842L, 7001L, 8123L, 8702L, 7817L, 10459L, 
+11634L, 12118L, 17051L, 16336L, 16542L, 19433L, 16098L, 12408L, 
+14632L, 20365L, 27668L, 33364L, 32396L, 26767L, 22027L, 18394L, 
+17122L, 15821L, 16081L, 16012L, 14697L, 15346L, 15679L, 18928L, 
+17327L, 19236L, 22979L, 26987L, 31825L, 35700L, 41551L, 47099L, 
+60810L, 75998L, 90073L, 104568L, 102804L, 101006L, 98242L, 98639L, 
+121919L, 125833L, 126768L, 136109L, 136463L, 135885L, 127723L, 
+109860L, 108066L, 110208L, 117392L, 116895L, 95877L, 80708L, 
+70596L, 54076L, 44104L, 38182L, 31443L, 29241L, 24369L, 18570L, 
+18424L, 19550L, 18662L, 21778L, 23285L, 24673L, 25693L, 30484L, 
+34098L, 33817L, 31191L, 25493L, 24009L, 26842L, 27483L, 33788L, 
+38364L, 44974L)), .Names = c("year", "gono"), class = "data.frame", row.names = c(NA, 
+-102L))
+@
+<<>>=
+qplot(cag$year,cag$gono,ylim=c(0,140000),xlab="Year",ylab="GC Count",main="Reported Gonorrhea in California")
+@
+
+{\bf Exercise \theexno.}\stepcounter{exno} Use the California state gonorrhea counts to produce Holt-Winters forecasts
+for next year's case count.  
+Please consider log transforming the data before analysis; you may wish to omit the first five
+years.  Why do you think the peaks and troughs occurred?  Do you think the Holt-Winters procedure is
+appropriate for the data?  
+\ding{122} \vskip 6pt
+
+\section*{More about time series}
+
+Another interesting process is derived from this recurrence:
+\[
+X_{\tau+1} = \alpha X_{\tau} + \epsilon_{\tau} 
+\]
+where we assume for now $|alpha| < 1$ and $E[\epsilon_{\tau}]=0$ for all $\tau$.
+We need to assume more though about the process $\epsilon_{\tau}$.  
+One simple assumption is that $E[\epsilon_{\tau}\epsilon_{\tau'}] = E[\epsilon_{\tau}]E[\epsilon_{\tau'}]$ for 
+$\tau \neq \tau'$.  Such as series is {\it uncorrelated}; an uncorrelated series of random variables is called
+{\it white noise}.
+
+We will assume the series $\epsilon_\tau$ is uncorrelated, and also that $\epsilon_\tau$ is uncorrelated with
+every value of $X_{i}$ for $i=1,2,\ldots,\tau$.  
+
+So now
+\[
+E[X_{\tau+1}] = {\color{red}E}[ \alpha X_{\tau} + \epsilon_{\tau} ]
+\]
+Apply linearity:
+\[
+E[X_{\tau+1}] = {\color{blue}E}[ \alpha X_{\tau} ] + {\color{blue}E}[ \epsilon_{\tau} ]
+\]
+Again:
+\[
+E[X_{\tau+1}] = E[ {\color{red}\alpha} X_{\tau} ] + E[ \epsilon_{\tau} ]
+\]
+\[
+E[X_{\tau+1}] = {\color{blue}\alpha} E[ X_{\tau} ] + E[ \epsilon_{\tau} ]
+\]
+The epsilons have mean zero:
+\[
+E[X_{\tau+1}] = \alpha E[ X_{\tau} ] + {\color{red}E[ \epsilon_{\tau} ]}
+\]
+\[
+E[X_{\tau+1}] = \alpha E[ X_{\tau} ] + {\color{blue}0}
+\]
+So
+\[
+E[X_{\tau+1}] = \alpha E[ X_{\tau} ]  .
+\]
+Let $\mu_\tau = E[X_{\tau}]$.  Therefore $\mu_{\tau+1}=\alpha \mu_\tau$.  We can see that
+\[
+\mu_{\tau + \ell} = \alpha^\ell \mu_\tau
+\]
+in general, and
+\[
+\mu_T = \alpha^T \mu_0 .
+\]
+
+{\bf Exercise \theexno.}\stepcounter{exno} What is the limit of $\mu_T$ for large $T$? \ding{122} \vskip 6pt
+
+Let's compute the variance in the far future.
+\[
+\var(X_{\tau + 1}) = \var(\alpha X_\tau + \epsilon_\tau) = \alpha^2 \var(X_\tau) + \sigma^2 .
+\]
+This happens to be another linear recurrence (difference equation); the equilibrium is
+\[
+\sigma'^2 = \frac{\sigma^2}{1-\alpha^2} .
+\]
+
+Let's compute the correlation coefficient of two values, one time apart.
+\[
+E[X_{\tau}X_{\tau+1}] = E[X_{\tau}(\alpha X_\tau + \epsilon_\tau)] = E[\alpha X^2_\tau] + E[X_\tau \epsilon_\tau]
+\]
+We assumed the noise $\epsilon_\tau$ was uncorrelated with the value, so the second term is zero.  So
+\[
+E[X_{\tau}X_{\tau+1}] = \alpha E[X^2_\tau] .
+\]
+Similarly, we have 
+\[
+E[X_\tau]E[X_{\tau+1}] = E[X_\tau](E[\alpha X_\tau + \epsilon_\tau]) = E[X_\tau]\alpha(E[X_\tau]) = \alpha (E[X_\tau])^2
+\]
+The correlation coefficient of $X$ and $Y$ is
+\[
+\rho = \frac{E[XY]-EXEY}{\sqrt{\mbox{\rm var}(X)\mbox{\rm var}(Y)}} .
+\]
+So our numerator is $\alpha \mbox{\rm var}(X_\tau)$.  
+
+What is the variance of $X_{\tau+1}$?  It must be $\mbox{\rm var}(\alpha X_\tau + \epsilon_\tau)$.  
+This is going to be
+$\alpha^2 \mbox{\rm var}(X_\tau) + \sigma^2$.
+
+So
+\[
+\rho = \frac{\alpha \var(X_\tau)}{\sqrt{ \var(X_\tau)(\alpha^2 \var(X_\tau) + \sigma^2) }}
+\]
+Let's go ahead and use $\var(X_\tau) = \sigma^2/(1-\alpha^2)$ for large times:
+\[
+\rho = \frac{\alpha \frac{\sigma^2}{1-\alpha^2}  }{\sqrt{ \frac{\sigma^2}{1-\alpha^2}\left(\alpha^2 \frac{\sigma^2}{1-\alpha^2} + \sigma^2\right) }}
+\]
+Let's clean up this mess:
+\[
+\rho = \frac{\alpha \frac{1}{1-\alpha^2}  }{\sqrt{ \frac{1}{1-\alpha^2}\left(\alpha^2 \frac{1}{1-\alpha^2} + \frac{1-\alpha^2}{1-\alpha^2}\right) }}
+\]
+\[
+\rho = \frac{\alpha \frac{1}{1-\alpha^2}  }{\sqrt{ \frac{1}{1-\alpha^2}\frac{1}{1-\alpha^2}  }} = \alpha
+\]
+
+Since all we need here is $|\alpha|<1$, this process can have negative autocorrelation as well as positive.  This is called an
+AR(1) process and is important in time series and repeated measures analysis.
+
+Let's look at some examples; I'm going to assume independent normal (Gaussian) white noise with variance 1.
+Here is R code for the simulation.
+<<>>=
+ar1sim <- function(len,alpha,starting=0) {
+  answer <- rep(NA,len)
+  answer[1] <- starting
+  cur <- starting
+  for (ii in 2:len) {
+    cur <- alpha*cur + rnorm(1,mean=0,sd=1)
+    answer[ii] <- cur
+  }
+  answer
+}
+xx <- 1:64
+yy <- ar1sim(length(xx),0)
+plot(xx,yy,main="Independent (alpha=0)",type="l")
+yy <- ar1sim(length(xx),0.5)
+plot(xx,yy,main="alpha=0.5",type="l")
+yy <- ar1sim(length(xx),0.9)
+plot(xx,yy,main="alpha=0.9",type="l")
+@
+{\bf Exercise \theexno.}\stepcounter{exno} Using R or some other language of your choice, plot simulated AR(1)
+time series for the normal model with unit variance.  Choose $\alpha=0.99, 0.8, 0.5, 0.2, 0.1, -0.1, -0.2, -0.5, -0.8, -0.99$.  
+Run series longer than 64; run replications over and over again.  (You only need to turn in one replication.)
+Please comment on the differences and similarities.
+\ding{122} \vskip 6pt
+
+\section*{Review and preparation for the Galton-Watson process}
+Suppose we parameterize the geometric distribution in such a way that we ask how many failures (not how many trials: how many
+failures) before we have our first success.  Then we get $P(Y=i) = p(1-p)^i$ for $i=0,1,2,\ldots$.  This is still called the
+geometric; it's just defined from 0 to infinity.  You see both formulations in the literature; R, for example, uses this one.
+The generating function in this case is
+\[
+E[u^Y] = \sum_{y=0}^\infty u^y P(Y=i) = \sum_{y=0}^\infty u^y p(1-p)^y = p \frac{1}{1-u(1-p)} .
+\]
+Note something interesting when comparing this distribution to the version from before---the probability generating 
+function of the version shifted 1 to the right is just this one multiplied by $u$.
+
+Let's ask the question how many failures before we get 2 successes.  That's a geometric waiting time for the first success, and
+another for the second.  It's the sum of two independent geometrics (with the same $p$).  
+Let the first one be $Y_1$, the second $Y_2$:
+\[
+E[u^{Y_1+Y_2}] = E[u_{Y_1}]E[u_{Y_2}] = p\frac{1}{1-u(1-p)}p\frac{1}{1-u(1-p)} = \frac{p^2}{(1-u(1-p))^2}
+\]
+If we are waiting for $k$ successes, we have to add up $k$ independent identical geometrics, and we get
+\[
+E[u^{Y_1+\cdots+Y_k}] = \frac{p^k}{(1-u(1-p))^k}
+\]
+a distribution known as the {\it negative binomial} distribution.  
+
+Even though we defined it as a waiting time until $k$ successes, in fact there's nothing stopping us from using the
+generating function we just derived, but with $k$ any positive number, integer or not.  This distribution is widely
+used in modeling and applied statistics for all sorts of things having nothing to do with waiting times, though it can be
+used for those of course.  
+
+Let's get the mean of a negative binomial $Y$ with parameters $p$ and $k$:
+\[
+E[Y] = g'(1) = \frac{d}{du} \frac{p^k}{(1-u(1-p))^k} = p^k (-k) (1-u(1-p))^{-k-1} (-(1-p))|_{u=1} .
+\]
+This gives us
+\[
+E[Y] = \frac{p^k k(1-p)}{p^{k+1}} = \frac{k(1-p)}{p} .
+\]
+Of course---this was from adding up independent geometrics (geometrics starting from 0).
+
+{\bf Exercise \theexno.}\stepcounter{exno} Find the variance of the negative binomial.  \ding{122} \vskip 6pt
+
+We are going to want to look at the probability function.  We get this from looking at
+\[
+g(u) = \frac{p^k}{(1-u(1-p))^k} = p_0 + p_1 u + p_2 u^2 + \cdots + p_n u^n + \cdots
+\]
+First, let's just factor out that $p^k$ and look at $h(u)=g(u)/p^k$:
+\begin{equation}
+\label{eq:hu}
+h(u) = \frac{1}{(1-u(1-p))^k} = h_0 + h_1 u + h_2 u^2 + \cdots + h_n u^n + \cdots
+\end{equation}
+This will be fine as long as we remember our extra factor of $p^k$ at the end.
+
+Let's expand this in a Taylor series.  The first term is easy: put $u=0$ and get
+\[
+h_0 = 1
+\]
+This means $p_0=h_0 p^k=p^k$.
+
+The Taylor series idea is now to take Equation~(\ref{eq:hu}) and write the first derivative
+of both sides:
+\[
+h'(u) = 0 + h_1 + 2 h_2 u + 3 h_3 u^2 + \cdots + n h_n u^{n-1} + \cdots
+\]
+Substituting in $u=0$, we get $h_1=h'(0)$.  This gives us $h'(u)=-k (p-1) (1-(1-p) u)^{-k-1}$,
+from which
+\[
+h'(0) = k (1-p) = h_1 .
+\]
+So now $p_1=h_1 p^k = p^k k (1-p)$.
+
+Next one: write the second derivative of both sides of Equation~(\ref{eq:hu}):
+\[
+h''(u) = 0 + 0 + 2 h_2  + 3 \times 2 h_3 u + \cdots + n(n-1) h_n u^{n-2} + \cdots
+\]
+Differentiating twice killed off the constant and the linear terms, and now substituting $u=0$
+will destroy everything with a $u$ in it, i.e. all terms for $h_3$ and higher:
+\[
+h''(0) = 2 h_2 .
+\]
+As before, we have a formula for what $h(u)$ is, and we differentiate it twice:
+\[
+h''(u) = -k(-k-1) (1-p)^2 (1-(1-p) u)^{-k-2} .
+\]
+With $u=0$,
+\[
+h''(0) = k(k+1)(1-p)^2,
+\]
+So $h_2 = \frac{1}{2} k(k+1)(1-p)^2$, and $p_2 = \frac{1}{2} k(k+1)(1-p)^2 p^k$.
+
+Next one: write the third derivative of both sides of Equation~(\ref{eq:hu}):
+\[
+h'''(u) = 0 + 0 + 0  + 3 \times 2 h_3  + 4 \times 3 \times 2 h_4 u \cdots + n(n-1)(n-2) h_n u^{n-3} + \cdots
+\]
+Differentiating twice killed off the first three terms, and now substituting $u=0$
+will destroy everything remaining with a $u$ in it, i.e. all terms for $h_4$ and higher:
+\[
+h'''(0) = 3 \cdot 2 h_3 .
+\]
+As before, we have a formula for what $h(u)$ is, and we differentiate it thrice.  This gives us,
+after some dust settles,
+\[
+h'''(u) = (-k)(-k-1) (-k-2)(-1) (1-p)^3 (1-(1-p) u)^{-k-3} .
+\]
+With $u=0$,
+\[
+h'''(0) = k(k+1)(k+2)(1-p)^3,
+\]
+So $h_3 = \frac{1}{3!} k(k+1)(k+2)(1-p)^3$, and $p_3 = \frac{1}{3!} k(k+1)(k+2)(1-p)^3 p^k$.
+
+We now conjecture the $n$th derivative:
+\[ 
+h^{(n)} = k(k+1)\cdots (k+n-1) (1-p)^n (1-(1-p)u)^{-k-n}
+\]
+and differentiate it again:
+\[ 
+h^{(n+1)} = k(k+1)\cdots (k+n-1)  (1-p)^n (k+n)(1-p) (1-(1-p)u)^{-k-n-1}
+\]
+which is
+\[
+h^{(n+1)} = k(k+1)\cdots (k+n+1-1) (1-p)^{n+1} (1-(1-p)u)^{-k-(n+1)},
+\]
+showing the same formula holds with $n+1$ substituted for $n$.  Since we already have it for $n=3$
+(and smaller) directly, induction shows that this is the general formula.
+
+The $n$th term of the Taylor series is then
+\[
+h_n = \frac{1}{n!} h^{(n)} = \frac{1}{n!} k(k+1)\cdots (k+n-1) (1-p)^n
+\]
+and the probability is then
+\[
+p_n = \frac{p^k}{n!} k(k+1)\cdots (k+n-1) (1-p)^n
+\]
+We can write this as
+\[
+p_n = {k+n-1 \choose k} p^k (1-p)^n
+\]
+which is the standard form of the negative binomial probability function.
+
+What does it look like?  The R function {\tt dnbinom} lets us calculate these probabilities
+easily.  Here, for instance, is the negative binomial probability of $n=3$ when $p=0.2$ and
+$k=5.1$:
+<<>>=
+dnbinom(3,prob=0.2,size=5.1)
+@
+Here is a barplot of more of the distribution:
+<<>>=
+barplot(dnbinom(0:70,prob=0.2,size=5.1))
+@
+The distribution goes on forever; we cannot show the whole thing.
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Use {\tt dnbinom} to plot the probability function of a negative binomial, for $p=0.2$, with $k=0.1$,
+$k=1$, $k=25$.
+\ding{122} \vskip 6pt
+
+It turns out that if you take $k\rightarrow \infty$ holding the mean constant, you get a Poisson.  Just as the
+binomial has a Poisson limit, so does the negative binomial.
+We will show this now.
+
+Let's go back to the generating function.
+\[
+g(u) = \frac{p^k}{(1-u(1-p))^k}
+\]
+The mean is $\lambda = \frac{k(1-p)}{p}$.  So $p=k/(k+\lambda)$.  I want to write the limit as 
+$k \rightarrow \infty$.  Let's put $a=1/k$ first, so we can take the limit as $a$ goes
+to zero from positive values.
+
+Substituting in for $p$ and letting the smoke clear gives us
+\[
+g(u) = \left(\frac{1} {1 + a \lambda(1-u) } \right)^{\frac{1}{a}}
+\]
+This is a $1^{\infty}$ indeterminate form.
+
+We need
+\[
+L = \lim_{a \rightarrow 0+} g(u) .
+\]
+
+We can write
+\[
+\log(L) = \log \lim_{a \rightarrow 0+} g(u) = \lim_{a \rightarrow 0+} \log g(u)
+\]
+or
+\[
+\log(L) = \lim_{a \rightarrow 0+} \frac{1}{a} \log \left(\frac{1} {-a \lambda  u+a \lambda +1}\right)
+\]
+\[
+\log(L) = - \lim_{a \rightarrow 0+} \frac{1}{a} \log \left(-a \lambda  u+a \lambda +1\right)
+\]
+\[
+\log(L) = - \lim_{a \rightarrow 0+} \frac{ \log \left(-a \lambda  u+a \lambda +1\right)}{a}
+\]
+Now, we have a 0/0 indeterminate form, and can invoke L'Hopital's rule:
+\[
+\log(L) = - \lim_{a \rightarrow 0+} \frac{1-a \lambda u + a \lambda }{a} = -\lambda(1-u).
+\]
+So 
+\[
+L = e^{\lambda (u-1)}
+\]
+This is the generating function of a Poisson distribution, with mean $\lambda$.
+
+To summarize: you should know these key facts about the negative binomial distribution:
+\begin{itemize}
+\item The negative binomial distribution is an integer valued distribution taking values on 
+0, 1, 2, $\ldots$.
+\item It can be derived as the number of failures before the first $k$ successes, in a
+sequence of independent Bernoulli trials with success probability $p$.
+\item The mean is $k(1-p)/p$.
+\item When $k=1$, the negative binomial is the geometric distribution.
+\item When $k \rightarrow \infty$, the negative binomial approaches the Poisson distribution.
+\item The variance is greater than the mean.
+\item Some books define it in terms of the count number of the first success in a
+sequence of independent identical Bernoulli trials.  When you are reading papers or conducting
+applications, check the fine print.
+\end{itemize}
+More facts and applications of the negative binomial will be derived later.
+
+{\bf Exercise \theexno.}\stepcounter{exno} How long did this assignment take you?  \ding{122} \vskip 6pt
+
+Reference:
+\begin{description}
+\item[Harvey, AC.] Forecasting, structural time series, and the Kalman filter.
+\end{description}
+
+\vfill
+
+\end{document}

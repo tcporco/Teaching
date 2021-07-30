@@ -1,0 +1,338 @@
+\documentclass[fleqn,12pt]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+
+Version 1.0---modified 15 Feb 2016
+
+\section{Hazard}
+Last time we were working with a basic stochastic model of an epidemic, and we made a few quick approximations and
+derived some equations that are often called ``the'' Kermack-McKendrick model.  We went from a stochastic model
+in discrete time to a deterministic model in continuous time.  In fact, we'll see some stochastic models in
+continuous time as well as some deterministic models in discrete time.  All in good time.  
+
+This week one of the things we need to do is deepen our understanding of continuous time systems and their
+relation to discrete time systems, among other things.  
+
+First of all, we are going to have to talk about continuous random variables.  There won't really be time to review
+this theory in detail, but some key facts you will need are as follows.  For a discrete variable, we had a probability
+function $p_i$ that told us the chance the variable took on the value $i$.  But in the continuous world, what matters is
+the probability the variable falls in various intervals; this probability is specified by giving a {\it cumulative distribution
+function}.  Say our variable is called $X$, and somebody has provided us with the cumulative distribution function of $X$, 
+which is $F(x) = P(X \leq x)$.  We're going to look at continuous random variables with {\it continuous} cumulative distribution function.
+(For the purists, we're actually being even more restrictive: we're ruling out a bunch of strange random variables that have
+what are called {\it singular} distributions; the ones we look at are called {\it absolutely continuous}).
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Show or argue that for continuous CDF $F$, 
+\[
+P(X \in [a,b]) = P(X \in (a,b]) = P(X \in [a,b)) = P(X \in (a,b)) = F(b)-F(a) .
+\]
+You have seen this sort of thing before in your statistical studies.  For example, you may have been asked to find the
+chance a standard normal variable is between -1 and 1, etc.
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Show or argue that for any real random variable with a continuous
+cdf, the cdf $F$ should obey 
+$\lim_{x \rightarrow -\infty}F(x)=0$,
+$\lim_{x \rightarrow \infty}F(x)=1$, and
+$dF/dx \geq 0$ if you can differentiate it---but $F(x_1)\geq F(x_2)$ for $x_1 > x_2$ no matter what (tell me
+why a CDF can't ``go down'').
+\ding{122} \vskip 6pt
+
+Often we work with the {\it probability density function}, $f(x) = dF/dx$.  The density of a standard normal is 
+$f(x) = ke^{- x^2/2}$.  Let's find $k$; we know
+\[
+\int_{-\infty}^{\infty} f(x) \/ dx = 1
+\]
+for any probability density function.  So
+\[
+k \int_{-\infty}^{\infty} e^{-x^2/2} \/ dx = 1.
+\]
+If we do that integral, one over it will be $k$.  This isn't the easiest integral in the world to do; there's a famous
+trick: square it and transform coordinates, but we won't have time to do this.  Instead, the answer is, believe it or 
+not, $ \int_{-\infty}^{\infty} e^{-x^2/2} \/ dx = \sqrt{2 \pi}$!
+
+So the standard normal density is
+\[
+f(x) = \frac{1}{\sqrt{2 \pi}} e^{-x^2/2} .
+\]
+The general normal is 
+\[
+f(x) = \frac{1}{\sigma \sqrt{2 \pi}} e^{-\frac{(x-\mu)^2}{2 \sigma^2}} 
+\]
+which has two parameters $\mu$ and $\sigma$.
+
+For any continuous variable, the expected value is $EX = \int_{-\infty}^{\infty} x f(x) \/ dx$, which is just the continuous
+version of the formula we had before for discrete variables.  Let's write the mean of the standard normal:
+\[
+EX = \frac{1}{\sqrt{2 \pi}} \int_{-\infty}^{\infty} x e^{-x^2/2} \/ dx .
+\]
+Simplest thing to do here is notice the thing you're integrating is symmetric, with as much below 0 as above it.  Each
+half can be integrated, but they'll cancel out and leave 0.  We don't care what the integral of each half is, but it's important
+that the integral be possible; there are symmetric variables with perfectly nice densities that don't work in this
+integral.
+
+We're going to need an important idea, that of {\it hazard}.  Suppose some event is supposed to happen, and we want to
+study the waiting time $T$ for it.  Take $T \geq 0$.  The hazard $\lambda(t)$ is the chance per unit time the event is about
+to happen, if it hasn't happened yet.  Formally:
+\[
+\lambda(t) = \frac{P(T \in (t, t+dt])}{dt \/ P(T > t)} .
+\]
+This is commonly discussed for nonnegative waiting time random variables.  What does this even mean?  First, $P(T>t)=1-F(t)$
+with $F$ as the CDF.  The quantity $P(T \in (t,t+dt]) = F(t+dt)-F(t) \approx f(t)\/ dt$.  So we could write this definition as
+\[
+\lambda(t) = \frac{f(t)}{1-F(t)} .
+\]
+
+\section{The Exponential Distribution}
+Let's think about it.  What if $\lambda$ is constant?  A fixed hazard, unchanging in time.  Then just from the definition, we would
+have
+\[
+\lambda = \frac{f(t)}{1-F(t)} .
+\]
+So
+\[
+\lambda (1-F(t)) = \frac{dF}{dt} .
+\]
+We could express this in terms of the {\it survival function}, the chance the event hasn't happened yet: $P(T>t)=S(t)=1-F(t)$.  So
+\[
+\lambda S(t) = -\frac{dS}{dt} .
+\]
+or
+\[
+\frac{dS}{dt} = - \lambda S(t) .
+\]
+Let's solve this:
+\[
+\frac{dS}{S} = - \lambda dt
+\]
+Integrate both sides:
+\[
+\int_{t=0}^{t_1}\frac{dS}{S} = \int_{t=0}^{t_1} (- \lambda dt)
+\]
+\[
+\log(S(t_1)/S(0)) = - \lambda t_1 
+\]
+\[
+S(t_1)/S(0) = e^{- \lambda t_1}
+\]
+By definition, $S(0)=1$; at the beginning, it hasn't happened.  So
+\[
+S(t) = e^{- \lambda t}
+\]
+and
+\[
+F(t) = 1-e^{-\lambda t} .
+\]
+with
+\[
+f(t) = \frac{dF}{dt} = \lambda e^{-\lambda t} .
+\]
+This distribution is called the {\it exponential} distribution.  A random variable representing a waiting time with
+constant hazard is called an exponential distribution.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Let $T$ be an exponential waiting time variable with hazard $\lambda$.  Show that
+\[
+ET = \int_0^{\infty} t \lambda e^{-\lambda t} = \frac{1}{\lambda} .
+\]
+\ding{122} \vskip 6pt
+
+Suppose $T$ is an exponential waiting time with hazard $\lambda$.  Suppose that we are at time $t_0$ and it hasn't happened;
+what is the distribution of the amount of future time to wait given it hasn't happened by time $t_0$?  We need the
+conditional distribution of $T-t_0$ given $T>t_0$.  Let's compute it by finding it's survival function as a function of say $u$:
+\[
+P(T-t_0 > u | T>t_0) = \frac{P(T-t_0>u)}{S(t_0)} .
+\]
+But $P(T-t_0>u) = P(T>t_0+u)=S(t_0+u)$.  The survival function of an exponential is just exponential, so
+\[
+P(T-t_0 > u | T>t_0) = \frac{S(t_0+u)}{S(t_0)} = \frac{e^{-\lambda(t_0+u)}}{e^{-\lambda t_0}} = e^{-\lambda u} .
+\]
+That's the survival function of an exponential with hazard $\lambda$; the conditional distribution of how much longer there
+is to wait is always the same, no matter how long you've waited!  This property is called {\it memorylessness} and you've
+seen it with the geometric.  Now you know the exponential is memoryless also.  It is a lot harder to prove, but it turns out the
+ONLY (absolutely) continuous memoryless distribution is the exponential.
+
+Here is another nice fact about the exponential.  Let $T_1$ and $T_2$ be independent exponential waiting times, with 
+hazards $\lambda$ and $\mu$ respectively.  Let $T$ be the smaller of the two; $T=T_1 \wedge T_2 = \min(T_1,T_2)$.  Let's
+get the distribution of $T$.  Looking at the survival function:
+\[
+P(T > t_0) = P(T_1 \wedge T_2 > t_0) = P(T_1 > t_0 \mbox{\rm and} T_2 > t_0) .
+\]
+Look closely: the event that the smaller of $T_1$ and $T_2$ is greater than some time $t_0$ is {\it exactly the same event}
+as both $T_1>t_0$ and $T_2>t_0$.  So the same event has the same probability.  Now, though, we invoke independence:
+\[
+P(T > t_0) = P(T_1 > t_0 \mbox{\rm and} T_2 > t_0) = P(T_1>t_0) P(T_2>t_0) = e^{-\lambda t_0}e^{-\mu t_0} .
+\]
+Then,
+\[
+P(T>t_0) = e^{-\lambda t_0}e^{-\mu t_0} = e^{-(\lambda+\mu)t_0} .
+\]
+That is the survival function of an exponential with hazard $\lambda + \mu$.  {\it The minimum of two independent exponentials is
+itself exponential, with hazard given by the sum of the two independent hazards.}  This works in fact for any number of 
+independent exponentials.
+
+Let's do one more quick thing.  Imagine a constant hazard, and look at tiny time steps.  Let's specifically pick a time
+$t$; divide the time from 0 to $t$ into $N$ steps, and make $N$ big.  Each tiny step of length $t/N$ is going to be thought of
+as a Bernoulli trial; with hazard $\lambda$ we can write $p_N=\lambda t/N$, where here we put a subscript $N$ on the $p$ to remind
+us.  Geometrically, the chance the event hasn't happened yet by time $t$ is just
+\[
+(1-p_N)^N
+\]
+or
+\[
+(1-\lambda t/N)^N .
+\]
+Here, let's take the limit as $N\rightarrow \infty$.  
+\[
+L = \lim_{N\rightarrow \infty} (1-\lambda t/N)^N .
+\]
+Write 
+\[
+\log(L) =  \log\left( \lim_{N\rightarrow \infty} (1-\lambda t/N)^N \right) .
+\]
+Now, log is continuous:
+\[
+\log(L) =  \log \lim_{N\rightarrow \infty} \log(1-\lambda t/N)^N 
+\]
+\[
+\log(L) =  \log \lim_{N\rightarrow \infty} N \log(1-\lambda t/N)
+\]
+Transform to $w = 1/N$:
+\[
+\log(L) =  \log \lim_{w\rightarrow 0} \frac{\log(1-\lambda wt)}{w}
+\]
+This is indeterminate form 0/0, so Prof. L'Hopital will come help us out:
+\[
+\log(L) =  \log \lim_{w\rightarrow 0} \frac{1/(1-\lambda wt) \cdot (-\lambda t)}{1} = -\lambda t
+\]
+Then of course, 
+\[
+L = e^{-\lambda t} 
+\]
+and this is the survival function of the exponential.  So you can think of an exponential as a limit of a geometric where you 
+have more and more tiny little Bernoulli trials; as you make the number of trials go up, the success per trial goes down 
+proportionally.  It is the same limit we took for the Poisson.  
+
+\section{Modeling with The Exponential Distribution}
+\subsection{Decay}
+Imagine there are $N$ individuals in a population, and each has hazard of dying in the next $dt$ given by $\lambda$.  
+
+We can model this probabilistically, and think of $N$ as a random variable evolving in time.  Death occurs randomly, and so
+we have a fluctuating random quantity.  Or we can model this deterministically.  Let's do the latter first.  
+
+Suppose we just think of death happening independently.  Then we have $N$ independent Bernoulli trials, each with 
+success probability $\lambda dt$.  We therefore expect $N \lambda\/ dt$ deaths each $dt$.  Let's then model this by 
+writing
+\[
+N(t+dt) = N(t) - N(t) \lambda \/ dt .
+\]
+Rearranging, 
+\[
+\frac{N(t+dt)-N(t)}{dt} = - \lambda N(t) 
+\]
+and so taking $dt \rightarrow 0$:
+\[
+\frac{dN}{dt} = - \lambda N(t) 
+\]
+Here, we can solve as before and find $N(t) = N(0) e^{-\lambda t}$, exponential decay.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Suppose the hazard of mortality is 1 per week.  What is the fraction living after 1/2 week? 1 week? 2 weeks?
+What is the half-life (time till mortality reaches 50\%)?
+\ding{122} \vskip 6pt
+
+\subsection{Branches}
+Now, suppose we have $N$ individuals, and two independent causes of death.  Each has hazard $\lambda$ and $\mu$, say.  We already
+know that the removal from the living state is going to be exponential, with hazard $\lambda+\mu$.  We can
+accumulate the number of deaths of type 1 in $Z_1$ and of type 2 in $Z_2$.  
+\[
+N(t+dt) = N(t) - (\lambda+\mu) N dt .
+\]
+But
+\[
+Z_1(t+dt) = Z_1(t) + \lambda N dt .
+\]
+Why?  The chance of death during time $dt$, for any person, due to cause 1, is $\lambda dt$.  So the expected number of
+deaths due to cause 1 is $\lambda N dt$.  In fact it is just that simple.
+
+We could ponder this another moment.  We could reason: the chance of death is actually
+\[
+1-(1-\lambda dt) (1-\mu dt) = 1-(1-\lambda dt - \mu dt + \lambda \mu (dt)^2) = \lambda dt + \mu dt - \lambda \mu (dt)^2
+\]
+which is $(\lambda+\mu)dt$ to first order.  
+
+Similarly,
+\[
+Z_2(t+dt) = Z_2(t) + \mu N dt .
+\]
+
+These become
+\[
+\frac{dN}{dt} = -(\lambda + \mu) N
+\]
+and
+\[
+\frac{dZ_1}{dt} = \lambda N
+\]
+\[
+\frac{dZ_2}{dt} = \mu N
+\]
+Here, $N=N_0e^{-(\lambda+\mu)t}$.  At the end of time, nobody's left.  Then, 
+\[
+dZ_1 = \lambda N dt = \lambda N_0 e^{-(\lambda +\mu)t} dt
+\]
+Integrating,
+\[
+Z_1(\infty)-Z_1(0) = \lambda N_0 \int_0^{\infty} e^{-(\lambda+\mu)t} dt
+\]
+Here $Z_1(0)=0$. 
+\[
+Z_1(\infty) = \lambda N_0 \frac{-1}{\lambda+\mu}(0-1) = N_0 \frac{\lambda}{\lambda + \mu} .
+\]
+So at the end, the causes of death accumulate cases proportional to the hazard ratio.  The one with twice the hazard gets
+twice the deaths.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Suppose juveniles mature at rate $\gamma$, and have mortality rate $\mu$ in the juvenile state.
+What is the fraction of creatures that die in the juvenile state?
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} How long did this assignment take you?  
+\ding{122} \vskip 6pt
+
+\vfill
+\end{document}
+

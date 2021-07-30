@@ -1,0 +1,31 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in Ophthalmic Epidemiology, Part 1}
+
+\section*{Understanding sample size planning}
+
+Suppose that we are considering a simple hypothesis test of whether
+or not the population mean is $\mu_0$.  We assume that the data are
+normally distributed with a standard deviation of $\sigma$.
+
+\vfill
+
+\end{document}

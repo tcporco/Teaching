@@ -1,0 +1,157 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand*{\cmss}{\fontfamily{\sfdefault}\selectfont}
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+\def\omit#1{}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+<<>>=
+library(tolerance)
+library(Matrix)
+library(gtools)
+library(Deriv)
+library(hypergeo)
+@
+
+\section{Lecture 4C}
+
+\subsection{Geometric}
+
+Since the geometric distribution has probability function
+\[
+P(X=x) = p (1-p)^x ,
+\]
+the ratio of two neighboring values is
+\[
+\frac{P(X=x+1)}{P(X=x)} = 1-p .
+\]
+
+If the potential difference between two equilibrium states is $\Delta$, then the state
+with the higher potential must have $e^{-\Delta}$ times the probability of the more 
+likely state.  Here, we would have $e^{-\Delta}=1-p$, or $\Delta = -\log(1-p)$.  The
+potential difference between states $X=x_1$ and $X=x_2$ is then $-(x_2-x_1)\log(1-p)$.
+We could set the potential at $X=0$ to be zero: $V(0)=0$.
+
+What is the potential of the negative binomial?
+\[
+P(X=x) = {a+x-1 \choose x} (1-p)^x p^a
+\]
+Then
+\[
+\frac{P(X=x+1)}{P(X=x)} = \frac{ {a+x \choose x+1} (1-p)^x (1-p) p^a} {{a+x-1 \choose x} (1-p)^x p^a}
+\]
+\[
+\frac{P(X=x+1)}{P(X=x)} = \frac{ {a+x \choose x+1} (1-p) } {{a+x-1 \choose x} }
+\]
+\[
+\frac{P(X=x+1)}{P(X=x)} = \frac{ (a+x) (1-p) } {1+x}
+\]
+So
+\[
+V(x+1) - V(x) = -\log\left(\frac{(a+x)(1-p)}{1+x}\right)
+\]
+\[
+V(x+1) - V(x) =  \log(1+x) - \log(a+x) - \log(1-p) 
+\]
+Mathematica gives this analytic solution:  
+\[
+V(x) = -x\log(1-p) + \log\left(\frac{(1)_x}{(a)_x}\right) = -x\log(1-p) + \log {a+x-1 \choose x} .
+\]
+\[
+V(x) = \log\left(\frac{(1)_x}{(1-p)^x (a)_x}\right)
+\]
+Look now at
+\[
+Z = \sum_{x=0}^{\infty} e^{- \beta V(x) }
+\]
+where $\beta$ will be discussed later.  If $\beta=1$, then
+\[
+Z = \sum_{x=0}^{\infty} \frac{(1-p)^x (a)_x}{(1)_x} = p^{-a}.
+\]
+What is
+\[
+\frac{e^{-V(x)}}{Z} ?
+\]
+This is just the probability function.  All we have done is say that the potential is minus the log of the probabilities, with some
+offset.  We have swept the temperature $1/\beta$ under the rug for the moment.  Essentially, minus the log likelihood is the potential!
+
+What does the potential look like?
+<<>>=
+nb.potential <- function(xs,k,p) {
+  vz <- rep(NA,length(xs))
+  vz[1] <- 0
+  cp <- -log(1-p)
+  for (ii in 2:length(xs)) {
+    xx <- ii-1 
+    dif <- log(1+xx)-log(k+xx)+cp
+    vz[ii] <- vz[ii-1]+dif
+  }
+  vz
+}
+@
+This has to be corresponding to a specific temperature, which we'll get back to later.
+
+\small
+What if you have a distribution with a power law tail?  Consider the zeta distribution
+\[
+P(X=x) = \frac{1}{\zeta(s)} x^{-s} .
+\]
+Then
+\[
+V(x+1)-V(x) = -\log\left( \frac{(x+1)^{-s}}{x^{-s}} \right) = \log(x^{-s})-\log((x+1)^{-s}) = s(\log(x+1)-\log(x)) .
+\]
+Clearly this potential is rising very slowly, but apparently enough to let the probability distribution converge.  Note that R
+does not parameterize the zeta distribution the usual way (R uses $s-1$ as the parameter and insists this be positive, so that the
+usual $s>1$.
+<<>>=
+zeta.potential <- function(xs,s) {
+  if (s<=1) {
+    stop("invalid")
+  }
+  ldenz <- dzeta(xs,s-1,log=TRUE)
+  vz <- rep(0,length(xs))
+  for (ii in 2:length(vz)) {
+    delt <- -ldenz[ii] + ldenz[ii-1] 
+    vz[ii] <- vz[ii-1]+delt
+  }
+  vz
+}
+@
+\normalsize
+
+\vfill
+
+\end{document}

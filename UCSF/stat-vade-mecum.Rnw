@@ -1,0 +1,82 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Statistics Vade Mecum}
+
+\section{Likelihood}
+Let $X$ be a random variable with some distribution function parameterized
+by $\theta$.  The probability of observed data given $\theta$ is the likelihood,
+written $f(x,\theta)$.
+
+For example, suppose that $N$ independent Bernoulli trials are conducted.
+Let $X$ be the number of successes; assume the success probability is $\theta$
+for each trial.
+The probability of $x$ successes is given by the binomial formula
+\[
+P(X=x) = {N \choose x} \theta^x (1-\theta)^{N-x} .
+\]
+For any particular value of $x$, this is a function of $\theta$, i.e. the
+likelihood function.
+
+\section{Score}
+Let $\ell(x,\theta)=\log f(x,\theta)$.  The score is defined to be
+\[
+V = \frac{\partial}{\partial \theta} \ell(x,\theta).
+\]
+
+For example, in the Bernoulli problem, the log likelihood is
+\[
+\ell (x,\theta) = \log\Big(\frac{N!}{x!(N-x)!}\Big) + x \log \theta + (N-x) \log (1-\theta) .
+\]
+Then the score is 
+\[
+V = \frac{\partial \ell}{\partial \theta} = \frac{x}{\theta} - \frac{N-x}{1-\theta} .
+\]
+
+If we treat $X$ as random, then we have a score random variable:
+\[
+V = \frac{X}{\theta} - \frac{N-x}{1-\theta} .
+\]
+
+Then
+\[
+EV  = \frac{EX}{\theta} - \frac{N-EX}{1-\theta} .
+\]
+But $EX = N \theta$.  So
+\[
+EV = \vrac{N \theta}{\theta} - \frac{N-N\theta}{1-\theta} = N-N = 0 .
+\]
+
+This result is true in general.
+
+\section{Fisher Information}
+
+Fisher information is defined as follows.  Let $\theta$ be a parameter
+of interest, regarding the distribution of random variable $X$.  Let 
+$\ell(X,\theta)$ be the log-likelihood function.
+
+
+
+\section{References}
+Wikipedia.
+
+
+\vfill
+
+\end{document}

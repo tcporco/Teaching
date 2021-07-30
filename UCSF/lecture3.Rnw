@@ -1,0 +1,655 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\section*{Mathematical Modeling of Infectious Disease, Lecture 3}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\subsection*{Review of the binomial distribution}
+Previously we have defined the binomial distribution as the 
+distribution of the number of successes in $N$ independent 
+Bernoulli trials, each with success probability $p$.  Thus, if
+$X$ is a a binomial random variable, the probability that $X$ takes
+some particular value $x$ is the chance that there would be $x$
+successes in $N$ independent Bernoulli trials with the same success
+probability.
+
+Recall that
+a Bernoulli trial is an experiment with two outcomes, conventionally
+labeled {\it success} and {\it failure}.
+We may think of each Bernoulli trial as being represented by a 
+Bernoulli random variable.  Conventionally, we represent success by
+1 and failure by 0, so that the sample space $\Omega=\{0,1\}$.  So if
+$W$ is a Bernoulli random variable with success probability $p$, then
+$P(W=1)=p$, and $P(W=0)=1-p$.
+
+In the case of the binomial distribution, we have $N$ independent
+Bernoulli trials.  Let $W_1, W_2, \ldots, W_N$ denote the $N$ trials.
+Observe the important fact that the count of successes in these trials
+can be computed by simply adding the variables, so that the binomial
+random variable $X$ is the sum of the Bernoulli random variables:
+$X=\sum_{i=1}^N W_i$.  If trial $i$ resulted in a success, then 
+$W_i=1$, and otherwise $W_i=0$.  We may also think of the entire
+collection of Bernoulli random variables as a single random experiment;
+the sample space is the collection of all the possible outcomes.  For
+instance, if $N=3$, failure on all three trials could be denoted
+$(0,0,0)$, success on the first and failure on the next two by 
+$(1,0,0)$, and so forth, so that we could write the sample space as 
+$\{(0,0,0),(1,0,0),(0,1,0),(0,1,1),(1,0,0),(1,0,1),(1,1,0),(1,1,1)\}$.
+Then, $W_1=1$ would correspond to the subset 
+$\{(1,0,0),(1,0,1),(1,1,0),(1,1,1)\}$, and so forth.  Considering the
+entire experiment as a whole, there are many outcomes that correspond
+to $W_1=1$.
+
+Suppose we are interested in the case where $X=0$; we wish to compute
+$P(X=0)=P(\sum_{i=1}^NW_i=0)$.  The only way for $X=0$ is for $W_i=0$,
+since you can only get zero successes if every trial was a failure.
+We may also then write $P(X=0)=P(W_1=0 \cap W_2=0 \cap \cdots \cap W_N=0)$.  Since all these random variables are independent, the probability of the
+intersection is the product of the probabilities.  Thus,
+$P(X=0)=P(W_1=0 \cap W_2=0 \cap \cdots \cap W_N=0) = P(W_1=0) P(W_2=0) \cdots P(W_N=0)=\prod_{i=1}^NP(W_N=0)$.  Finally, since all the success
+probabilities are $p$, we have for each $i$, $P(W_i=0)=1-p$.  So
+$P(X=0)=(1-p)^N$.  
+
+Now suppose we are interested in the case where $X\neq 0$; we wish to
+compute $P(X \neq 0)=P(X \geq 1)$.  Since we already know $P(X=0)$, 
+we have $P(X \geq 1)=1-P(X=0)=1-(1-p)^N$.  But suppose we choose not
+to go this route.  Thinking of $P(X \geq 1)$ as the chance of getting
+at least one success, we may write
+$P(X \geq 1)=P(W_1=1 \cup W_2=1 \cup \cdots \cup W_N=1)$.  Let's first
+observe that $W_1=1 \cap W_2=1 \neq \emptyset$; this means the events
+are not incompatible.  Since it is possible to get a success on both
+the first and second trial, these two events are not disjoint.  
+To return to our simple example where $N=3$, whose sample space was
+$\{(0,0,0),(1,0,0),(0,1,0),(0,1,1),(1,0,0),(1,0,1),(1,1,0),(1,1,1)\}$,
+we had $W_1=1$ corresponding to the subset
+$\{(1,0,0),(1,0,1),(1,1,0),(1,1,1)\}$, and also note that $W_2=1$
+corresponds to
+$\{(0,1,0),(0,1,1),(1,1,0),(1,1,1)\}$.  Therefore, $W_1=1 \cap W_2=1$
+is the subset $\{(1,1,0),(1,1,1)\}$, which is not empty.  Since the
+events are not disjoint (incompatible), we {\it cannot} use the
+addition rule.  Probabilities of disjoint unions are additive (just
+like the probabilities of nonoverlapping areas), but if the 
+events are not disjoint, the probabilities are not additive.  
+
+To further reinforce this principle, let's examine a very simple case
+where $N=2$ and the success probability of two independent events is
+$p=0.8$.  Thus, $P(W_1=1)=0.8$ and $P(W_2=1)=0.8$.  If we were allowed
+to compute $P(W_1=1 \cup W_2=1)$ by addition---which we are not---we
+would arrive at the absurdity that $P(W_1 = 1 \cup W_2=1) = 2*0.8=1.6>1$!  The probability of the union is the sum of the probabilities {\bf only} for
+the union of disjoint events.
+
+Returning to the binomial example, if we wish to compute the
+probability
+$P(X \geq 1)=P(W_1=1 \cup W_2=1 \cup \cdots \cup W_N=1)$, we simply
+cannot invoke the addition rule, and must therefore choose a different
+method.  As stated above, one straightforward method is to simply
+compute $P(X=0)$ and subtract.  In the case where $N=2$ and $p=0.8$,
+$P(X=0) = 0.2^2=0.04$, so that $P(X=1)=1-0.2^2=1-0.04=0.96$.
+
+{\bf Example.}~~Suppose 51 individuals are subject to a needlestick
+injury with hepatitis C contaminated blood, and that 3 infections
+result.  What is the probability that $P(X=3)$ for different values
+of the infection probability $p$, assuming that the individuals
+behave independently and have the same risk?  \newline
+{\it Solution.}~~Using the binomial distribution, we have
+$P(X=3)={51 \choose 3}p^3(1-p)^{48}$.  We may plot this using R, using
+the \verb+dbinom+ function.
+<<>>=
+ps <- seq(0,1,by=0.001)
+vs <- dbinom(3,size=51,prob=ps)
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,vs,xlab="p",ylab="P(X=3)",type="l")
+@
+\end{figure}
+This function gives the probability of the data as an unknown 
+parameter varies, and is known as the likelihood function.  
+For what value of $p$ is the probability of the data the greatest?
+After we review calculus, we will show that this value is just
+$X/N$; the observed relative frequency is the value of the 
+success probability that makes the data most likely.  
+Theoretical statistical arguments show that the maximum
+likelihood estimate has many useful properties, and such estimates
+are widely used in practice.
+
+We have also discussed the principle that the expected value of a sum
+of random variables is the sum of the expected values.  Thus,
+$E(X)=E(\sum_{i=1}^{N}W_i) = \sum_{i=1}^NE(W_i)$.  But the expected
+value of a Bernoulli random variable is, using the definition of
+expected value,
+\[
+E(W_i) = 0*P(W_i=0) + 1*P(W_i=1) = P(W_i=1) = p .
+\]
+Therefore, $E(X)=\sum_{i=1}^Np = Np$.  Returning briefly to our
+example with $N=2$ and $p=0.8$, $E(X)=Np=2*0.8=1.6$.  The expected
+number of successes is 1.6, and the probability of at least one 
+success is 0.96.  The expected value can be any number between 0 and
+the number of trials $N$; the probability must be between 0 and 1.
+
+{\bf Example.}  Suppose that a person is not infected with tuberculosis
+at age 15, but is exposed to a risk of infection with tuberculosis 
+each year for the next ten years.  What is the probability the person
+would be infected by age 25, assuming the probability of
+infection is independent from year to year?\newline
+{\bf Solution.}~~Suppose the annual risk of infection is denoted $p$.
+Let $Y_i$ be the probability that the person would be infected in
+year $i$ if they were not infected already; we think of $p$ as the
+probability of receiving a sufficient exposure during year $i$.  So
+the probability of infection during the ten years may be thought
+of as one minus the probability of escaping infection, and the
+probability of escaping infection for ten years may be computed as
+$(1-p)^{10}$.  The probability of infection is thus $1-(1-p)^{10}$.
+
+Let us also compute the risk of infection in the second year
+conditional on not having been infected the first.  In other words,
+we want $P(Y_2=1|Y_1=0)$.  Because of the independence assumption,
+we know $P(Y_2=1|Y_1=0)=P(Y_2=1)$.  
+
+{\bf Example.}  Suppose once again that a person is not infected
+at age 15, but is exposed to an age-dependent risk of infection with
+tuberculosis for the next ten years.  What is the probability of
+infection during the next ten years, assuming the probability of
+infection is independent from year to year?\newline
+{\bf Solution.}~~Now, we assume that the risk of infection each
+year is given by $p_i$, $i=1,\ldots,10$.  Since these Bernoulli trials
+no longer have the same success probability, we can no longer use
+the binomial probability formula at all.  Nevertheless, we may
+compute the risk of infection as one minus the risk of escaping
+infection over all ten years.  Let $Y_i$ be the Bernoulli trial
+indicating sufficient exposure to infect in the year $i$; $Y_i=1$
+if the person gets a sufficient exposure in year $i$ and $Y_i=0$
+otherwise.  So the chance of escaping infection may be
+written $P(Y_1=0 \cap Y_2=0 \cap \cdots \cap Y_{10}=0)$, and for this
+we may use the independence from year to year to write the probability
+of the intersection as the product of the probabilities for each
+year:
+\[
+P(Y_1=0 \cap Y_2=0 \cap \cdots \cap Y_{10}=0) = P(Y_1=0)P(Y_2=0)\cdots P(Y_{10}=0) = \prod_{i=1}^{10}(1-p_i) .
+\]
+Thus, the probability of infection is $1-\prod_{i=1}^{10}(1-p_i)$.  
+
+\subsection*{Frailty selection}
+In the previous two examples, we have assumed that the risk is
+independent from year to year.  But intuitively, we know that there
+are risk factors for tuberculosis infection, such as crowding, 
+contact with an active case, and so forth.  Tuberculosis is not
+distributed randomly in a population.  As a consequence, intuitively
+it seems that individuals, on average, who are more at risk should be
+more likely to be infected the first year.  In some average sense, 
+individuals who were not infected the first year ought to be depleted
+in above-average risk individuals.  Arguably, the risk of infection
+the second year should be slightly smaller for this reason, independent
+of any other considerations.
+
+So let us now suppose that the population is composed of high risk
+individuals (with constant annual risk $p_h$) and low risk individuals (with
+constant annual risk $p_l$).  Let us suppose that the risks of infection each 
+year are conditionally independent given the risk group status.  
+In other words, for high risk individuals, we can still compute the
+probability of escaping infection for 10 years as the product of
+the probabilities of escaping each year for high risk individuals.
+The overall probability of infection for a high risk individual is then
+$1-(1-p_h)^{10}$.  Similarly, the probability of infection for 
+a low-risk individual is $1-(1-p_l)^{10}$.  
+
+More explicitly, let us suppose that the Bernoulli random variable 
+$V$ indicates whether an individual is in the high risk group; we
+may think of ``success'' as being in the high risk group and denote
+the success probability by $r$.  Thus, $r$ is the probability of being
+in the high risk group; it is the prevalence of high risk status in
+this population.  Using $Y$ to indicate infection overall, and 
+using $Y_i$ to indicate sufficient infection in
+year $i$, we may write the probability of escaping infection for 
+the high risk group as
+$P(Y=0|V=1)=P(Y_1=0 \cap Y_2=0 \cap \cdots \cap Y_{10}=0 | V=1)$.  By the
+assumption of conditional independence, this implies that
+$P(Y=0|V=1)=\prod_{i=1}^N P(Y_i=0|V=1)$, which we used to compute
+the risk of infection conditional on the risk group status of an
+individual.
+
+Let us now compute the probability of infection the first year,
+unconditionally.  The probability of infection the first year may
+be written
+\[
+P(Y_1=1) = P(Y_1=1 \cap V=0) + P(Y_1=1 \cap V=1) .
+\]
+This yields
+\[
+P(Y_1=1) = P(Y_1=1 | V=0)P(V=0) + P(Y_1=1 | V=1) P(V=1) .
+\]
+We already know what $P(Y_1=1|V=0)$ is; it is the annual risk of 
+infection in the low risk group $p_l$.  Similarly, $P(Y_1=1|V=1)=p_h$.
+Therefore,
+\[
+P(Y_1=1)=p_l(1-r)+p_hr .
+\] 
+Essentially, the overall risk of infection is just a weighted average
+of the risk in each risk group.
+
+What is the risk of infection the second year?  Here, we must very
+carefully distinguish two things: (1) the probability of receiving a
+sufficient exposure to cause infection, and (2) the probability of
+being infected given that the person has not already been infected.
+When the risk was the same for everybody, these two were in fact the
+same.  
+
+Let us compute the risk of infection the second year conditional
+on not having received a sufficient exposure the first year.
+\[
+P(Y_2=1|Y_1=0) = \frac{P(Y_2=1 \cap Y_1=0)}{P(Y_1=0)} .
+\]
+Then, 
+\begin{eqnarray*}
+P(Y_2=1|Y_1=0) & = & \frac{P(Y_2=1 \cap Y_1=0 | V=0)P(V=0) + P(Y_2=1 \cap Y_1=0 | V=1)P(V=1)}{P(Y_1=0)} . \\
+\end{eqnarray*}
+We can then use conditional independence again:
+\begin{eqnarray*}
+P(Y_2=1|Y_1=0) & = & \frac{P(Y_2=1|V=0)P(Y_1=0 | V=0)P(V=0) + P(Y_2=1|V=1)P(Y_1=0 | V=1)P(V=1)}{P(Y_1=0)} \\
+ & = & \frac{p_l(1-p_l)(1-r)+p_h(1-p_h)r}{1-(p_l(1-r)+p_hr)}
+\end{eqnarray*}
+Suppose that the risk groups actually don't differ.  Then
+$p_l=p_h=p$.  Then, the denominator is just one minus 
+this common value, or $1-p$,
+and the numerator is just $p(1-p)$.  Cancellation gives us $p(1-p)/(1-p)=p$, so
+this result reduces to what we had before, namely, when the risk is
+homogeneous in the population and independent from year to year, the
+risk of infection each year for those who have not been infected is
+the same as the overall risk of a sufficient exposure.
+
+But now, we have the overall risk of sufficient exposure being
+the weighted average $p_l(1-r)+p_hr$, but the risk of infection
+the second year conditional on not having already been infected given
+by $(p_l(1-p_l)(1-r)+p_h(1-p_h)r)/(1-(p_l(1-r)+p_hr))$.
+
+Another way to look at this is as follows.  The probability of being
+infected in year two given you have not been infected in year one
+is the chance of being infected in year two given you have not been
+infected in year one given you are a low risk person who was not
+infected in year one, plus the chance of being infected in year two
+given you weren't infected in year one given you were a high risk
+person who was not infected in year one.
+\[
+P(Y_2=1|Y_1=0) = P(Y_2=1|V=0,Y_1=0)P(V=0|Y_1=0) + P(Y_2=1|V=1,Y_1=0)P(V=1|Y_1=0) .
+\]
+
+This is easy to get wrong.  Let's take a quick step back and use
+some fundamental definitions; let's think of $A$ denoting $V=0$, 
+$B$ denoting $Y_2=1$, and $C$ denoting $Y_1=0$.  Then we should be
+sure we have correctly interpreted 
+$P(B|C)=P(B|A,C)P(A|C)+P(B|A^c,C)P(A^c|C)$.  Essentially, we are
+using the principle that $P(B)=P(B|A)P(A)+P(B|A^c)P(A^c)$, but with
+all the probabilities now conditional on $C$ having occurred.  If
+we wrote $P_C(A)$ to mean the conditional probability of $A$ given 
+$C$, then we could just use the fact that conditional probabilities
+are probabilities to get $P_C(B)=P_C(B|A)P_C(A)+P_C(B|A^c)P_C(A^c)$.
+But we still need to correctly interpret $P_C(B|A)$.  We must be sure
+that $P_C(B|A)$ is the same as $P(B|A,C)$.  Here, 
+$P_C(B|A)= P_C(A \cap B)/P_C(A)$ by the definition of conditional
+probability.  Then, 
+\[
+P_C(A \cap B) = P(A \cap B|C) = \frac{P(A \cap B \cap C)}{P(C)} ,
+\]
+and $P_C(A)=P(A|C) = P(A \cap C)/P(C)$.  So
+\[
+P_C(B|A) = \frac{P_C(A \cap B)}{P_C(A)} = \frac{P(A \cap B \cap C)/P(C)}{P(A \cap C)/P(C)} = \frac{A \cap B \cap C}{P(A \cap C)} .
+\]
+Now, let's examine $P(B|A,C)$, which is the conditional probability of
+B given A and C, and could be written $P(B|A \cap C)$.  By definition,
+\[
+P(B|A,C)=P(B|A \cap C) = \frac{P(B \cap A \cap C)}{P(A \cap C} .
+\]
+What we can now see is that $P_C(B|A)=P(B|A,C)$.  So the conditional
+probability of B given A, given C, is the same thing as the conditional
+probability of B given A and C.
+Therefore, $P(B|C)=P(B|A,C)P(A|C)+P(B|A^c,C)P(A^c|C)$ which is what
+we assumed. 
+
+Returning to the result we just had for the probability of infection
+in the second year given the person had not been infected the first
+year, we had just found that
+\[
+P(Y_2=1|Y_1=0) = P(Y_2=1|V=0,Y_1=0)P(V=0|Y_1=0) + P(Y_2=1|V=1,Y_1=0)P(V=1|Y_1=0) .
+\]
+We must compute $P(V=0|Y_1=0)$, or the chance a person who was 
+not infected the first year is a low risk person.  Remember that we
+already know that the probability of being infected the first year
+given the person is in the low risk group is $p_l$.  We are solving
+for the reverse conditional probability, the chance of being low risk
+given that the person was not infected.  We can use Bayes' Theorem
+for this:
+\begin{eqnarray*}
+P(V=0|Y_1=0) & = & \frac{P(V=0 \cap Y_1=0)}{P(Y_1=0)}\\
+& = & \frac{P(Y_1=0|V=0)P(V=0)}{P(Y_1=0)} \\
+& = & \frac{(1-p_l)(1-r)}{1-(p_l(1-r)+p_hr)} \\
+& = & \frac{(1-p_l)(1-r)}{(1-p_l)(1-r)+(1-p_h)r} .
+\end{eqnarray*}
+Note that $p_l<p_h$, by assumption.  So therefore $1-p_l>1-p_h$ (the
+low risk group are more likely to {\it not} be infected).  So 
+\begin{eqnarray*}
+r(1-p_l) & > & r(1-p_h) \\
+r(1-p_l) + (1-r)(1-p_l) & > & r(1-p_h) + (1-r)(1-p_l) \\
+(1-p_l) & > & r(1-p_h) + (1-r)(1-p_l) . \\
+\end{eqnarray*}
+What this says is that averaging a value with a smaller number gives
+you a smaller value than you started with.  Since $1-p_h$ is smaller
+than $1-p_l$, averaging $1-p_l$ with $1-p_h$ gives you a number smaller
+than $1-p_l$.  So
+\[
+\frac{1-p_l}{r(1-p_h)+(1-r)(1-p_l)} > 1 ,
+\]
+implying
+\[
+\frac{(1-p_l)(1-r)}{(1-p_l)(1-r)+(1-p_h)r} > 1-r .
+\]
+So the probability of being in the low risk group conditional on 
+not having been infected the first year is larger than the 
+unconditional probability of being in the low risk group.  In other
+words, the group of people that did not get infected the first year
+is enriched in low risk individuals.
+ 
+We should also find $P(V=1|Y_1=0)$:
+\[
+P(V=1|Y_1=0) = 1-P(V=0|Y_1=0) = 1- \frac{(1-p_l)(1-r)}{(1-p_l)(1-r)+(1-p_h)r} = \frac{(1-p_h)r}{(1-p_l)(1-r)+(1-p_h)r} .
+\]
+
+We may now substitute into this result:
+\[
+P(Y_2=1|Y_1=0) = P(Y_2=1|V=0,Y_1=0)P(V=0|Y_1=0) + P(Y_2=1|V=1,Y_1=0)P(V=1|Y_1=0) ,
+\]
+yielding
+\[
+P(Y_2=1|Y_1=0) = p_l \frac{(1-p_l)(1-r)}{(1-p_l)(1-r)+(1-p_h)r} + p_h \frac{(1-p_h)r}{(1-p_l)(1-r)+(1-p_h)r} .
+\]
+Now, this can be written $p_l (1-r') + p_h r'$, where $r'=(1-p_h)r/((1-p_l)(1-r)+(1-p_h)r)$ is the probability of being in the high risk group given
+the person did not get infected the first year.  We already know that
+$1-r'>1-r$, so $r'<r$; the people not infected the first year are
+enriched in low risk people and depleted in high risk people.  
+We may write $p_l (1-r')+p_h r' = p_l + r'(p_h-p_l)$.  Since $p_h>p_l$,
+the coefficient multiplying $r'$ is greater than zero.  Thus, working
+backward, since $r'<r$, $r'(p_h-p_l)<r(p_h-p_l)$, and so 
+$p_l+r'(p_h-p_l)<p_l+r(p_h-p_l)$, and rearranging, we have shown that
+$p_l(1-r')+p_hr'<p_l(1-r)+p_hr$.  This means that the probability
+of becoming infected the second year, given that you did not get
+infected the first year, is lower than the overall risk of being
+infected the first year.  Since the population has been depleted in
+high risk people, the overall risk is lower the second year.  This
+is an example of what is known in analytic epidemiology or clinical
+trial design as {\it frailty selection}.
+
+Also note that since $P(Y_2=1|Y_1=0) \neq P(Y_2=1)$, the probability
+of receiving a sufficient exposure the second year is not independent
+of the probability of receiving a sufficient exposure the first year.
+The probability of receiving a sufficient exposure the second year is
+conditionally independent of receiving a sufficient exposure the first
+year, given the risk group status.
+
+Let us examine this numerically.
+Suppose that the initial risk of infection is
+$\rho=p_l(1-r)+p_hr=0.2$.  Then the most extreme heterogeneity of
+risk possible is for $p_l=0$ and $p_h=1$, with $r=0.2$.  
+Then, $r'=(1-p_h)r/((1-p_l)(1-r)+(1-p_h)r)$ becomes 0, and 
+the risk of infection the second year is $p_l(1-r')+p_hr'$, which
+is zero.  This is a particularly extreme example of frailty selection,
+occurring when the population risk is concentrated in a small group
+at very high risk.
+
+More generally, we may not wish to assume just two levels of risk.
+We could imagine that there were more levels of risk, or even a
+continuous probability distribution of risk.  We will examine 
+continuous distributions in a forthcoming class.
+
+\subsection*{Chain binomial epidemic models}
+We began with a review of the binomial distribution, and now turn to
+application of the binomial distribution to epidemic modeling
+developed by Lowell J. Reed and Wade Hampton Frost in the middle of
+the last century.
+
+As a simple example, we suppose that there are $N$ individuals
+at the beginning, and that at each time $i$ ($i=0,1,\ldots$), 
+there are $C_i$ cases and $S_i$ susceptibles.  Each time
+period, the case exposes the susceptibles to risk of infection, and
+we assume that the case recovers with immunity at the end of the
+time period.  Thus, each time unit, the cases are the result of 
+the new infections that occurred the last time period.
+We suppose that the chance that each susceptible
+will be infected by any given infective is given by $p$.  
+
+Thinking about each susceptible, what is the chance of infection? As
+we have seen, it is simpler to determine the chance of escaping
+infection, and subtract from one.  Thus, if the chance that one of
+the infectives will cause sufficient exposure is $p$, then the chance
+of escaping infection from that infective is $1-p$.  The chance of
+escaping infection by all the infectives is $(1-p)^{C_i}$
+under an assumption of independence.  Thus, 
+each of the $S_i$ susceptibles has an infection risk of 
+$r=1-(1-p)^{C_i}$, and if we assume independence of the infection risk
+between susceptibles, we can compute the distribution of the number
+of susceptibles infected using a binomial distribution with $S_i$
+trials, each with success probability $r=1-(1-p)^{C_i}$.  This is
+the Reed-Frost model.
+
+A simple example will help clarify how the Reed-Frost model works.
+Consider a simple household with $N=4$ individuals, beginning with
+one single case at the beginning ($C_0=1$), with everyone else
+susceptible ($S_0=3$).  Assume the infection risk is $p$ for
+one susceptible and one infective; the risk that a susceptible will
+be infected in the first time period is $1-(1-p)^{C_0}=1-(1-p)^1=p$.
+There are four possible outcomes, and the binomial distribution 
+reveals that the chance of zero infections is $P(C_1=0)=(1-p)^3$,
+$P(C_1=1)={3 \choose 1}p^1(1-p)^2=3p(1-p)^2$, $P(C_1=2)={3 \choose 2}
+p^2(1-p)^1=3p^2(1-p)$, and of all being infected $P(C_1=3)=p^3$.
+If all the individuals are infected, or none are infected, then
+the epidemic ends because there are no more susceptibles or because
+there are no more infectives, and in either case, $C_2=0$.  
+
+Let us
+consider now what happens if we had $C_1=1$.  At time 1, we have
+$C_1=1$ and $S_1=N-C_0-C_1=2$.  The risk for each susceptible is
+$1-(1-p)^{C_1}=1-(1-p)^1=p$, and so the binomial distribution (with
+$S_1=2$ trials) reveals that $P(C_2=0|C_1=1)=(1-p)^2$, 
+$P(C_2=1|C_1=1)=2p(1-p)$, and $P(C_2=2|C_1=1)=p^2$.  In the case that
+none or both of the susceptibles are infected, the epidemic ends; when
+only one is infected, we have $C_2=1$ and $S_2=1$.  The risk of infection
+is $p$ for the one susceptible, so $P(C_3=1|C_2=1,C_1=1)=p$ and
+$P(C_3=0|C_2=1,C_1=1)=1-p$.  In either case, the epidemic ends.  
+
+Finally, to finish the analysis, we must look at what happens when
+$C_1=2$.  Here, we have two infectives and one susceptible, and the
+risk for the susceptible is $r=1-(1-p)^2$.  With only one susceptible,
+the binomial distribution for the number of new infections just
+reduces to a single Bernoulli trial with success probability $1-(1-p)^2$.  The probability of an infection is $P(C_2=1|C_1=2)=1-(1-p)^2$, and
+$P(C_2=0|C_1=2)=(1-p)^2$; in either case, the epidemic ends, either
+because we run out of susceptibles, or because there are no more cases.
+
+We can compute the unconditional probability of a particular
+epidemic pathway just using the definition of conditional 
+independence.  For instance, what is the chance that there will
+be one new infective at time 1 and then two at time 2 (after which
+the epidemic must go extinct)?  We found the chance of one 
+new case at time 1 to be $3p(1-p)^2$, and the chance of two new
+cases at time 2 given one new case at time 1 (and thus the
+presence of two susceptibles at time 1) to be $p^2$.  Thus,
+the unconditional probability is $3p(1-p)^2 \times p^2$; we will
+denote the unconditional probability of an entire epidemic pathway
+by $q$.
+
+We may summarize the entire analysis in a Table.  We let $K=\sum_{i=1}C_i$
+be the cumulative number of secondary cases, and $T$ be the time of the last
+case, i.e. one less than the minimum value of $i$ such that $C_j=0$ for all $j \geq i$.
+Finally, we denote the probability of the entire pathway by $q$.
+\begin{table}[hb]
+\begin{tabular}{cc|cc|cc|c|c|c}
+$C_1$ & $S_1$ & $C_2$ & $S_2$ & $C_3$ & $S_3$ & $K$ & $T$ & $q$ \\ \hline
+0 & 3 & 0 & 3 & 0 & 3 & 0 & 0 & $(1-p)^3$ \\
+1 & 2 & 0 & 2 & 0 & 2 &  1 & 1 & $3p(1-p)^4$ \\
+1 & 2 & 1 & 3 & 0 & 1 &  2 & 2 & $6p^2(1-p)^4$ \\
+1 & 2 & 1 & 1 & 1 & 0 &  3 & 3 & $6p^3(1-p)^3$ \\
+1 & 2 & 2 & 0 & 0 & 0 &  3 & 2 & $3p^3(1-p)^2$ \\
+2 & 1 & 0 & 1 & 0 & 0 &  2 & 1 & $3p^2(1-p)^3$ \\
+2 & 1 & 1 & 0 & 0 & 0 &  3 & 2 & $3p^2(1-p)(1-(1-p)^2)$ \\
+3 & 0 & 0 & 0 & 0 & 0 &  3 & 1 & $p^3$ \\
+\end{tabular}
+\end{table}
+
+Then, we can compute the probability distribution of the number of
+secondary cases, yielding $P(K=0)=(1-p)^3$,
+$P(K=1)=3p(1-p)^4$, 
+$P(K=2)=6p^2(1-p)^4+3p^2(1-p)^3$, and
+$P(K=3)=9p^3(1-p)^3+3p^2(1-p)(1-(1-p)^2)+p^3$.
+Plotted using R, these look like:
+<<>>=
+ps <- seq(0,1,by=0.001)
+pk0 <- function(pp){(1-pp)^3}
+pk1 <- function(pp){3*pp*(1-pp)^4}
+pk2 <- function(pp){6*pp^2*(1-pp)^4+3*pp^2*(1-pp)^3}
+pk3 <- function(pp){6*pp^3*(1-pp)^3+3*pp^3*(1-pp)^2+3*pp^2*(1-pp)*(1-(1-pp)^2)+pp^3}
+pk3a <- function(pp){1-pk0(pp)-pk1(pp)-pk2(pp)}
+check <- max(abs(pk3(ps)-pk3a(ps)))
+check
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,pk0(ps),xlab="p",ylab="P(K=x)",type="l",ylim=c(0,1))
+points(ps,pk1(ps),type="l",col="blue")
+points(ps,pk2(ps),type="l",col="green")
+points(ps,pk3(ps),type="l",col="red")
+@
+\end{figure}
+
+What is the expected number of secondary infections?  We can 
+compute $\sum_{k=0}^3 P(K=k)$ numerically.
+<<>>=
+ek <- function(pp) {pk1(pp)+2*pk2(pp)+3*pk3(pp)}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,ek(ps),xlab="p",ylab="E(K)",type="l",ylim=c(0,3))
+@
+\end{figure}
+
+{\bf Exercise.}~~Plot the expectation of the extinction time $T$
+using R.  Use the following as a starting point.  The functions
+\verb+et0+, \verb+et1+, \verb+et2+, and \verb+et3+ give the
+probability of extinction at time 0, 1, 2, and 3 respectively;
+the function \verb+eet+ gives the expected extinction time.
+<<>>=
+et0 <- function(pp) {(1-pp)^3}
+et1 <- function(pp) {(3*pp*(1-pp)^4+3*pp^2*(1-pp)^3+pp^3)}
+et2 <- function(pp) {6*pp^2*(1-pp)^4+3*pp^3*(1-pp)^2+3*pp^2*(1-pp)*(1-(1-pp)^2)}
+et3 <- function(pp) {6*pp^3*(1-pp)^3}
+et3a <- function(pp){1-et0(pp)-et1(pp)-et2(pp)}
+check <- max(abs(et3(ps)-et3a(ps)))
+check
+eet <- function(pp){et1(ps)+2*et2(ps)+3*et3(ps)}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,et0(ps),xlab="p",ylab="P(T=x)",type="l",ylim=c(0,1))
+points(ps,et1(ps),type="l",col="blue")
+points(ps,et2(ps),type="l",col="green")
+points(ps,et3(ps),type="l",col="red")
+@
+\end{figure}
+You should find that the maximum extinction time occurs for 
+intermediate values of the transmission probability $p$; interpret
+this result.
+
+\subsection*{Digression on functions}
+Earlier we discussed the concept of the maximum likelihood
+estimate, the value of an unknown parameter that makes the data most 
+probable.
+
+For the case of the binomial distribution, suppose there were $N$
+trials with $x$ observed successes.  Then
+\[
+P(X=x)={N \choose x} p^x (1-p)^{N-x} .
+\]
+What value makes this the largest?  To begin with, note that $x$
+is a fixed constant; $p$ is the variable of interest.  Since
+${N \choose x}$ is a constant, we can ignore it when looking for
+the value of $p$ that maximizes the likelihood.  So we wish to
+find $p$ to maximize $p^x (1-p)^{N-x}$.  
+
+In mathematical statistics and numerical statistics, it is much more 
+common to work with the logarithm of the likelihood.  Since the
+logarithm is an increasing function, i.e. $x<y$ implies $log(x)<log(y)$,
+we can find the value of $p$ that maximizes the logarithm of the
+likelihood.
+\[
+L(p) = \log\big( p^x (1-p)^{N-x} \big) = x \log (p) + (N-x) \log (1-p)
+\]
+
+If $x=0$, this just becomes $L(p)=N \log(1-p)$.  The largest value of
+$N \log (1-p)$ occurs at the largest value of $\log(1-p)$, which occurs
+at the largest value of $1-p$, which occurs at the smallest value of
+$p$, or zero.  If you observe no successes, your best estimate of 
+the success probability is zero.  Of course, if there are few trials,
+this estimate may have little precision (and thus be unconvincing),
+which we will discuss later.  Similarly, if the number of successes is
+$N$, every trial being a success, then the maximum likelihood estimate
+for $p$ is one.  
+
+Let us suppose that $x$ is not 0 or $N$ in what follows.  A famous
+optimization method is based on the fact that for a smooth function,
+the slope becomes zero at a maximum.  For instance, consider the
+function $f(x)=-x^2$.  The maximum value occurs at $x=0$, at which
+point the slope $f'(x)=-2x$ equals zero as well.  In this particular
+case, the slope vanishes nowhere else.  In general, however, since
+the slope can vanish at a minimum (as with $x=0$ for $f(x)=x^2$), 
+as well as other places ($x=0$ for $f(x)=x^3$), it is not sufficient
+to simply find where the derivative vanishes.  Finally, as we have
+seen, sometimes the maximum occurs on the boundary, and the slope does
+not have to vanish there.  
+
+Nevertheless, we will look for places where the slope vanishes for
+the function $f(p)=x \log(p) + (N-x)\log(1-p)$.  The derivative may
+be computed, first using the addition rule:
+\[
+f'(p) = x \frac{d}{dp} \log(p) + (N-x) \frac{d}{dp}\log(1-p) .
+\]
+Remember that $x$ is constant here, and $p$ is the variable of 
+interest.  Then, we need the fact that 
+\[
+\frac{d}{du}\log(u) = \frac{1}{u} .
+\]
+Using this, and the chain rule, gives us
+\[
+f'(p) = \frac{x}{p}  - \frac{N-x}{1-p} .
+\]
+Setting this to zero gives the solution $\hat{p}$ in terms of the odds:
+\[
+\frac{\hat{p}}{1-\hat{p}} = \frac{x}{N-x} .
+\]
+Solving this gives $\hat{p}=x/N$, the observed relative frequency.
+
+To show that this occurs at a maximum, and not a minimum or saddle
+point, we could look at the second derivative and verify that the
+second derivative is negative, indicating that the function is
+concave down at this point.  We omit this important consideration
+for brevity.
+
+\vfill
+
+\end{document}
+

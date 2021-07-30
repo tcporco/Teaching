@@ -1,0 +1,525 @@
+\documentclass[fleqn,12pt]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+\definecolor {ourcerulean}{RGB}{189,222,217}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+
+Version 2.0---modified 9 Mar 2017
+
+\section*{The SIS model}
+We will look today at the classical SIS (susceptible-infective-susceptible) model.  
+
+\begin{center}
+\begin {tikzpicture}[-latex,auto,node distance=4 cm and 5cm,on grid,semithick,state/.style={circle,top color=white,bottom color=ourcerulean,draw,processblue,text=black,minimum width=1 cm}]
+\node[state] (S) {$S$};
+\node[state] (I) [right=of S] {$I$};
+\path (S) edge [bend left = 30] node[below =0.15 cm] {$\beta \frac{I}{N}$} (I);
+\path (I) edge [bend right = -30] node[below =0.15 cm] {$\gamma$} (S);
+\end{tikzpicture}
+\end{center}
+
+Here, the population is divided into susceptible ($S$) and infective ($I$), with total number $N=S+I$; the 
+prevalence fraction is $I/N$.  We assume the force of infection is $\lambda=\beta \frac{I}{N}$.  We assume
+exponential recovery (recovery at constant hazard $\gamma$).
+The model is then
+\[
+\frac{dS}{dt} = - \beta S \frac{I}{N} + \gamma I
+\]
+\[
+\frac{dI}{dt} =  \beta S \frac{I}{N} - \gamma I
+\]
+We can just write this as one equation: 
+\[
+\frac{dI}{dt} = \beta (N-I) \frac{I}{N} - \gamma I .
+\]
+
+This is a nonlinear ordinary differential equation, since I and it's derivatives appear to powers other than 1.
+
+The dimensions of $\gamma$ are reciprocal time; it is a rate.  Note that $\beta$ in this model also has dimensions
+of rate as well.
+
+Note that $dN/dt=dS/dt+dI/dt=0$; the total population doesn't change in this model.
+
+Let's plot the right hand side.  First, let us pick $\beta=2$ per year and suppose $\gamma=1$ per year, and let's take
+$N=10000$ say.
+<<>>=
+nmax <- 10000
+itmp <- seq(0,nmax,by=1)
+cur.beta <- 2
+cur.gamma <- 1
+plot(itmp,cur.beta*(nmax-itmp)*itmp/nmax - cur.gamma*itmp,xlab="I",ylab="dI/dt",type="l",ylim=c(-2000,2000),main="beta=2, gamma=1")
+abline(h=0,col="gray")
+points( ((cur.beta-cur.gamma)/cur.beta)*nmax, 0,pch=16 )
+points( 0, 0,pch=16 )
+@
+
+In fact the graph is of course a parabola.  One zero is at $I=0$; if there are no infectives, then the number of
+infectives doesn't change.  It makes sense: if nobody has the disease, then nobody ever gets it.  This model is
+therefore excluding importation, immigration, and evolution.
+
+Where is the other root of the parabola?  It is at $I^*$ such that
+\[
+\beta (N-I^*)/N = \gamma .
+\]
+This is just from substituting into the $dI/dt$ equation above.  What we get is that the prevalence fraction 
+$I^*/N$ is $(\beta - \gamma)/\beta$.  If $I^*$ takes this value, then the rate of production of new cases
+exactly balances recovery, and again the number of infectives does not change.
+
+What does this mean?  Say you have a value of $I=2000$ (a prevalence fraction of 0.2).
+<<>>=
+nmax <- 10000
+itmp <- seq(0,nmax,by=1)
+cur.beta <- 2
+cur.gamma <- 1
+plot(itmp,cur.beta*(nmax-itmp)*itmp/nmax - cur.gamma*itmp,xlab="I",ylab="dI/dt",type="l",ylim=c(-2000,2000),main="beta=2, gamma=1")
+abline(h=0,col="gray")
+points( ((cur.beta-cur.gamma)/cur.beta)*nmax, 0,pch=16 )
+points( 0, 0,pch=16 )
+points( 2000, 0, pch=16, col="red")
+arrows( 1800, 100, 2200, 100, length=0.1, col="red")
+points( 8000, 0, pch=16, col="blue")
+arrows( 8200, 100, 7800, 100, length=0.1, col="blue")
+@
+We know the rate of change of $I$ has to be given by the equation. We have 2 per year times 10000 - 2000 times 0.2 = 3200
+new infections per year for the first term.  And we will have 2000 times 1 per year = 2000 recoveries per year for the second.
+The total rate of change is 1200 per year, in the positive direction.  So if $I=2000$, the rate of change is positive---the
+red dot in the plot is moving to the right at a speed of 1200 per year.
+
+If we happened to be at the value $I=5000$, what happens?  Then we have a new infection rate of $2$ per year, $\times (10000-5000) \times 0.5$, which is 5000 per year.  The number of recoveries is $\gamma I=5000$ per year also, so the system is in equilibrium.
+
+If we were at say $I=8000$, then what?  We would have a new infection rate of $2$ per year, times $10000-8000$, times 0.8.  There
+are lots of infectives---so the susceptibles are at high risk.  But there aren't that many of them; the total new infection
+rate is back down to 3200 per year again.  But the recovery rate is 8000 per year; we're going to be losing infectives faster
+than we gain them.  If the system is at the blue point and $I=8000$, then the rate of change is negative.  $I$ is
+decreasing---the blue dot is moving left.  The parabola keeps going down (even though I cut the graph off).
+
+Can the dot cross from the left of the equilibrium at 5000 over to the right? No way.  The velocity is zero at
+the equilibrium; if it were there, it could never leave.  In fact, the system will never actually get there either.  Before
+we move on, let's ask two more questions.  What if the value of $I$ were 12000 say?  Well, it can't be.  There are only
+10000 people, so $I$ is restricted to the range $[0,10000]$.  What if the equations somehow tried to create solutions
+that went outside this range?  That model wouldn't be well posed.  
+
+\footnotesize
+It turns out we can actually solve this whole system.  That's pretty lucky in a way.  Normally nice closed form analytic
+solutions just don't happen for realistic systems.  
+
+Let's do it.  First, since $N$ is a constant, I'd like to just change variables please, over to say $y=I/N$.  Then we
+have
+\[
+\frac{dy}{dt} = \beta y (1-y) - \gamma y .
+\]
+which is
+\[
+\int \frac{dy}{\beta y (1-y) - \gamma y} = \int dt = t + C .
+\]
+Here $C$ is a constant of integration.
+
+The denominator factors on the left: $\beta y (1-y) - \gamma y = y ( \beta  - \gamma - \beta y)$.  Let's
+solve it only for the case $\beta - \gamma > 0$, and
+we use the usual trick:
+\[
+\frac{1}{y (\beta - \gamma - \beta y)} = \frac{A}{y} + \frac{B}{\beta - \gamma - \beta y} 
+\]
+\[
+\quad \quad = \frac{A(\beta - \gamma - \beta y)}{y(\beta - \gamma - \beta y)} + \frac{By}{\beta - \gamma - \beta y} 
+\]
+\[
+\quad \quad = \frac{A \beta - A \gamma - A \beta y + B y)}{y(\beta - \gamma - \beta y)} 
+\]
+So this will all work if $A = 1/(\beta-\gamma)$ and $B = A \beta$.  So:
+\[
+\int \frac{dy}{\beta y (1-y) - \gamma y} = 
+  \int \frac{dy}{(\beta - \gamma)y} + \int \frac{\beta dy}{(\beta - \gamma)(\beta - \gamma - \beta y)} .
+\]
+\[
+\quad \quad = \frac{\mbox{\rm ln}(y)}{\beta - \gamma} 
+  - \frac{1}{\beta - \gamma} \mbox{\rm ln}(\beta - \gamma - \beta y) .
+\]
+\[
+\quad \quad = \frac{1}{\beta - \gamma} 
+  \mbox{\rm ln}\left(\frac{y}{\beta - \gamma - \beta y}\right) .
+\]
+We then have
+\[
+ \frac{1}{\beta - \gamma} \mbox{\rm ln}\left(\frac{y}{\beta - \gamma - \beta y}\right)  = t+C
+\]
+Just for a moment, let $a=\beta - \gamma$:
+\[
+ \mbox{\rm ln}\left(\frac{y}{a - \beta y}\right)  = at+C
+\]
+\[
+ \frac{y}{a - \beta y}  = C' e^{at} .
+\]
+Rearrange this and apply the initial condition $y(t)=y_0$ and you get
+\[
+y = \frac{\beta - \gamma}{\beta y_0 + (\beta (1-y_0) - \gamma) e^{-(\beta - \gamma)t}} .
+\]
+Does it make sense?  As $t \rightarrow \infty$, this just becomes the equilibrium $(\beta - \gamma)/\beta$, so at
+least it makes that sense.  This curve shows logistic growth in time.
+
+\normalsize
+
+But what if $\beta-\gamma<0$?  A positive equilibrium does not exist, and we'll discuss it more in a moment.  Let's look at the
+right hand side for $\beta=0.5$ per year and $\gamma=1$ per year:
+<<>>=
+nmax <- 10000
+itmp <- seq(0,nmax,by=1)
+cur.beta <- 0.5
+cur.gamma <- 1
+plot(itmp,cur.beta*(nmax-itmp)*itmp/nmax - cur.gamma*itmp,xlab="I",ylab="dI/dt",type="l",ylim=c(-2000,2000),main="beta=1/2, gamma=1")
+@
+
+What happens if $\beta=\gamma$ exactly?  Not particularly believable in reality---why would two different processes have
+rates that equal each other right down to infinitely many decimals?  
+<<>>=
+nmax <- 10000
+itmp <- seq(0,nmax,by=1)
+cur.beta <- 1
+cur.gamma <- 1
+plot(itmp,cur.beta*(nmax-itmp)*itmp/nmax - cur.gamma*itmp,xlab="I",ylab="dI/dt",type="l",ylim=c(-2000,2000),main="beta=1, gamma=1")
+@
+
+Suppose we consider the following.  Let's follow only the very first infectives; let $I^{(0)}$ be the number of them.
+By definition, we can't get any more---you were either there at the beginning or you were not.  Let's let $I^{(+)}$ be the
+number of new infectives caused by the initial group of infectives---I mean the total number ever caused.  This variable
+is meant to be a cumulative incidence; it is counting the flow into a state, and not worrying about the actual number
+of infectives.  Imagine just counting the number of people who ever enter a room on a given day and not keeping track
+of who leaves.
+
+So we will have for the first generation
+\[
+\frac{dI^{(0)}}{dt} = - \gamma I^{(0)} .
+\]
+They decay away exponentially just like we assumed all infectives do in this model.  We know the solution to 
+this equation is $I^{(0)}=I^{(0)}e^{-\gamma t}$.  The size of the original cohort is an exponential function.  We know
+the initial size of the starting group of infectives, $I^{(0)}(0)$, and this decays away in time.  As time passes, the
+size of the starting group of infectives is smaller as they recover.
+
+But while they're still infective, they cause new infections.  The incidence term {\it from them} is $\beta S I^{(0)}/N$.
+We know after a while there are other infectives, second or later generation infectives, and those infectives will keep
+transmitting disease too.  But we're not talking about those.  We're talking about transmission from the first generation, and
+this happens at rate $\beta S I^{(0)}/N$.  
+
+Let's now assume that $I^{(0)}$ is much less than $N$, and that over the course of the first generation, the size of
+the second generation will also be small compared to $N$.  So we'll never put much of a dent in $N$, and we can just take
+$S=N$.  Eventually the epidemic might grow and render this assumption no longer useful.  But while we have it, we have
+incidence from the first generation of $\beta I^{(0)}$.  So the cumulative incidence $I^{(+)}$ follows
+\[
+\frac{dI^{(+)}}{dt} = \beta I^{(0)} .
+\]
+So 
+\[
+I^{(+)}(t) = \int_0^t \beta I^{(0)}(t') dt' = \beta \int_0^t I^{(0)}(0)e^{-\gamma t'} dt'
+\]
+\[
+I^{(+)}(t) = \beta I^{(0)}(0) \int_0^t e^{-\gamma t'} dt' = \beta I^{(0)}(0) \left(-\frac{1}{\gamma}\right)\left(e^{-\gamma t} - 1\right) 
+\]
+which becomes
+\[
+I^{(+)}(t) = \frac{\beta I^{(0)}(0) (1-e^{-\gamma t})}{\gamma} .
+\]
+In the far future, as $t \rightarrow \infty$, the number of secondary cases generated per initial starting case is therefore
+$\beta/\gamma$, which is the basic reproduction number for this model.
+
+\section*{Chains}
+In the simple model we just looked at, there was no waiting time between infection and disease or infectivity.  But really there is
+always some delay, and for some problems, it is important enough to consider.
+A common design motif in epidemic models is to construct a delay using exponential states.  In fact it's possible with
+branches, loops, and chains to construct an arbitrarily good approximation to any waiting time.  But what you often see
+is a simple model where infective people enter an ``exposed'' waiting state $E$.  Let's take a moment to learn more about
+how chains of states work.
+
+Let's find out what the sum of two independent identical exponential distributions is.  Consider $Y_1$, $Y_2$, and $Z$:
+\[
+\frac{dY_1}{dt} = - \lambda Y_1
+\]
+\[
+\frac{dY_2}{dt} = \lambda Y_1 - \lambda Y_2
+\]
+\[
+\frac{dZ}{dt} = \lambda Y_2
+\]
+If we start off with $N$ people in $Y_1$ at time 0, and watch how they build up over time in $Z$, we'll understand what the
+cumulative distribution function for the sum of two independent exponentials is.  Let $T$ be the waiting time distribution of the
+sum of two independent exponentials is.  
+\[ 
+P(T < t) = Z(t)/N
+\]
+See?  $Z$ is the fraction of people for whom this has already happened.  Imagine each person has a waiting time $T$.  If you are in
+$Z$ at time $t$, then $T<t$.  If $T<t$, then you are in $Z$ at time $t$.  
+
+We already know $Y_1(t) = N e^{-\lambda t}$.  We need to use a little trickery to get $Y_2$.  There's a standard trick:
+\[
+\frac{dY_2}{dt} + \lambda Y_2 = \lambda N e^{-\lambda t} .
+\]
+\[
+e^{\lambda t} \frac{dY_2}{dt} + e^{\lambda t} \lambda Y_2 = \lambda N  .
+\]
+\[
+\frac{d}{dt} \left( e^{\lambda t} Y_2\right) = \lambda N  .
+\]
+\[
+d\left( e^{\lambda t} Y_2\right) = \lambda N\/ dt
+\]
+\[
+\int_{t=0}^{t=t'} d \left( e^{\lambda t} Y_2\right) = \int_{t=0}^{t=t'}\lambda N\/ dt
+\]
+\[
+e^{\lambda t'} Y_2(t') - Y_2(0) = \lambda N t'
+\]
+By assumption, everyone is in $Y_1$ at the beginning, so $Y_2(0)=0$.
+\[
+e^{\lambda t'} Y_2(t') = \lambda N t' 
+\]
+Rearranging and dropping the primes:
+\[
+Y_2(t) = \lambda N t e^{-\lambda t}
+\]
+Finally, 
+\[
+\frac{dZ}{dt} = \lambda Y_2(t).
+\]
+
+We have
+\[
+\frac{1}{N} \frac{dZ}{dt} = \lambda^2 t e^{-\lambda t} .
+\]
+Remember that the fraction of people who have arrived in Z at any time is the cumulative distribution function of
+the arrival time.  We wouldn't mind having that, but actually having the probability density function would be nice too.
+The PDF is the derivative of the cumulative distribution function; where are we going to get it?  We notice that we already
+have it in the previous equation!
+\[
+f(t) = \frac{d}{dt} P(T<t) = \lambda^2 t e^{-\lambda t} .
+\]
+What distribution has this density?  Meet the gamma distribution, with shape parameter 2.  The sum of two independent identical exponentials
+with rate $\lambda$ is a gamma with shape parameter 2. 
+
+The Gamma family comes up all the time.  The general formula for the density is
+\[
+f(t) = \frac{\lambda^a}{\Gamma(a)} t^{a-1} e^{-\lambda t} .
+\]
+We won't prove it, but the mean is always $a/\lambda$.  Here, $a$ is the {\it shape parameter} and $\lambda$ is the rate.
+
+The sum of $n$ independent identical exponentials (with rate $\lambda$) is a gamma with shape $n$ and rate $\lambda$, which
+we won't show.
+
+Some people call a gamma distribution with integer shape parameter (i.e. a sum of exponentials) an Erlang distribution.
+
+You already have seen the gamma distribution in your life.  If the rate parameter is $1/2$ and the shape parameter is $n/2$, it's 
+called a {\it chi square} distribution.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Find the hazard $\lambda(t)$ for a gamma distribution with shape parameter 2 and rate parameter $\lambda$. 
+\ding{122} \vskip 6pt
+%is this too hard
+
+%$R_0$ for a model with delay (SEIR) model.
+
+\section*{Loops}
+Loops form another design motif.  In fact the SIS model shows a loop; once you recover, you become susceptible
+again and the prior history is forgotten.
+It's common in compartmental modeling to loop back to a previous state.  An example is given by herpes simplex virus, where a person
+can repeatedly have episodes during which transmission is much more likely than when there is no episode (cf. Blower 1998).
+
+Let's imagine for a moment that we are looking at a closed population of people with the disease, and just keeping track of
+how many have episodes at any given time.
+
+We might assume the rate of relapse is independent of the past history of relapses, and is the same for everyone.  Let $Y$
+be the number people with symptoms then, and $L$ be the number without.  Say the relapse hazard is $\zeta$.  Then in a given
+unit of time, we have each of $L$ people faced with a risk $\zeta \/ \Delta t$ of relapsing.  The expected number of relapses
+is then $L \zeta \Delta t$.  This gives us a flow rate per unit time of $L \zeta$.  
+
+Similarly, say the rate of recovery (recovery hazard) is $\rho$.  Then the flow rate of people recovering per unit time is $Y \rho$.
+So we would just write
+\[
+\frac{dL}{dt} = \rho Y - \zeta L
+\]
+and
+\[
+\frac{dY}{dt} = -\rho Y + \zeta L
+\]
+The total population, $N=L+Y$ doesn't change; $dN/dt=0$.  
+
+In fact, why not just divide by $N$ and get equations for the fraction symptomatic over time:
+\[
+\frac{dy}{dt} = -\rho y + \zeta (1-y) .
+\]
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Show that the equilibrium fraction of symptomatic people in the above simple model is
+$\bar{y}=\frac{\zeta}{\zeta + \rho}$.  Suppose $\rho$ is much smaller than $\zeta$; does the answer make sense?  What about
+if $\zeta$ is much larger than $\rho$?
+\ding{122} \vskip 6pt
+
+Let $a=\rho + \zeta$.  Then we can write
+\[
+\frac{dy}{dt} = -a y + \zeta
+\]
+This can be looked at as a version of the ``immigration-death'' process again.  We have an inflow at rate $\zeta$ and
+an outflow at rate $a$.  
+
+\tiny
+There's a standard trick to solve it; you don't have to learn the trick, but just understand the solution:
+\[
+\frac{dy}{dt} + ay = \zeta
+\]
+\[
+e^{at} \left(\frac{dy}{dt} + ay\right) = \zeta e^{at}
+\]
+\[
+\left(\frac{dy}{dt}e^{at} + ay\right)e^{at} = \zeta e^{at}
+\]
+\[
+\frac{d}{dt} \left(y e^{at} \right) = \zeta e^{at}
+\]
+\[
+d \left(y e^{at} \right) = \zeta e^{at} \/ dt
+\]
+\[
+\int_{t=0}^{t=t'}d \left(y e^{at} \right) = \int_{t=0}^{t=t'}\zeta e^{at} \/ dt
+\]
+\[
+y(t') e^{at'} - y(0)  = \frac{\zeta}{a} \left(e^{at'} - 1\right)
+\]
+
+Just for simplicity, let's imagine everyone at the beginning was symptomatic, so $y(0)=1$.  Then
+\[
+y(t') e^{at'}  = 1 + \frac{\zeta}{a} \left(e^{at'} - 1\right)
+\]
+Now just write $t$ for $t'$:
+\[
+y(t) = \frac{\zeta}{\zeta+\rho} \left(1 - e^{-at}\right) + e^{-a t} 
+= \frac{\zeta}{\zeta+\rho} \left(1 - e^{-at}\right) + \frac{\zeta+\rho}{\zeta+\rho}e^{-a t} 
+\]
+\[
+y(t) = \frac{\zeta - \zeta e^{-at} + (\zeta+\rho)e^{-a t} }{\zeta+\rho}
+\]
+\normalsize
+
+\[
+y(t) = \frac{\zeta +\rho e^{-a t} }{\zeta+\rho} = \frac{\zeta + \rho e^{-(\rho + \zeta)t}}{\zeta + \rho} .
+\]
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} What is the behavior of this equation as $t \rightarrow \infty$?  Work out the solution if
+$y(0)=0$.
+\ding{122} \vskip 6pt
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} Suppose that births occur randomly in the sense that the rate of new people being added to a population
+has a constant rate $\Lambda$, so the chance of a birth happening in a tiny time interval $\Delta t$ is $\Lambda \/ \Delta t$.
+Suppose there are $X$ people, and the per capita death rate is $\mu$.
+(a) What is the mean waiting time to death, for any individual in the population?\newline
+(b) Show
+\[
+X(t+\Delta t) = X(t) (1-\mu \/ \Delta t) + \Lambda \/ \Delta t
+\]
+if you assume birth/immigration is independent of death.\newline
+(c) Now rearrange and take the limit as $\Delta t \rightarrow 0$ and get
+\[
+\frac{dX}{dt} = \Lambda - \mu X
+\]
+(d) Find the equilibrium of this system (for what value is $dX/dt=0$?)  Construct an interpretation in terms of a kind
+of ``prevalence equals incidence times duration'' in a demographic setting.\newline
+\ding{122} \vskip 6pt
+
+Now, we're going to add what we learned about competing risks to what we just learned about loops.  Suppose now we have
+a chance of death, all the time, no matter what stage you are in:
+\[
+\frac{dL}{dt} = - \mu L - \zeta L + \rho Y
+\]
+\[
+\frac{dY}{dt} = - \mu Y + \zeta L - \rho Y
+\]
+Now, people leave and never come back.  The long run equilibrium is zero.  What we want to know is how much
+transmission could a person cause?  Or rather, if we started a bunch of people out, how much transmission could
+they cause?  
+
+For your first episode, the removal rate is $\rho+\mu$.  The mean duration is $1/(\rho+\mu)$.  The chance of death is
+$\mu/(\rho+\mu)$, and the chance you recovered is $\rho/(\rho+\mu)$.  If death occurred, that's it; no more cases.  But
+if you recovered, there's a chance you'll relapse again.  What is it?  If you recover, your recovery will last on average
+how long?  The time is $1/(\zeta+\mu)$, and there's a chance $\mu/(\zeta+\mu)$ of death before your relapse and a chance
+$\zeta/(\zeta+\mu)$ that you actually relapse and become an infective again.  
+
+If you're an infective, everything is as it was before.  There is nothing in the model to distinguish your second relapse from
+your first.  All these distributions are memoryless.  
+
+So.  What is your total person-time of infection?  Let's say it's called $T$.  What we know is that 
+\[
+T = \frac{1}{\rho+\mu} + \frac{\rho \zeta}{(\rho+\mu)(\zeta+\mu)} T.
+\]
+The first time is the duration of the current episode.  The second term is the chance you recover (instead of dying) times the
+chance you relapse (insteading of dying in state $L$).  
+
+You can actually go ahead and solve this for $T$.
+
+We may also reason this way.  Let's just call
+\[
+k = \frac{\rho}{\rho+\mu} \frac{\zeta}{\zeta + \mu} .
+\]
+This is the chance that you have another episode, once one infectious episode ends.  Let's also call the length of one episode
+$\tau = 1/(\rho+\mu)$.  So another way to look at it is that the number of infectious episodes is going to be
+\[
+1 + k + k^2 + k^3 + \cdots
+\]
+We know $0 \leq k < 1$, since we are only interested in $\mu>0$.  Therefore we can add this series up and get $1/(1-k)$; that is the
+expected number of episodes for each infective.  Each episode lasts $\tau$ long, so the expected time is $\tau/(1-k)$.  Is this the
+solution of the equation
+\[
+T = \tau + k T ?
+\]
+
+This analysis shows you that a loop is actually a kind of chain that never stops.
+
+Let's look at the full epidemic model (Blower 1997):
+\[
+\frac{dX}{dt} = - \beta X \frac{Y}{N} + \Lambda - \mu X
+\]
+\[
+\frac{dY}{dt} = \beta X \frac{Y}{N} - \mu Y - \rho Y + \zeta L
+\]
+\[
+\frac{dL}{dt} =  - \mu L - \zeta L + \rho Y
+\]
+This is a kind of modified SI model.  The analysis above shows what $R_0$ is for this model.
+
+\stepcounter{exno}
+{\bf Exercise \theexno{}.} How long did this assignment take you?  
+\ding{122} \vskip 6pt
+
+% my lyme model
+% eigenbusiness for the 2 group model
+% nasell argument
+
+\vfill
+\end{document}
+

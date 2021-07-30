@@ -1,0 +1,723 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+{\LARGE Mathematical Modeling of Infectious Disease, Lecture 10}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section{Introduction}
+In this lecture, we will outline the Galton-Watson process, and 
+illustrate it's use as a simple model of an epidemic.  This collection
+of notes contains fuller details than can be presented in the 
+lecture; the learning objectives for this week are enumerated below.
+\begin{enumerate}
+\item Describe the formulation of the Galton-Watson process.
+\item Interpret the subcritical, critical, and supercritical cases
+of the Galton-Watson process in epidemiological terms.
+\end{enumerate}
+
+\section{The Galton-Watson Process Introduced}
+\subsection{Introduction}
+The Galton-Watson process is a simple example of what is known as
+a {\it branching process}.  Branching process theory has been applied
+to epidemics for decades, and we will study the Galton-Watson process
+in detail as a simple example of  how an epidemic might get started.
+Historically, the Galton-Watson process arose in the analysis of the
+continuation of family names.
+
+The Galton-Watson process, applied in an epidemic setting, is a model
+of the number of cases $C_t$ at each time $t$.  At each time period, 
+the cases in the population give rise to a random number of new cases,
+and then recover.  We assume that the number of cases produced by
+each case is independent of the number produced by any other case, 
+and of the number of cases present in the population (and of the
+previous history).  We assume that 
+there are $C_0=1$ cases at time 0, to start the
+epidemic, and no new cases enter the population.  Thus, if at some
+time $t_0$, $C_{t_0}=0$, the epidemic has gone extinct; then 
+$C_t=0$ for all $t>t_0$.  In the Galton-Watson process, the 
+assumptions of independence, the starting number of cases, and the
+distribution of the number of secondary cases will allow us to 
+determine the changing probability distribution of the number of 
+cases as it evolves over time.  Thus, $C_t$, for $t=0,1,2,\ldots$
+are random variables, and we wish to determine their probability
+distribution.
+
+Observe that we have assumed that the probability distribution of
+the number of secondary cases is not changing, and that this 
+distribution is identical for all cases.  Notice that this is quite
+different than we assumed in the Reed-Frost epidemic.  In the
+Galton-Watson process, we are ignoring the depletion of susceptibles
+entirely---in fact, we are not even modeling the number of susceptibles
+at all in the Galton-Watson process.  
+We are also building in no household or small group
+structure.  Each case transmits disease in the same way, probabilistically speaking, as any other.  If we are ignoring household structure, then when
+the infection chain is small (not many people have been infected), 
+then we are justified in ignoring the depletion of susceptibles.  For
+instance, in a population numbering in millions, the infection of 
+ten individuals reduces the number of susceptibles negligibly.  Thus,
+the Galton-Watson process may be considered a simple model of how
+an epidemic might be initiated, with the understanding that once the
+number of individuals infected is no longer negligible compared to the
+population size, the model is no longer useful.
+
+Before proceeding with the analysis, it will be useful to examine
+some numerical simulations of the process.  For simplicity, we
+will begin with the assumption that the number of secondary cases
+obeys a binomial distribution with $N=3$ and $p=0.2$.  There is no
+compelling biological reason for choosing a binomial distribution, but
+we have studied this distribution earlier and it will provide a 
+convenient example.  We will begin with a very direct method of 
+simulation, as shown next.
+<<>>=
+gw.sim.binomial <- function(end.time,nn,pp) {
+  if (end.time < 0 || end.time > 10000) {
+    stop("end.time out of range")
+  } 
+  if (nn<=0 || pp<0 || pp>1) {
+    stop("binomial parameters wrong") 
+  } 
+  ans <- rep(0,end.time+1)
+  ans[1] <- 1
+  for (tt in 1:(length(ans)-1)) {
+    current.cases <- ans[tt]
+    new.cases <- sum(rbinom(current.cases,size=nn,prob=pp))
+    ans[tt+1] <- new.cases
+  }
+  ans
+}
+ending.time <- 10
+times <- 0:ending.time
+colors <- c("black","blue","cyan","green","yellow2","orange","red","purple","magenta","gray")
+nreps <- length(colors)
+nn<-3
+pp<-0.2
+sims <- matrix(0,ncol=ending.time+1,nrow=nreps)
+for (ii in 1:nreps) {
+  sims[ii,] <- gw.sim.binomial(ending.time,nn,pp)
+}
+@
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(times,sims[1,],type="l",ylim=c(0,max(sims)),col=colors[1],xlab="Time, t",ylab="C(t)")
+for (ii in 2:nreps) {
+  points(times,sims[ii,],type="l",col=colors[ii])
+}
+@
+\end{figure}
+In this figure, there are actually ten colored lines superimposed
+(which is hard to read, since many of the lines are atop one another).
+Each line represents the trajectory of one particular epidemic, or
+realization of the process.  For instance, in the last epidemic
+we plotted (in \Sexpr{colors[nreps]}), the first value was 
+\Sexpr{sims[nreps,1]} to start the epidemic, the second was \Sexpr{sims[nreps,2]}, and so on, to the
+last value, which was \Sexpr{sims[nreps,ending.time+1]}.
+
+We could actually plot the average of all the values at the beginning
+(which will be one, since we always seed with a single case), then
+the average of all the values at time 1, and so forth.  In other words,
+we can plot the average over time for these ten runs.
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(times,apply(sims,2,mean),type="l",ylim=c(0,max(sims)),col=colors[1],xlab="Time, t",ylab="Mean C(t)")
+@
+\end{figure}
+
+In fact, let us replicate the simulation for ten thousand runs and
+plot the mean over time.
+<<>>=
+ending.time <- 20
+times <- 0:ending.time
+nreps <- 10000
+nn<-3
+pp<-0.2
+simsum <- rep(0,ending.time+1)
+extinct <- 0
+current <- rep(0,ending.time+1)
+for (ii in 1:nreps) {
+  current <- gw.sim.binomial(ending.time,nn,pp)
+  simsum <- simsum + current
+  extinct <- extinct + (current[ending.time+1]==0)
+}
+simmean <- simsum/nreps
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(times,simmean,type="l",col=colors[1],xlab="Time, t",ylab="Mean C(t)")
+@
+\end{figure}
+
+Here, by time \Sexpr{ending.time}, \Sexpr{signif(100*extinct/nreps,3)}\% 
+of the epidemics had actually gone extinct.
+
+It will be interesting to re-run the simulation with different parameters.  First, let us increase the value of $p$ to 1/3:
+<<>>=
+ending.time <- 10
+times <- 0:ending.time
+nreps <- length(colors)
+nn<-3
+pp<-1/3
+sims <- matrix(0,ncol=ending.time+1,nrow=nreps)
+for (ii in 1:nreps) {
+  sims[ii,] <- gw.sim.binomial(ending.time,nn,pp)
+}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(times,sims[1,],type="l",ylim=c(0,max(sims)),col=colors[1],xlab="Time, t",ylab="C(t)")
+for (ii in 2:nreps) {
+  points(times,sims[ii,],type="l",col=colors[ii])
+}
+@
+\end{figure}
+<<>>=
+ending.time <- 50 
+times <- 0:ending.time
+nreps <- 10000
+nn<-3
+pp<-1/3
+simsum <- rep(0,ending.time+1)
+extinct <- 0
+current <- rep(0,ending.time+1)
+for (ii in 1:nreps) {
+  current <- gw.sim.binomial(ending.time,nn,pp)
+  simsum <- simsum + current
+  extinct <- extinct + (current[ending.time+1]==0)
+}
+simmean <- simsum/nreps
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(times,simmean,type="l",col=colors[1],xlab="Time, t",ylab="Mean C(t)")
+@
+\end{figure}
+Here, by time \Sexpr{ending.time}, \Sexpr{signif(100*extinct/nreps,3)}\% had gone
+extinct.
+
+In the final numerical example, we will increase the value of $p$
+to 0.4.
+<<>>=
+ending.time <- 10
+times <- 0:ending.time
+nreps <- length(colors)
+nn<-3
+pp<-0.4
+sims <- matrix(0,ncol=ending.time+1,nrow=nreps)
+for (ii in 1:nreps) {
+  sims[ii,] <- gw.sim.binomial(ending.time,nn,pp)
+}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(times,sims[1,],type="l",ylim=c(0,max(sims)),col=colors[1],xlab="Time, t",ylab="C(t)")
+for (ii in 2:nreps) {
+  points(times,sims[ii,],type="l",col=colors[ii])
+}
+@
+\end{figure}
+<<>>=
+ending.time <- 50 
+times <- 0:ending.time
+nreps <- 10000
+nn<-3
+pp<-0.4
+simsum <- rep(0,ending.time+1)
+extinct <- 0
+current <- rep(0,ending.time+1)
+for (ii in 1:nreps) {
+  current <- gw.sim.binomial(ending.time,nn,pp)
+  simsum <- simsum + current
+  extinct <- extinct + (current[ending.time+1]==0)
+}
+simmean <- simsum/nreps
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(times,simmean,type="l",col=colors[1],xlab="Time, t",ylab="Mean C(t)")
+@
+\end{figure}
+Here, by time \Sexpr{ending.time}, \Sexpr{signif(100*extinct/nreps,3)}\% had gone
+extinct.
+
+As a simulation note, we could have used special features of the binomial
+distribution to simplify the addition of independent binomial
+random variables.
+
+{\bf Exercise 1.}~~Simulate the Galton-Watson process using a
+Poisson distribution, and plot the results of several simulations
+on the same graph.  Use the function \verb+rpois+ to generate the
+random numbers, instead of \verb+rbinom+ as we used above.  To 
+generate seven Poisson random variates with mean (say) 1.2, use
+\verb+rpois(7,lambda=1.2)+.  Remember that we generate a random
+number of secondary cases for each case, and then add these up
+using \verb+sum+ (in this case, it is possible to simplify the
+simulation using special features of the Poisson distribution, but
+this is not necessary).  Use the code above as a model, and 
+repeat this three times, using the values 0.5, 1.0, and 5.0 for
+the mean.  Simulate each to an ending time of 10.
+
+{\bf Exercise 2.}~~Using the value 2.0 for the mean, simulate the
+epidemic ten thousand times, and determine the estimated extinction
+probability as the fraction of epidemics that had gone extinct by
+time twenty.
+
+We would like to know what the eventual extinction probability is for one
+starting case ($C_0=1$).  This tells us the chance that a chain of 
+infection beginning with one case would die out eventually.  Once the
+chain dies out, the number of cases is zero from then on; suppose that
+the chain has become extinct at some specific time $t_0$, and $C_{t_0}=0$.  Either $C_{t_0-1}=0$ (and it was already extinct), or $C_{t_0-1}>0$ (so
+that it just became extinct at $t_0$).  Because all chains extinct
+at time $t_0-1$ are extinct at time $t_0$, the event $C_{t_0-1}=0$
+is a subset of $C_{t_0}=0$.  Thus, we could write 
+$(C_{t_0-1}=0) \subset (C_t=0)$, and therefore
+$P(C_{t_0-1}=0) \leq P(C_t=0)$.  This means that the longer we wait,
+extinction becomes more and more likely.  The ultimate or
+eventual extinction probability is the chance that there is a $t_0$
+such that $C_{t_0}=0$.
+
+\small
+In the general case, analysis of the Galton-Watson process can become
+cumbersome without introducing some new tools.  For instance, to 
+determine the probability of extinction after the first generation
+(when $t=1$), we can simply use the distribution of the number of
+secondary cases to determine the chance that there will be no 
+secondary cases from the index case.  But after the second generation,
+we must consider the number of cases at time 1, $C_1$.  We must
+compute the chance that there were no cases at time 1 (in which case
+the process stays extinct), plus the chance there was one case at time
+1 times the chance one case gives rise to no secondary cases, plus
+the chance there were two cases at time 1 times the chance neither
+gave rise to a secondary case, and so on.  At time $t=3$, the same
+logic applies, except now we need to know the distribution of the
+number of cases at time $t=2$, and the number of cases at time two
+is derived from the number of cases at time 1.  For instance, to 
+determine the chance there are two cases at time 2, we would need to
+compute the chance there was one case at time 1 times the chance one
+case could cause two cases, plus the chance there were two cases at
+time 1 times the chance two cases could cause two more cases, plus
+the chance there were three cases at time 1 times the chance three cases
+could cause two cases, and so on.  The direct analysis gets more
+and more cumbersome as it is extended to further and further times
+$t$ because of the increasing number of possibilities
+to be considered.
+
+For this reason, mathematicians developed more powerful analytic
+techniques for such problems.  The classical analysis of the
+Galton-Watson process, in particular, utilizes a method based on
+the {\it probability-generating function}.  We will next briefly
+discuss the definition and applications
+of the probability-generating function.
+
+\section{Analysis of the Galton-Watson Process}
+\subsection{The extinction probability}
+\subsubsection{Introduction}
+Of great interest is the extinction probability itself.  In other
+words, we would like to know the probability that there is an $i$
+such that $X_i=0$.  Since $X_i=0$ implies $X_{i+1}=0$, the event
+$X_i=0 \subset X_{i+1}=0$.  In other words, if the process has
+gone extinct at time $i$, it is still extinct at time $i+1$.  Thus,
+$P(X_i=0) < P(X_{i+1}=0)$.  The extinction probability may
+be defined to be 
+\[
+E = P\Big(\cup_{i=1}^{\infty} (X_i=0)\Big) .
+\]
+If the events $X_i=0$ were disjoint, we could use the additivity
+axiom.  Unfortunately, $X_i=0$ is a subset of $X_{i+1}=0$!  We will
+have to use a different principle.
+
+In this particular case, observe that if the process has gone
+extinct at time $t$, it remains extinct from then on.  If we know
+the probability that the process went extinct at time $t$, we know
+the sum of the chance that the process went extinct at time 1, time 2,
+and so on up to $t-1$.  The extinction probability by time $t$ 
+includes the extinction probabilities at all previous times.  Intuitively,
+the chance of extinction ever should be the long run limit of the
+running extinction probability by time $t$, so that
+\[
+E = P\Big(\cup_{t=1}^{\infty} (X_t=0)\Big) = \lim_{t \rightarrow \infty} P(X_t=0) .
+\]
+This is proven in the next, optional, section.
+
+\subsubsection{Probability of an increasing union (Optional)}
+Let us abbreviate the event $X_i=0$ by $A_i$.  We know that 
+$A_i \subset A_{i+1}$.  A sequence of events with this property is
+known as an {\it increasing sequence}.  To find the probability that
+the epidemic dies out, we need to calculate the probability of 
+the union of an increasing sequence:
+\[
+E = P(\cup_{i=1}^{\infty} A_i) .
+\]
+
+Here, we may write
+\begin{eqnarray}
+\label{eq:increase}
+\cup_{i=1}^{\infty} A_i & = & A_1 \cup A_2 \backslash A_1 \cup A_3 \backslash A_2 \cup \cdots \\
+ & = & A_1 \cup \cup_{i=2}^{\infty} (A_i \backslash A_{i-1}) .
+\end{eqnarray}
+
+Why is this true?  Suppose that $\omega$ is in 
+$\cup_{i=1}^{\infty}A_i$.  In other words, there is some $j$ such 
+that $\omega \in A_j$.  If this $j$ is 1, then $\omega \in A_1$, and
+we know then that $\omega$ is in the set on the right side of the
+equation.  Now, suppose that $j>1$; we may assume that $j$ is the
+smallest $j$ such that $\omega \in A_j$; as long as there exists
+at least one such $j$, we know there must be a smallest.  Since
+$A_{j-1} \subset A_j$, we know that $A_j = A_{j-1} \cup (A_j \backslash A_{j-1})$.  Thus, either $\omega \in A_{j-1}$ or $\omega \in A_j$.  But
+$\omega \notin A_{j-1}$, since $j$ was the smallest $j$ such that
+$\omega \in A_j$.  So $\omega \in A_{j} \backslash A_{j-1}$, and so
+we know that $\omega$ is in the set on the right side.  Thus,
+$\cup_{i=1}^{\infty} \subset  A_1 \cup \cup_{i=2}^{\infty} (A_i \backslash A_{i-1})$. 
+Now, assume that $\omega$ is in the set on the right hand side.  Thus
+either $\omega \in A_1$, in which case $\omega$ is in the set on
+the left hand side, or else there is a $j$ such that 
+$\omega \in A_j \backslash A_{j-1}$.  But then, since 
+$(A_j \backslash A_{j-1}) \subset A_j$, $\omega \in A_j$.  Since there
+is a $j$ such that $\omega \in A_j$, $\omega$ is in the set on the
+left side of the equation.  Thus,
+$A_1 \cup \cup_{i=2}^{\infty} (A_i \backslash A_{i-1}) \subset  \cup_{i=1}^{\infty}$.  This is, finally, enough to show that 
+Equation~(\ref{eq:increase}) is satisfied.
+
+Using Equation~(\ref{eq:increase}), 
+\begin{equation}
+\label{eq:e2}
+P\Big(\cup_{i=1}^{\infty}A_i\Big) = 
+P\Big( A_1 \cup \cup_{i=2}^{\infty} (A_i \backslash A_{i-1}) \Big) .
+\end{equation}
+Now, for every $i>1$, $A_1 \cap (A_i \backslash A_{i-1}) = \emptyset$.
+This is because $A_1 \subset A_2 \subset \cdots \subset A_{i-1} \subset A_i$.  Thus, $A_1 \subset A_{i-1}$.  If $\omega \in A_i \backslash A_{i-1}$,
+$omega \notin A_{i-1}$.  If $\omega \in A_1$, then $\omega \in 
+A_{i-1}$, but since $\omega \notin A_{i-1}$, $\omega \notin A_1$.
+Also, if $\omega \in A_1$, $\omega \notin A_i \backslash A_{i-1}$.
+
+What of $(A_i \backslash A_{i-1}) \cap (A_j \backslash A_{j-1})$
+for $i$ different from $j$?
+For simplicity, let $i<j$.  Using the increasing property, we
+can find that $A_i \subset A_{j-1} \subset A_j$, and
+observe $A_i \backslash A_{i-1} \subset A_i \subset A_{j-1} \subset A_j$.
+We can see that $A_i \cap A_j \backslash A_{j-1} = \emptyset$ for the
+same reason we used above for $A_1$ and the rest follows.
+
+Thus, Equation~(\ref{eq:e2}) applies to a disjoint union, and we may
+invoke the addition rule:
+\begin{eqnarray*}
+P\Big(\cup_{i=1}^{\infty} A_i \Big) & = &
+P\Big( A_1 \cup \cup_{i=2}^{\infty} (A_i \backslash A_{i-1}) \Big) \\
+& = & P(A_1) + \sum_{i=2}^{\infty} P(A_i \backslash A_{i-1}) \\
+& = & P(A_1) + \lim_{N \rightarrow \infty} \sum_{i=2}^N P(A_i \backslash A_{i-1}) \\
+& = & \lim_{N \rightarrow \infty} P(A_1) + \sum_{i=2}^N P(A_i \backslash A_{i-1}) . \\
+\end{eqnarray*}
+Finally, the last expression is just $P(A_N)$, since 
+$A_N = A_1 \cup (A_2 \backslash A_1) \cup (A_3 \backslash A_2) \cup \cdots (A_N \backslash A_{N-1})$ and this is a disjoint union.
+So 
+\[
+P\Big(\cup_{i=1}^{\infty}A_i \Big) = \lim_{N \rightarrow \infty} P(A_N).
+\]
+For an increasing sequence of events, the probability of the union is
+the limit of the probabilities.
+
+Thus, to compute the probability that the epidemic goes extinct, we
+need 
+\[
+E = P\Big(\cup_{i=1}^{\infty} (X_i=0)\Big) = \lim_{i \rightarrow \infty} P(X_i=0) . 
+\]
+
+\subsection{The distribution of the number of cases}
+\subsubsection{The probability generating function}
+We will assume that 
+the number of secondary cases caused by the first case is $Y_1$, 
+the number of secondary cases caused by the second case is $Y_2$,
+and so on; we assume that the secondary case distributions are
+independent and identically distributed, and the generating 
+function of the distribution is $g_Y(u)$.  
+
+Recall that there are $C_t$ cases at time $t$.  We denote the
+generating function of this distribution by $h_t(u)$.  If we know
+the distribution of cases at time $t$, we know that the number of
+cases the next time, $t+1$, will be a random value as well.  Each
+case creates a random number of cases, according to the distribution
+of $Y$; we are adding up a random number $C_t$ of values of $Y$. 
+
+We know then that the generating function of $C_{t+1}$ is
+\[
+h_{t+1}(u) = h_t(g_Y(u)) .
+\]
+
+Suppose that we began with a single index case at the beginning.  Then
+we know that 
+\[
+h_0(u) = P(C_0=0) + P(C_0=1)u + P(C_0=2)u^2 + \cdots = u .
+\]
+Since $h_1 = h_0(g_Y(u))$, and $h_0$ is just the function that maps
+its argument to itself, $h_1 = g_Y(u)$.  
+
+Then, $h_2(u)=h_1(g_Y(u)) = g_Y(g_Y(u))$.  Keeping this up, we find
+that $h_t(u)=g_Y(g_Y( \cdots g_Y(u) \cdots ))$, with $t$ 
+compositions.   Then
+$h_{t+1}(u)=g_Y(g_Y( \cdots g_Y(u) \cdots ))$, with $t+1$ compositions.
+The standard trick is now to rewrite this as
+\begin{equation}
+\label{eq:fniter}
+h_{t+1}(u) = g_Y(h_{t}(u)) .
+\end{equation}
+
+\subsubsection{The extinction probability}
+This is supposed to be true for all values of $u$, including $u=0$.
+So
+\[
+h_{t+1}(0) = g_Y(h_t(0)) .
+\]
+What is $h_t(0)$?  This is the generating function evaluated at 0; 
+since $h_t(u) = P(C_t=0) + uP(C_t=1) + \cdots$, $h_t(0)$ is
+the chance that $C_t=0$.  This is the chance the process will be 
+extinct at time $t$!  So
+\begin{equation}
+\label{eq:extiter}
+P(C_{t+1}=0) = g_Y( P(C_t=0) ) .
+\end{equation}
+In other words, if we continue iterating the application of $g_Y$, 
+we get successive values of $P(C_{t}=0)$.  The actual long-term
+extinction probability can only occur at values $E$ where $E=g_Y(E)$.
+
+\subsubsection{The expected number of cases}
+We can also use Equation~(\ref{eq:fniter}) to evaluate the mean 
+number of cases at any given time.  We will differentiate both
+sides of Equation~(\ref{eq:fniter}):
+\[
+h'_{t+1}(u) = g'_Y(h_{t}(u))h'_{t}(u)
+\]
+Then, we will substitute in the value $u=1$:
+\[
+h'_{t+1}(1) = g'_Y(h_{t}(1))h'_{t}(1) = g'_Y(1) h'_t(1) .
+\]
+Thus,
+\begin{equation}
+\label{eq:expmod}
+E(C_{t+1}) = EY E(C_t) .
+\end{equation}
+In other words, the expected number of cases at time $t$ times the 
+expected number of cases each can lead to is the expected number of 
+cases at time $t+1$.  We could have used this directly as a 
+deterministic model in its own right.
+
+\subsubsection{Numerical examples}
+Since $g(1)=1$, the value $E=1$, representing certain extinction, is
+a conceivable value for the long-term extinction probability.  But
+assuming that $P(C_0=0)=0$ (the process does not start out extinct),
+we need to know the value that will result from repeated iteration.
+
+Before going any further, we should consider some special cases of
+the secondary case distribution.  Suppose first that a case never
+generated any secondary cases, so that $P(Y=0)=1$ every time.  In this
+case, the probability generating function is simply the constant
+function 1.  Assuming $P(C_0=0)=0$ and applying Equation~(\ref{eq:expmod}) gives us $P(C_1=0)=1$, and from then on of course the process is extinct.
+We are reassured to find that if there are never secondary cases, the
+epidemic certainly goes extinct (and immediately).
+
+Another special case is to suppose that each case always leads to a
+single secondary case, a supposition that is instructive, though
+unrealistic.  Here, the probability generating function is simply
+$g_Y(u)=u$, and the extinction probability never changes.  If the
+process starts out with a case, $P(C_0=0)=0$, the extinction probability
+stays at zero.  If you are guaranteed exactly one case from every case,
+then extinction can never occur.  
+
+This case can be taken somewhat further.  Suppose that $P(Y=0)=0$, so
+you are guaranteed at least one secondary case from every case.  
+Recalling that the $y$-intercept of the graph of the probability
+generating function is the chance of no secondary cases, we see that
+the graph must start at zero.  Remembering that the iteration for $E$
+always begins at zero (we start with one case!), we find that the
+value of the extinction probability at time 1 is zero also.  Repeated
+iteration keeps producing zeros, and the process never goes extinct.
+
+For a numerical example, we return to the binomial distribution
+with $N=3$ and $p=0.2$, whose expected value is $Np=0.6$.  The
+probability generating function we derived earlier is graphed
+in the first figure, along with 
+with the 45-degree line $u$ itself (as a dashed line).
+<<>>=
+uu <- seq(0,1,by=0.001)
+ys <- 0.512+0.384*uu+0.096*uu^2+0.008*uu^3
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(uu,ys,type="l",ylim=c(0,1),xlab="u",ylab="g(u)")
+points(uu,uu,type="l",lty=2)
+@
+\end{figure}
+Observe that the graph of the probability generating function does
+not begin at zero, but rather has a $y$-intercept equal to the nonzero
+probability that there will be no secondary cases.  Geometrically,
+the iteration converges to an extinction probability of 1.
+
+Recalling that the expected number of secondary cases that an
+index case can cause is known as the basic reproduction number, we
+found that in the Galton-Watson process, if the basic reproduction
+number is less than one, the process goes extinct with probability
+one.  The disease cannot survive indefinitely unless at least one
+case on average is produced from each case.
+
+Using the result we have for the expected number of cases, Equation~(\ref{eq:expmod}), we find that the expected number of cases at each time is 
+0.6 times the value at the previous time.  As $t$ increases to larger
+and larger values, the expected number of cases gets smaller and
+smaller, and approaches zero.
+
+For another interesting numerical example, let us consider a binomial
+distribution for the number of secondary cases from each case for
+which $N=3$ again, but now with $p=0.4$.  Here, $EY=Np=1.2>1$.  Now, 
+the graph is shown in the next figure.
+<<>>=
+uu <- seq(0,1,by=0.001)
+nn <- 3
+ys <- rep(0,length(uu))
+for (ii in 0:nn) {
+  ys <- ys + dbinom(ii,size=nn,prob=0.4)*uu^ii
+}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(uu,ys,type="l",ylim=c(0,1),xlab="u",ylab="g(u)")
+points(uu,uu,type="l",lty=2)
+@
+\end{figure}
+Now, since the expected value is greater than one, the slope of the
+curve of the probability generating function at $u=1$ is greater than
+one.  Since the curve begins above the dashed line representing $y=u$,
+there must be one intersection with the dashed line.  Iterating
+{\it beginning with zero} leads to an extinction probability, which
+is larger than zero, but smaller than one.  Because there is some 
+chance of having no secondary cases, there is some chance that the
+epidemic will go extinct.  However, extinction is not certain, as it
+was in the previous case.  Nevertheless, even when the basic
+reproduction number is greater than one, extinction is possible, 
+despite the fact that the average number of cases increases over time.
+
+Let us examine the expected value.  In this case, we have
+$E(C_{t+1})=1.2 \times E(C_t)$.  As time $t$ gets larger and larger, 
+the expected value gets larger and larger (20\% larger every time
+period).  Nevertheless, extinction is possible.  The analysis indicates
+that while some epidemic chains terminate, others keep growing, and
+the average grows every time period.
+
+One of the most interesting cases occurs when the expected value
+of the secondary case distribution $Y$ is exactly one.  An example
+of this is a binomial with $N=3$ and $p=1/3$; here, $Np=1$.  The
+graph is shown in the next Figure.
+<<>>=
+uu <- seq(0,1,by=0.001)
+nn <- 3
+ys <- rep(0,length(uu))
+for (ii in 0:nn) {
+  ys <- ys + dbinom(ii,size=nn,prob=1/3)*uu^ii
+}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(uu,ys,type="l",ylim=c(0,1),xlab="u",ylab="g(u)")
+points(uu,uu,type="l",lty=2)
+@
+\end{figure}
+Observe that iteration beginning at zero leads to certain extinction.
+
+Here, the equation for the expected value shows that $E(C_{t+1})=1 \times E(C_t)$, so that the expected value actually does not change over time.  
+Each case produces on average its replacement, and the expected value
+is not changing.  Nevertheless, the expected value does not change
+over time.  If one imagines repeating this epidemic many times side
+by side, and watching many chains of transmission, over time more and
+more go extinct.  Yet those that do not go extinct grow to larger and
+larger numbers of cases, and this exactly balances the extinctions so
+that the average does not change.  We found that when the basic
+reproduction number is exactly one, extinction is still certain,
+despite the fact that the expected number of cases does not decrease.
+
+\subsubsection{Summary of analytical results}
+The three examples we have seen are known as the {\it subcritical}
+case (the basic reproduction number is less than one), the 
+{\it supercritical} case (the basic reproduction number is greater
+than one), and the {\it critical} case (the basic reproduction 
+number equals one).  In general, when the process is subcritical,
+extinction is certain, and the expected number of cases decreases
+over time.  When the process is supercritical, extinction is still
+possible, although the expected number of cases increases over time.
+Finally, in the critical case, extinction is still certain, although
+the expected number of cases does not change over time.
+
+\subsubsection{Further examples}
+Suppose that the distribution of the number of secondary cases is as
+follows: the probability of zero cases is 0.03, one secondary case is
+0.965, and the probability of fifty thousand secondary cases is 0.005.  
+Here, the generating function is $g(u)=0.03+0.965u+0.005u^{50000}$.
+The following figure illustrates the behavior of this system.
+<<>>=
+uu <- seq(0,1,by=0.001)
+ys <- 0.03+0.965*uu+0.005*uu^{50000}
+@
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(uu,ys,type="l",ylim=c(0,1),xlab="u",ylab="g(u)")
+points(uu,uu,type="l",lty=2)
+@
+\end{figure}
+Here, the extinction probability in one time step is quite small, yet
+the overall extinction probability is quite high (about 86\% in this
+case).  The basic reproduction number is found from the derivative
+of the generating function, and is approximately 251.  It is possible
+to make the basic reproduction number as high as possible, or even
+infinite, and simultaneously make the extinction probability as close
+to one as you wish, while keeping the probability of generating no
+secondary cases low.
+
+{\bf Exercise 4.}~~Plot the probability generating function of the
+Poisson distribution with mean $\lambda$ for $\lambda=2$, and
+plot the line $y=u$ on the same graph.  The probability generating
+function for the Poisson distribution with mean $\lambda$ is 
+$e^{\lambda (u-1)}$.  You might find the following code fragment
+useful:
+<<>>=
+uu <- seq(0,1,by=0.001)
+lambda <- 2
+ys <- exp(lambda*(uu-1))
+@
+Graphically estimate the
+extinction probability, and compare to your simulation results from
+earlier.
+
+\normalsize
+
+\section*{References}
+Br{\'e}maud, P. An Introduction to Probabilistic Modeling, Springer-Verlag, 1988. \newline
+Bailey, NTJ. The elements of stochastic processes. John-Wiley, 1964.\newline
+Lloyd-Smith JO, Schreiber SJ, Kopp PE, Getz WM. Superspreading and the
+effect of individual variation on disease emergence. Nature 438:355--359, 2005.
+
+
+\vfill
+
+\end{document}
+

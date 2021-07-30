@@ -1,0 +1,109 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+Travis C. Porco, instructor
+
+{\bf Example: Gott's Law.}  Physicist Gott argued that predictions of lifetimes could be made using the following argument.  The
+idea, which he called a Copernical principle, is that the time at which you first notice something is not special.  You are likely
+to notice something at a random time in its lifetime.  
+
+Let $T$ be the unknown lifetime of something, and suppose you first notice it at time $T_1 \leq T$.  Gott wishes to argue that
+$T_1/T$ is uniformly distributed:
+\[
+P(T_1/T \leq u) = u.
+\]
+
+Let $T_1+T_2=T$, so that $T_2$ is the amount of waiting time remaining.  
+
+What is the distribution of $T_2$?  We have
+\[
+P(T_1 \leq (T_1+T_2)u) = u.
+\]
+Remember, here $T_1$ is a known constant.  
+
+\[
+P(T_1 \leq T_1 u+T_2 u) = u.
+\]
+\[
+P(T_1 u+ T_2 u \geq T_1) = u.
+\]
+\[
+P(T_2 u \geq T_1-T_1 u) = u.
+\]
+Since $u>0$, we know
+\[
+P(T_2 \geq T_1(1-u)/u) = u.
+\]
+Suppose these are continuous.  Then 
+\[
+P(T_2 > T_1(1-u)/u) = u.
+\]
+\[
+P(T_2 \leq  T_1(1-u)/u) = 1-u.
+\]
+
+Let $w = T_1(1-u)/u$; thus $u=T_1/(w+T_1)$.  
+\[
+F_T(w) = P(T_2 \leq  w) = 1-T_1/(w+T_1)=w/(w+T_1)$.
+\]
+This is the cumulative distribution function $F_T$ of some distribution.  
+
+Gott applied this principle in 1996 to the waiting time until the Chicago White Sox won the World Series.  It had been 79 years since
+the last win, so we take $T_1=79$ years.  Suppose we want a lower 2.5\% confidence bound; what is the value of $w$ that makes
+$w/(w+T_1)$ be $a=$0.025?  
+\[
+\frac{w}{w+T_1}=a
+\]
+\[
+w = wa + aT_1
+\]
+\[
+w-wa = aT_1
+\]
+\[
+w(1-a) = aT_1
+\]
+\[
+w=\frac{aT_1}{1-a}
+\]
+We get about 2 years for the lower bound (about 1998), and for $a=0.975$, we get a wait time of 3081 years, or Gregorian year 5077
+\cite{caves}.  
+
+We can write Gott's law in a slightly different form.  Since
+\[
+P(T_2 > T_1(1-u)/u) = u.
+\]
+let $k$ be the multiplier, so $k=(1-u)/u$.  Then
+\[
+P(T_2 > kT_1) = \frac{1}{1+k}.
+\]
+This is the common form of Gott's Law.
+
+
+\vfill
+
+\end{document}

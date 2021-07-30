@@ -1,0 +1,539 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in TB Surveillance, Part 4}
+
+\subsection*{Goals}
+The specific goals for this review segment are:
+\begin{enumerate}
+\item Understand the relation of the Poisson distribution to the binomial
+\item Understand the mean and variance of the Poisson
+\end{enumerate}
+
+\newcounter{exercount}
+\setcounter{exercount}{1}
+
+\section*{The Poisson Distribution}
+\subsection*{Definition}
+
+Imagine we are considering population
+surveillance for a disease over time.  To keep things simple for
+now, let's look at statistics for something noncommunicable, such as traffic
+accidents (Table~\ref{tbl:traffic}).
+\begin{table}[hbp]
+\caption{\label{tbl:traffic}Number of fatal crashes in selected 
+California counties (note: crashes may include
+multiple individuals). Source: National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS).}
+\begin{tabular}{cccccc}
+Year & Alameda & Contra Costa & Los Angeles & Napa & Siskiyou \\ \hline
+2000 & 104 & 56 & 687 & 17 & 11 \\
+2001 & 104 & 47 & 710 & 15 & 10 \\
+2002 & 99 & 66 & 671 & 15 & 11 \\
+2003 & 104 & 65 & 723 & 17 & 11 \\
+2004 & 95 & 57 & 706 & 24 & 12 \\
+2005 & 92 & 67 & 701 & 19 & 8 \\
+\end{tabular}
+\end{table}
+If we think of each vehicle-year as a trial with a certain risk 
+that year, we can think of a very large number of trials with a very
+small ``success'' probability per trial.  Notice that the counts 
+fluctuate over time.
+
+Similarly, when considering surveillance data for 
+diseases, we may also consider each person-year as a 
+trial. 
+In the case of noncommunicable disease, we may consider
+each person to be an independent trial.
+Of course, in reality, the trials are nowhere near equiprobable.  
+We do not expect all vehicles to have the same risk of a fatality 
+accident, nor do we expect all people to have the same risk of 
+disease---disease is not usually distributed randomly in populations.
+We will discuss ways to model heterogeneity in the future.
+
+The
+incidence for the population may be considered as a very large number
+of trials with a small ``success'' probability per trial.  With a
+communicable disease, such as tuberculosis, we can no longer consider the
+trials as independent, due to the possibility of transmission
+(which we'll discuss soon).  Table~\ref{tbl:cdc} shows the incidence
+of foodborne botulism, human rabies, Rocky Mountain Spotted Fever (RMSF), and
+brucellosis.  Botulism and human rabies
+are not normally transmitted from
+person to person. Diseases such as RMSF are maintained in 
+an endemic focus by transmission between host animals and vector
+arthropods; humans become infected when they enter the natural focus
+and become bitten by an infected arthropod---and are more like a
+noncommunicable disease because of the lack of person to person
+transmission.
+\begin{table}
+\caption{\label{tbl:cdc}Incidence of selected diseases in the
+United States. Source: CDC.}
+\begin{tabular}{ccccc}
+Year & Foodborne botulism & Human rabies & RMSF & Brucellosis \\ \hline
+1996 & 25 & 3 & 831 & 112 \\
+1997 & 31 & 2 & 409 & 98 \\
+1998 & 22 & 1 & 365 & 79 \\
+1999 & 23 & 0 & 579 & 82 \\
+2000 & 23 & 4 & 495 & 87 \\
+2001 & 39 & 1 & 695 & 136 \\
+2002 & 28 & 3 & 1104 & 125 \\
+2003 & 20 & 2 & 1091 & 104 \\
+2004 & 16 & 7 & 1713 & 114 \\
+\end{tabular}
+\end{table}
+When considering trends in such counts, we all know that we must
+consider (1) changes in reporting practices, (2) changes in the
+underlying number of individuals at risk (due to migration, or 
+depletion of frail individuals), (3) changes in environmental exposure, and (4) changes in public health measures (improved safety or public
+awareness).  For instance, the counts of infections of vector-borne 
+disease depend on weather, rainfall, populations of vectors, and so 
+forth.  In general, we don't consider count data to be 
+independent over time, a fact that will have great importance later.
+
+To begin with, let's analyze the situation where there are a large
+number $N$ of trials, each with the same probability of success, $p$.
+We know the expected number of successes, i.e. the expected incidence,
+is $Np$.
+The number of successes $X$ in $N$ independent Bernoulli
+trials each with success probability $p$ is a binomial distribution 
+with 
+\[
+P(X=x) = {N \choose x} p^x (1-p)^{N-x} .
+\]
+
+Let's {\it assume}, for now, that the rabies count data represent
+independent trials over time.  We do not know $N$, the number of
+individuals at risk, nor do we know $p$.  The average number of 
+cases per year was approximately 2.56.  For the sake of discussion,
+suppose the number of people at risk for human rabies was only
+10000, and that the risk to each was 0.000256.  We will use the
+binomial probability formula to find the chance of seeing various
+numbers of cases (Figure~\ref{fig:binom1}).
+\begin{figure}
+\caption{\label{fig:binom1}Probability of the number of successes in 
+10000 trials, with the expected value held at 2.56.}
+  \centering
+<<fig=true>>=
+barplot(dbinom(0:20,prob=0.000256,size=10000),names.arg=0:20)
+@
+\end{figure}
+
+But suppose that there are really 100,000 individuals, but that the
+risk is ten times smaller (so that the expected value stays at 2.56).
+Here is the probability function now:
+\begin{figure}
+\caption{\label{fig:binom2}Probability of the number of successes in 
+100000 trials, with the expected value held at 2.56.}
+  \centering
+<<fig=true>>=
+barplot(dbinom(0:20,prob=0.0000256,size=100000),names.arg=0:20)
+@
+\end{figure}
+Notice that the distribution really does not look very different at
+all.
+
+It turns out that all binomial distributions with large $N$ and the
+same expected value are about the same.  With $Np$ held constant
+at some value, say $\lambda=Np$, and $N \rightarrow \infty$, the
+binomial distribution converges to the {\it Poisson} distribution:
+\[
+P(X=x) = \frac{e^{-\lambda} \lambda^x}{x!} .
+\]
+Here is a Poisson probability function with $\lambda = 2.56$:
+\begin{figure}
+\caption{\label{fig:pois1}Poisson probabilities,
+with the expected value held at 2.56.}
+  \centering
+<<fig=true>>=
+barplot(dpois(0:20,lambda=2.56),names.arg=0:20)
+@
+\end{figure}
+
+Here is another example.  Suppose you are considering the arrival of patients at a service
+center, and you know that on average, $\lambda$ arrive per hour.
+What is
+the distribution of $N$?  It is convenient to think of this as
+a binomial distribution with a very large $N$ and a very small $p$,
+but with the expected value $Np$ equal to $\lambda$.
+We could think of 60 Bernoulli trials (one each minute), with a success
+probability of 1/30; then the binomial formula gives the probability of
+zero arrivals as approximately 0.1307991.  But
+we could think of 3600 Bernoulli trials (one each second) with
+success probability $\lambda/3600$.  Let's say $\lambda$ is 2 per
+hour; then we have 3600 trials with success probability 1/1800.
+Using the binomial formula, we find that the probability of zero
+arrivals is about 0.1352601.  If we use millisecond trials, then
+$N=3600000$ and $p=1/1800000$; now the probability of zero arrivals
+is 0.1353352.  If we keep taking more and more
+Bernoulli trials, with smaller and smaller success probability (always
+keeping the mean fixed), we
+arrive at the Poisson distribution, whose probability function is
+\[
+P(X=i)=\frac{e^{-\lambda}\lambda^i}{i!}
+\]
+for $i=0,1,\ldots,$.  Using the Poisson distribution with a mean of
+2, we find that the probability of zero arrivals is about 0.1353353
+($e^{-2}$).
+
+{\it Example} (adapted from Riley et al., 1978).
+Suppose that $C$ is the equilibrium concentration
+of infectious particles in a room due to the presence of infectious
+cases of a disease, $p$ is the pulmonary ventilation rate per
+susceptible, and $t$ the duration of exposure. What is the probability
+of escaping infection?  We can think of the exposure to sufficient
+particles as a Poisson distribution (each tiny volume of air may or
+may not contain an infectious dose).  The expected number of infectious
+particles a person will be exposed to is the concentration times the
+ventilation rate times the duration of exposure, or $\lambda=Cpt$.
+The chance of escaping infection is the chance of breathing no
+infectious particles; this is $e^{-Cpt}$, so the chance of infection is
+$1-e^{-Cpt}$.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+(simplified from Goldfarb, 1986).
+Suppose that the age-specific rate of being bitten by ticks of the
+species that transmit Crimean-Congo hemorrhagic fever is 0.4 per
+year, but that 0.5\% of such ticks are actually infected with the
+infectious agent.  What is the probability of receiving at least one
+infectious bite per year, assuming the Poisson distribution of tick
+bites?  
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+(simplified from Kagay et al, 2004). Suppose that
+on average an individual with perfect adherence to an HIV antiretroviral
+treatment regimen acquires on average 0.47 drug resistance mutations
+in six months, assuming incomplete viral load suppression.  What is
+the probability of acquiring at least one drug resistance mutation in
+six months, assuming the Poisson distribution?  Observe that once the
+first mutation occurs, further may follow due to increased replication.
+
+\renewcommand{\baselinestretch}{1.2} \small
+One way to see that the binomial distribution has a Poisson limit
+is as follows.  The {\it probability generating function} of
+a discrete distribution with nonnegative values is defined as
+\[
+G(u) = \sum_{x=0}^{\infty} P(X=x)u^x = E[u^X] .
+\]
+There is one and only one probability generating function
+for each distribution (power series are unique).
+The probability generating function for the binomial distribution is
+\[
+G_N(u) = \sum_{x=0}^{N} {N \choose x} p^x (1-p)^{N-x} u^x .
+\]
+Using the binomial formula, 
+\[
+G_N(u) = (pu+1-p)^N .
+\]
+We want to take the limit as $N \rightarrow \infty$ and
+$p \rightarrow 0$, but holding $Np=\lambda$:
+\[
+G_N(u) = (pu+1-p)^{\frac{\lambda}{p}} .
+\]
+We want to take the limit of this function as $p \rightarrow 0$, and
+see what probability generating function results.
+\[
+G(u) = \lim_{p \rightarrow 0+} (1+p(u-1))^{\frac{\lambda}{p}} .
+\]
+So
+\begin{eqnarray*}
+\log G(u) & = & \log \lim_{p \rightarrow 0+} (1+p(u-1))^{\frac{\lambda}{p}} \\
+ & = & \lambda \lim_{p \rightarrow 0+} \frac{\log (1+p(u-1)) }{p}  \\
+ & = & \lambda \lim_{p \rightarrow 0+} \frac{ \frac{1}{1+p(u-1)}(u-1) }{1}  \\
+ & = & \lambda (u-1) ,
+\end{eqnarray*}
+where we used the continuity of $\log$, and L'H{\^o}pital's Rule.
+Thus, $G(u) = e^{\lambda (u-1)} = e^{-\lambda} e^{\lambda u}$.
+Expanding this in a power series, we use $e^x = 1+x+\frac{x^2}{2!} + \frac{x^3}{3!} + \cdots$.  So
+\[
+e^{\lambda (u-1)} = e^{-\lambda} \big(
+1 + (\lambda u) + \frac{(\lambda u)^2}{2!} + \frac{(\lambda u)^3}{3!} + \cdots + \frac{(\lambda u)^x}{x!} + \cdots \big) .
+\]
+Then
+\[
+P(X=x) = \frac{e^{-\lambda}{\lambda}^x}{x!} ,
+\]
+which is the Poisson distribution.
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+We have seen how the Poisson distribution is related to the 
+concept of the random occurrence of events, thanks to its derivation
+from the binomial.  Since we derived the Poisson by holding the
+binomial mean $Np=\lambda$ constant, we expect the Poisson distribution
+with parameter $\lambda$ to have mean $\lambda$, and this is the
+case.
+
+\renewcommand{\baselinestretch}{1.2} \small
+To prove this directly, we use the definition 
+\[
+E[X] = \sum_{x=0}^{\infty} x P(X=x) = 
+\sum_{x=0}^{\infty} x e^{-\lambda} \frac{\lambda^x}{x!} .
+\]
+So
+\begin{eqnarray*}
+E[X] & = & e^{-\lambda} \sum_{x=1}^{\infty}\frac{x \lambda^x}{x!} \\
+ & = & e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda^x}{(x-1)!} \\
+ & = & e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda \lambda^{(x-1)}}{(x-1)!} \\
+ & = & \lambda e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda^{(x-1)}}{(x-1)!} \\
+ & = & \lambda e^{-\lambda} \sum_{i=0}^{\infty}\frac{\lambda^i}{i!} \\
+ & = & \lambda e^{-\lambda} e^{\lambda} \\
+ & = & \lambda . \\
+\end{eqnarray*}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+The classical occupancy distribution also has a Poisson limit.  
+Consider the random distribution of $M$ ticks over $N$ hosts.  We have
+already seen that the probability distribution of the
+number $X$ of hosts which have at least one tick is
+\[
+P(X=x) = \frac{ \left\{ {M \atop x} \right\} {N \choose x} x!}{N^M} .
+\]
+The expected value of $X$ (the expected number of hosts which get
+at least one bite) is
+\[
+EX = N(1-\left(\frac{N-1}{N}\right)^M) .
+\]
+
+Let $Y=N-X$ be the number of hosts that do {\it not} receive a bite
+(the number of boxes that do not get filled with at least one ball).
+Then
+\begin{eqnarray*}
+P(Y=y) & = & \frac{ \left\{ {M \atop N-y} \right\} {N \choose N-y} (N-y)!}{N^M} \\
+ & = & \frac{ \left\{ {M \atop N-y} \right\} {N \choose y} (N-y)!}{N^M} , \\ 
+\end{eqnarray*}
+since ${N \choose N-y}={N \choose y}$.
+On average, we have $M/N$ ticks per host.  If we just focus on one
+host, we have a large number of trials ($M$) with a small success
+probability per trial ($N$); we might expect to see a Poisson 
+distribution of ticks with mean $M/N$.  The chance of no ticks on this
+host would be $e^{-M/N}$, and we could think of whether each host
+received a bite or not as a Bernoulli trial.  If we think of escaping
+being bitten as success, then the success probability would be 
+$p=e^{-M/N}$.  If the trials were independent, then we could determine
+the number of hosts who escape by simply multiplying the success
+probability $p$ by the number of hosts $N$; the number of escaping
+hosts would be $Ne^{-M/N}$.
+
+It turns out that this is in fact the correct answer.  If the number
+of hosts $N$ and ticks $M$ are large, then the distribution of $Y$ is
+approximately Poisson, with mean $\lambda = Ne^{-M/N}$.  This is 
+another way that Poisson probabilities arise from time to time.
+
+\subsection*{Properties of the Poisson distribution}
+One important fact about the Poisson distribution is that the
+probability of a zero count is $e^{-\lambda}$, where $\lambda$ is
+the mean.  This follows directly from the definition, but comes up
+often enough to be worth noting explicitly.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+If the mean is $\lambda=1$, what is the probability
+of a zero count?  If the mean is $\lambda=2$, or $\lambda=5$?  How
+high does the mean have to be for the probability of a zero count to
+be 1\%?  How low does the mean have to be for the probability of
+a nonzero count to be 10\%? 5\%? 1\%?
+
+The next important fact we need about the Poisson distribution is
+its variance.  It turns out that the variance of a Poisson random
+variable with parameter $\lambda$ is $\lambda$, the same as the mean.
+
+\renewcommand{\baselinestretch}{1.2} \small
+To see this directly, we can first compute $E[X(X-1)]$.  
+\begin{eqnarray*}
+E[X(X-1)] & = & \sum_{x=0}^{\infty} x(x-1)\frac{e^{-\lambda}\lambda^x}{x!} \\
+& = & \sum_{x=2}^{\infty} x(x-1)\frac{e^{-\lambda}\lambda^x}{x!} \\
+& = & e^{-\lambda} \sum_{x=2}^{\infty} \frac{\lambda^x}{(x-2)!} \\
+& = & e^{-\lambda} \lambda^2 \sum_{x=2}^{\infty} \frac{\lambda^(x-2)}{(x-2)!} \\
+& = & e^{-\lambda} \lambda^2 \sum_{i=0}^{\infty} \frac{\lambda^i}{i!} \\
+& = & e^{-\lambda} \lambda^2 e^{\lambda} \\
+& = &  \lambda^2 . \\
+\end{eqnarray*}
+So $E[X^2] = \lambda^2 + EX=\lambda^2 + \lambda$.  Then
+\[
+\mbox{\rm var}(X) = E[X^2] - (EX)^2 = \lambda^2 + \lambda - \lambda^2 = \lambda . 
+\]
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+Another important fact about the Poisson distribution can be 
+gathered from the binomial limit.  We know that if $X_1$ is 
+binomial with $N$ trials with success probability $p$ and $X_2$ is
+independent, and
+also binomial with $M$ trials and the same success probability, 
+$X_1+X_2$ is just a count of the number of successes in $M+N$ trials
+with success probability $p$; it is binomial with parameters $N+M$
+and $p$.  Adding two binomials with the same $p$ gives another
+binomial.  The expected value of $X_1+X_2$ is $(M+N)p$.  Let
+$p \rightarrow 0$ so that $Np=\lambda_1$ and $Mp=\lambda_2$.  Then
+$X_1$ becomes Poisson with mean $\lambda_1$ and $X_2$ becomes
+Poisson with mean $\lambda_2$.  So $X_1+X_2$ becomes the sum of 
+two independent Poisson random variables.  On the other hand, 
+$X_1+X_2$ is itself binomial, and as $p \rightarrow 0$, its mean
+stays fixed at $(M+N)p=\lambda_1+\lambda_2$.  Since we're taking
+the success probability per trial smaller and smaller, and taking
+more and more trials while keeping the mean fixed, this sum
+must itself be Poisson with rate $\lambda_1+\lambda_2$.  The sum
+of independent Poisson random variables is Poisson, with the mean
+given by the sum of the means of the two variables being added.
+
+\renewcommand{\baselinestretch}{1.2} \small
+To see this, let $X_1$ be Poisson with mean $\lambda_1$ and
+$X_2$ be Poisson with mean $\lambda_2$.  So
+\begin{eqnarray*}
+P(X_1+X_2 = i) & = & P(X_1=0,X_2=i) + P(X_1=1,X_2=i-1) + \cdots + P(X_1=i,X_2=0) \\
+ & = & P(X_1=0)P(X_2=i) + P(X_1=1)P(X_2=i-1) + \cdots + P(X_1=i)P(X_2=0) \\
+ & = & \sum_{j=0}^i P(X_1=j)P(X_2=i-j) \\
+ & = & \sum_{j=0}^i \frac{e^{-\lambda_1}\lambda_1^j}{j!} \frac{e^{-\lambda_2}\lambda_2^{i-j}}{(i-j)!} \\
+ & = & e^{-(\lambda_1+\lambda_2)}\sum_{j=0}^i \frac{\lambda_1^j}{j!} \frac{\lambda_2^{i-j}}{(i-j)!} \\
+ & = & \frac{e^{-(\lambda_1+\lambda_2)}}{i!}\sum_{j=0}^i \frac{i! \lambda_1^j \lambda_2^{i-j}}{j!(i-j)!} \\
+ & = & \frac{e^{-(\lambda_1+\lambda_2)}}{i!}\sum_{j=0}^i {i \choose j} \lambda_1^j \lambda_2^{i-j} \\
+ & = & \frac{e^{-(\lambda_1+\lambda_2)}}{i!} (\lambda_1+\lambda_2)^i , \\
+\end{eqnarray*}
+which is the Poisson probability for a mean of $\lambda_1+\lambda_2$.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+Another important result we'll need concerns {\it binomial thinning}.
+Suppose $X$ is Poisson with mean $\lambda$.  Now, we'll form a new
+variable $Y$ by taking $X$, and then choosing a random variable
+which is Binomial with $X$ trials and success probability $\theta$
+per trial.  We're randomly keeping a fraction $\theta$ of the 
+Poisson count $X$.  Intuitively, $Y$ ought to be Poisson with
+mean $\theta \lambda$, since if $X$ represents random occurrence
+of events, and we randomly delete a fraction $1-\theta$ of them,
+isn't this like random occurrence of {\it events we'll keep}, at
+rate $\lambda \theta$?  This intuition turns out to be correct;
+binomially thinning a Poisson random variable gives another
+Poisson random variable.  The operation of thinning is sometimes
+denoted with the symbol $\circ$, so that $Y = X \circ \theta$.
+
+\renewcommand{\baselinestretch}{1.2} \small
+To prove this, let's compute $P(Y=i)$.  We've assumed that
+$X$ is Poisson with mean $\lambda$, and that {\it given $X$}, 
+$Y$ is binomial with success probability $\theta$ and
+independent of $X$.  So
+\begin{eqnarray*}
+P(Y=i) & = & P(X=i)P(Y=i|X=i) + P(X=i+1)P(Y=i|X=i+1) + \cdots + P(X=i+k)P(Y=i|X=i+k) + \cdots \\
+ & = & \sum_{k=0}^{\infty} P(X=i+k) P(Y=i|X=i+k) \\
+ & = & \sum_{k=0}^{\infty} \frac{e^{-\lambda}\lambda^{i+k}}{(i+k)!} {i+k \choose k} (1-\theta)^k \theta^{i+k-k} \\
+ & = & e^{-\lambda} \theta^i \lambda^i \sum_{k=0}^{\infty} \frac{\lambda^{k}(1-\theta)^k}{k!(i+k-k)!} \\
+ & = & \frac{e^{-\lambda} (\theta \lambda)^i}{i!} \sum_{k=0}^{\infty} \frac{(\lambda(1-\theta))^k}{k!} \\
+ & = & \frac{e^{-\lambda} (\theta \lambda)^i}{i!} e^{\lambda (1-\theta)} \\
+ & = & \frac{e^{-\lambda \theta} (\theta \lambda)^i}{i!} .  \\
+\end{eqnarray*}
+Thus, $Y$ is Poisson with mean $\lambda \theta$.
+
+\subsection*{Additional exercises and examples}
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+In an experiment, Chinese hamster ovary cells were exposed to alpha particle radiation.  In one 
+study, the mean number of tracks per cell nucleus was 0.58.  What is the probability that a nucleus
+would have at least one track?  (Huo et al, 2001).
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+In a study of esophageal cancer arising from Barrett's esophagus, 4,955 patients were followed for
+a total of 11068 person-years (Murray et al, 2003).   Twenty-nine cancers were found, yielding a crude incidence rate of 0.26\% per year.  Assume the Poisson distribution for the number of counts.  (a) Suppose the expected number
+of malignancies was were 0.2\% per year (22.136).  What is the probability of having seen 29 or fewer?
+{\it Ans. 9.1\%}.  (b) What does the expected value have to be to have a 2.5\% chance of seeing 29 or
+fewer cancers?  {\it Ans. 19.42}.  (c) What does the expected value have to be to have a 2.5\%
+chance of seeing 29 or more cancers? {\it Ans. 41.65}.  (d) Divide these two expected values by
+the number of person years at risk to arrive at a Poisson confidence interval for the incidence
+rate. {\it Ans. (0.18\% to 0.38\%)}.  Note: you may find the functions \verb+ppois+ and \verb+uniroot+
+helpful in R.  Remember to compute the right-hand tail, to get the chance of a value greater than
+or equal to 29, you will have to compute the value of being less than or equal to 28 and subtract
+this from one.
+
+{\bf Exercise \arabic{exercount}.~~}
+\stepcounter{exercount}
+(Simplified from Haas and Rose, 1996).  {\it Cryptosporidium} is a waterborne protozoan capable of causing severe
+disease among immunocompromised individuals.  Infectious oocysts are not uncommon in reservoirs and other
+water sources, and must be removed by water treatment.  Haas and Rose (1996) report the results of testing
+volumes of treated water for {\it Cryptosporidium} oocysts.  No oocysts were observed in 33 volumes of 
+water totaling 3292 liters, one oocyst was observed in each of 12 volumes totaling 1271.3 liters, two oocysts
+in each of 4 volumes totalling 770.3 liters, and three oocysts in each of three volumes totalling 288.3 liters.
+Assuming that all the water samples can be treated as coming from a source with a constant rate of 
+oocysts and that they are all well-mixed, we can model the number of oocysts in a given volume of water as
+a Poisson distribution.  Let $C$ be the unknown concentration.  Then the expected number of oocysts
+in a volume $L$ of water is $CL$, i.e. the number of oocysts per unit volume times the volume.  \newline
+(a) What is the overall average oocyst count per liter? {\it Ans.}  $8.81 \times 10^{-3}$.\newline
+(b) Let $L_i$ denote the volume of sample $i$, and $Y_i$ denote the number of oocysts observed in sample $i$.
+Write the probability of seeing $y_i$ oocysts in sample $i$.  {\it Ans.} $P(Y_i = y_i) = \frac{e^{-CL_i}(CL_i)^{y_i}}{y_i!}$. \newline
+(c)  What is the probability of observing $y_1$ oocysts in sample 1, $y_2$ oocysts in sample 2, and so forth, 
+through the $s$-th sample, assuming that the samples are statistically independent?  {\it Ans.} 
+$P(Y_1=y_1,\ldots,Y_S=y_S) = \prod_{i=1}^{S}\frac{e^{-CL_i}(CL_i)^{y_i}}{y_i!}$.  \newline
+(d) Show that the logarithm of $P(Y_1=y_1,\ldots,Y_S=y_s)$, i.e. the log-likelihood, can be written
+\[
+\ell(C) = -C\sum_{i=1}^S L_i + \sum_{i=1}^S y_i \log(CL_i) - \sum_{i=1}^S \log{y_i!} .
+\]
+Note that the final term does not depend on the unknown concentration $C$. \newline
+(e) Given the sample volumes and oocyst counts in Table~{\ref{tbl:ooc}}, use a statistics package to plot
+the log-likelihood as the concentration varies from 0 to 0.02. \newline
+\begin{table}
+\caption{\label{tbl:ooc}Oocyst counts in particular water samples, derived from Table 1 in Haas and Rose, 1995.}
+\begin{tabular}{cc|cc|cc}
+Liters & Oocysts & Liters & Oocysts & Liters & Oocysts \\ \hline
+48 & 0 & 100 & 0 & 74.1 & 1 \\
+51 & 0 & 100.4 & 0 & 99.9 & 1 \\
+52 & 0 & 100.4 & 0 & 100 & 1 \\
+54.9 & 0 & 100.6 & 0 & 100 & 1 \\
+55 & 0 & 100.7 & 0 & 100 & 1 \\
+55 & 0 & 101.7 & 0 & 100 & 1 \\
+55 & 0 & 102 & 0 & 100 & 1 \\
+57 & 0 & 102 & 0 & 101.1 & 1 \\
+59 & 0 & 102.2 & 0 & 101.3 & 1 \\
+59 & 0 & 102.2 & 0 & 183.5 & 1 \\
+85.2 & 0 & 103.3 & 0 & 193 & 1 \\
+100 & 0 & 185.4 & 0 & 95.8 & 2 \\
+100 & 0 & 189.3 & 0 & 223.7 & 2 \\
+100 & 0 & 189.3 & 0 & 223.7 & 2 \\
+100 & 0 & 190 & 0 & 227.1 & 2 \\
+100 & 0 & 191.4 & 0 & 89.9 & 3 \\
+100 & 0 & 18.4 & 1 & 98.4 & 3 \\
+~  & ~ & ~ & ~ & 100 & 3 \\
+\end{tabular}
+\end{table}
+(f) Does the maximum likelihood estimate of the concentration agree with the simple estimate?\newline
+(g) Given the simple concentration estimate, what is the expected number of samples in which you would
+see 0 oocysts? 1? 2? 3? 4 or more?\newline
+(h) Test the goodness of fit of this model using the chi-square goodness of fit test.  {\it Ans.} $X^2 = 4.59$, cf. Haas and Rose.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+\section*{References}
+
+Goldfarb LG. 1986. Epidemiological models of tick-borne infections (Acari: Ixodidae and Argasidae). {\it Journal of Medical Entomology} 23(2):125--131.
+
+Haas CN, Rose JB.  1996.  Distribution of {\it Cryptosporidium} oocysts in a water supply. {\it Water Research} 30(10):2251--2254.
+
+Huo L, Nagasawa H, Little JB. 2001. {\it HPRT} mutants induced in bystander cells by very low fluences
+of alpha particles result primarily from point mutations. Radiation Research 156:521-525.
+
+Kagay CR, Porco TC, Liechty CA, Charlebois E, Clark R, Guzman D, Moss AR, Bangsberg D. 2004. Modeling the impact of modified directly observed HIV antiretroviral therapy on viral suppression and resistance, disease progression, and death. {\it Clinical Infectious Diseases} 38 (Supplement 5):S414--S420.\
+
+Murray L, Watson P, Johnston B, Sloan J, Mainie IML, Gavin A. 2003. Risk of adenocarcinoma in Barrett's oesophagus: population based study. BMJ 327:534-535.
+
+Riley EC, Murphy G, Riley RL. 1978. Airborne spread of measles in
+a suburban elementary school. {\it American Journal of Epidemiology}
+107: 421--432.
+
+\vfill
+\end{document}

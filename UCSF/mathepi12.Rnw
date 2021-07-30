@@ -1,0 +1,366 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Mathematical epidemiology, Part 12}
+
+\section*{Simple epidemic models in discrete time}
+\subsection*{Simple model in a closed population}
+Suppose that we begin with a population of $N$ individuals, of
+which $X(0)=N-1$ are susceptible, and $Y(0)=1$ are infectious.
+During each time period, suppose that each susceptible has a
+{\it constant} risk of infection of $\lambda$, independent of the
+number of infectives.  This is not the sort of thing we typically
+associate with a communicable disease, but it could apply to 
+infectious diseases of environmental origin, such as 
+coccidioidomycosis or histoplasmosis.  It could also be applied
+to infectious diseases where humans are only an incidental host,
+such as zoonoses being maintained within an endemic focus.
+
+But this model is a very simple one---it is just the binomial
+death process again, with respect to the waiting time until infection.
+The mean time until infection is just $1/\lambda$, and in the long
+run everyone gets infected.
+We can write the model informally as
+\[
+Y(\tau+1)|X(\tau) \sim \mbox{\rm Binom}(X(\tau),\lambda) 
+\]
+and $X(\tau+1)=X(\tau)-Y(\tau+1)$.  And of course,
+\[
+EX(\tau) = X(0)(1-\lambda)^{\tau} .
+\]
+
+\subsection*{Simple epidemic in a closed population}
+Let's now take the next step and suppose that the probability of
+infection depends on the prevalence.  Suppose, in particular, that
+each individual has $C$ contacts at random (and not necessarily
+symmetrically) in the population, and that if one of the contacts
+is infected, the infection is transmitted with probability $\beta$
+(cf. Enko, Jacquez 1988).
+If, for simplicity, we model the contact process as sampling
+with replacement, the probability a contact is infected is simply
+$Y(\tau)/N$ for each contact, and if we assume the contacts are
+independent, then the chance of being infected after $C$ contacts
+is $1-(1-\beta Y(\tau)/N)^C$.
+
+Now, our model could be written informally as
+\[
+Y(\tau+1) | X(\tau) \sim \mbox{\rm Binom}(X(\tau),1-(1-\beta Y(\tau)/N)^C).
+\]
+
+Importantly, we suppose that each individual is only infectious for one
+time period.  In effect, we're measuring time in units of the infectious
+period.  In this simple model, if we assume that nobody ever recovers, then
+the duration of infection is infinite, since we're ignoring death.  Everyone
+becomes infected.
+
+Let's simulate.  Here, \verb+nn+ is the number of individuals in the
+population, \verb+cc+ the number of contacts per time unit,
+\verb+beta+ the transmission probability per contact with an infected
+person, \verb+y0+ the initial number of infectives, and \verb+endtime+
+the end of the simulation.  The result is a matrix, each column being
+a realization and each row corresponding to a time.  There are \verb:endtime+1:
+rows.
+<<>>=
+epi1 <- function(nn,cc,beta,y0,endtime,mean.only=FALSE) {
+  nsims <- length(y0)
+  if (mean.only) {
+    ans <- matrix(NA,ncol=1,nrow=endtime+1)
+  } else {
+    ans <- matrix(NA,ncol=nsims,nrow=endtime+1)
+  }
+  if (mean.only) {
+    ans[1,1] <- mean(y0)
+  } else {
+    ans[1,] <- y0
+  }
+  y.prev <- y0
+  xs <- nn-y0
+  for (ii in 2:(endtime+1)) {
+    ys <- y.prev
+    lambda <- 1-(1-beta*ys/nn)^cc
+    ys.new <- rbinom(nsims,size=xs,prob=lambda)
+    y.prev <- ys.new
+    if (mean.only) {
+      ans[ii,1] <- mean(ys.new)
+    } else {
+      ans[ii,] <- ys.new  
+    }
+    xs <- xs-ys.new
+  }
+  ans
+}
+@
+Let's do a few hundred of them and see what we get.
+<<>>=
+ww <- epi1(1000,5,0.3,rep(1,400),40)
+plot.sim1 <- function(sim,showmean="",colors=c("black","red","blue","green","orange"),add.to.plot=FALSE) {
+  nsims <- dim(sim)[2]
+  times <- 0:( dim(sim)[1] -1 )
+  ypretty <- pretty(c(0,max(sim)))
+  ytop <- ypretty[length(ypretty)]
+  ylims <- c(0,ytop)
+  if (!add.to.plot) {
+    plot(times,times,xlab="Time",ylab="Infected individuals",
+      ylim=c(0,ytop),type="n")
+  }
+  if (nsims > length(colors)) {
+    colors0 <- c(colors,sample(setdiff(colors(),colors)))
+    colors <- colors0 
+  }  
+  for (ii in 1:nsims) {
+    points(times,sim[,ii],type="l",col=colors[ii])
+  }
+  if (showmean!="") {
+    points(times,apply(sim,1,mean),col=showmean,type="l")
+    points(times,apply(sim,1,mean),col=showmean)
+  }
+  TRUE
+}
+@
+\begin{figure}
+\caption{\label{fig:sim1}
+Plot of  realizations of the simple epidemic with five contacts and 30\%
+transmission per contact.}
+  \centering
+<<fig=true>>=
+plot.sim1(epi1(1000,5,0.3,rep(1,400),40),colors=rep("gray",400),showmean="red")
+@
+\end{figure}
+Now, one problem with this sort of plot is that many trajectories can overlap,
+and they don't get the sort of visual emphasis that they deserve.  Notice
+this graph, where most of the trajectories go to zero rapidly, though on 
+average there is a bit of a rise in the epidemic curve.  Visually, it looks
+as though the average epidemic is large:
+\begin{figure}
+\caption{\label{fig:sim2}
+Plot of  realizations of the simple epidemic with five contacts and 21\%
+transmission per contact.}
+  \centering
+<<fig=true>>=
+plot.sim1(epi1(1000,5,0.21,rep(1,400),40),colors=rep("gray",400),showmean="red")
+@
+\end{figure}
+Here is another:
+\begin{figure}
+\caption{\label{fig:sim3}
+Plot of  realizations of the simple epidemic with five contacts and 19\%
+transmission per contact.}
+  \centering
+<<fig=true>>=
+plot.sim1(epi1(1000,5,0.19,rep(1,400),40),colors=rep("gray",400),showmean="red")
+@
+\end{figure}
+In this latter case, the mean epidemic relentlessly declines toward zero.  At
+the outset of the epidemic, the average number of secondary cases (and thus
+the number of cases at time 1, by our assumptions) is $\beta C$.  If this is
+less than one, the epidemic on average always decreases.  Nevertheless, even
+with $\beta C<1$, we still get rare relatively large excursions (over 20 cases
+at one time).
+\newline
+{\bf Exercise.~~}Repeat this exercise for $\beta=0.1$, 0.5.
+\newline
+{\bf Exercise.~~}Repeat this exercise with 20 initial cases, for $\beta$=0.5,
+and with 50 initial cases, and 100 initial cases.  Comment.
+%Much of the variability in the epidemic peaks arises from fluctuations when
+the epidemic is small.  
+
+Let's consider the time it takes to reach various numbers of cases.  Here is
+one attempt at a function to determine how long it takes to reach
+\verb+thr+ cases.
+<<>>=
+thresh.time <- function(xx,thr=20,verbose=FALSE) {
+  nsims <- dim(xx)[2]
+  len <- dim(xx)[1]
+  ans <- rep(NA,nsims)
+  jj <- 1
+  while (jj<=nsims) {
+    if (verbose) {cat("jj=");cat(jj);cat("\n")}
+    ii <- 1  
+    cs <- 0
+    while (ii<=len) {
+      cs <- cs+xx[ii,jj]
+      if (cs>=thr) {
+        ans[jj] <- ii    
+        break
+      }
+      ii<-ii+1
+    }
+    jj <- jj+1
+  } 
+  ans
+}
+@
+Strangely, this is slower than doing the full \verb+cumsum+:
+<<>>=
+thresh.time <- function(xx,thr=20,verbose=FALSE) {
+  nsims <- dim(xx)[2]
+  ans <- rep(NA,nsims)
+  jj <- 1
+  while (jj<=nsims) { 
+    if (verbose) {cat("jj=");cat(jj);cat("\n")}
+    cs <- cumsum(xx[,jj])
+    ans[jj] <- match(T,cs>=thr)
+    jj<-jj+1
+  }
+  ans
+}
+@
+\begin{figure}
+\caption{\label{fig:sim4}
+Plot of the time it takes to reach 20 cumulative cases. }
+  \centering
+<<fig=true>>=
+nsims <- 8192
+wk <- thresh.time(epi1(1000,5,0.3,rep(1,8192),40))
+wkc <- wk[!is.na(wk)]
+twkc <- table(wkc)
+plot(as.numeric(dimnames(twkc)$wkc),twkc/8192,type="l")
+@
+\end{figure}
+{\bf Exercise.~~}Plot the time it takes to reach 40 and 100 cumulative 
+cases on the same plot.
+
+\noindent{\bf Exercise.~~}Plot a histogram of the cumulative number of cases when
+$\beta=0.19,0.21,0.3$.
+
+\noindent{\bf Exercise.~~}Determine the expected number of secondary cases
+when the epidemic is first beginning.  
+
+Note that it is also possible to construct a related model as follows.
+Since before we had
+\[
+Y(\tau+1) | X(\tau) \sim \mbox{\rm Binom}(X(\tau),1-(1-\beta Y(\tau)/N)^C),
+\]
+we could write
+\[
+E[Y(\tau+1 | X(\tau)] = X(\tau) \big(1-\big(1-\beta \frac{Y(\tau)}{N}\big)^C\big).
+\]
+We could take the expectation of both sides again, and use
+$E[E[Y(\tau+1 | X(\tau)]] = E[Y(\tau+1)]$ to find
+\begin{equation}
+\label{eq:stochmean}
+E[Y(\tau+1)] = E[ X(\tau) \big(1-\big(1-\beta \frac{Y(\tau)}{N}\big)^C\big)] .
+\end{equation}
+Unfortunately, for now, we're stuck.
+
+So let's leave aside the stochastic model for the present.  
+Let $S(\tau)$ be ``the number of susceptibles at time $\tau$'',
+$I(\tau)$ be ``the number of infectives at time $\tau$'',
+and wrote
+\[
+I(\tau+1) = S(\tau) \big(1-\big(1-\beta \frac{I(\tau)}{N}\big)^C) ,
+\]
+with $S(\tau+1)=S(\tau)-I(\tau+1)$.
+This is a perfectly legitimate model in its own right.  Of course,
+$S$ certainly does not in general equal $X$, or even $E[X]$, for the stochastic model!  
+But for large $X$, $X$ is probably not far from the mean, and we can 
+just formulate our new, deterministic, model using the same functional
+form, and see what happens.  Here, we note that $I/N$ is the
+prevalence (probability a random person is infected), $\beta$
+the chance of transmitting infection, and $(1-\beta I/N)^C$ the 
+chance of escaping infection from $C$ contacts.  Multiply this by
+$S$, and you have an estimate of the number of susceptibles you 
+``expect'' next time.  Remember---we have not reasoned from
+Equation~(\ref{eq:stochmean}).  We have based a simpler
+new deterministic model on Equation~(\ref{eq:stochmean}).
+
+Let's see how it works.
+<<>>=
+epi1a <- function(nn,cc,beta,y0,endtime) {
+  nsims <- length(y0)
+  i.ans <- matrix(NA,ncol=nsims,nrow=endtime+1)
+  ss.cur <- nn-y0
+  i.ans[1,] <- y0
+  for (ii in 2:(endtime+1)) {
+    i.cur <- i.ans[ii-1,]
+    escape <-  (1-beta*i.cur/nn)^cc
+    ss.new <- ss.cur * escape
+    i.ans[ii,] <- ss.cur * (1-escape)
+    ss.cur <- ss.new
+  }
+  i.ans
+}
+@
+Let's take a look.  First, a stochastic epidemic in a population
+of size 10000, starting with one infective:
+\begin{figure}
+\caption{\label{fig:sim5}
+Starting with one infective,
+four hundred stochastic epidemic realizations in gray, stochastic
+mean in red, deterministic model in blue.}
+  \centering
+<<fig=true>>=
+plot.sim1(epi1(10000,5,0.3,rep(1,400),40),colors=rep("gray",400),showmean="red")
+plot.sim1(epi1a(10000,5,0.3,1,40),colors="blue",add.to.plot=TRUE)
+@
+\end{figure}
+Notice that the stochastic mean is substantially lower than the
+deterministic model predicts.  This is partly because the stochastic
+epidemics can go extinct (no cases), and this pulls the mean down.
+
+If we move to one hundred initial cases, the deterministic model
+predicts the stochastic mean rather well---in this case.  We will see other
+examples in the future where the results are not so clear-cut.
+\begin{figure}
+\caption{\label{fig:sim6}
+Starting with one infective,
+four hundred stochastic epidemic realizations in gray, stochastic
+mean in red, deterministic model in blue.}
+  \centering
+<<fig=true>>=
+plot.sim1(epi1(10000,5,0.3,rep(100,400),40),colors=rep("gray",400),showmean="red")
+plot.sim1(epi1a(10000,5,0.3,100,40),colors="blue",add.to.plot=TRUE)
+@
+\end{figure}
+
+Note that we've assumed that infectious individuals are only 
+infectious for one time period.  After that, we aren't interested
+in them any more.  We've effectively assumed that they have recovered
+with perfect immunity.  Notice that they are implicitly still in
+the population, because we are still assuming that $I/N$ is the
+prevalence, and that $N$, the population size, does not change.  But
+we did not need to explicitly keep track of the number of 
+recovered individuals, though we could have.  Since each individual
+may start susceptible ($S$), become infected ($I$), and then 
+enter a recovered ($R$) state, this model is a simple example of 
+a so-called SIR model in discrete time.
+
+{\bf Example.~~}Let's compare the mean of very many stochastic
+simulations with the deterministic model.
+<<>>=
+rep1 <- (epi1(1000,5,0.3,rep(100,1000000),40,mean.only=TRUE) - epi1a(1000,5,0.3,100,40))[1:10]
+rep1
+rep2 <- (epi1(1000,5,0.3,rep(100,1000000),40,mean.only=TRUE) - epi1a(1000,5,0.3,100,40))[1:10]
+rep2
+@
+Are you convinced that the deterministic model provides results
+close to, but not equal to, the mean of the stochastic model, even
+when early extinction is not important?   How many runs do you think
+it would take to determine the result to three decimal places?
+
+{\bf Programming exercise.~~}Modify \verb+epi1+ to accept a list
+of summary functions, such as \verb+mean+, instead of the
+argument \verb+mean.only+.  Have each column of the output be
+the result of using the summary function on the simulation results.
+
+
+\vfill
+
+\end{document}

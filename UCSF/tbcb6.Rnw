@@ -1,0 +1,1444 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in TB Surveillance, Part 6}
+
+\subsection*{Goals}
+The specific goals for this segment are:
+\begin{enumerate}
+\item Discuss the concept of mutual independence in a 2x2x2 table
+\end{enumerate}
+
+\section*{The Two by Two by Two Table}
+
+Three dimensional classifications, such as the two by two by two
+table, arise frequently in public health and biomedical applications.
+Statistical analysis of such tables is discussed in many
+classical references, such as Agresti (2002), Fienberg, Selvin,
+and others.  In this section, we will focus on the classical material
+regarding the probabilistic structure of such tables; further
+details, original references, and statistical applications may be
+found in the books just cited.
+
+As an example, suppose that we are interested in analyzing
+resistance to the first-line tuberculosis drug isoniazid (INH).
+Ignoring patients with missing information, we could classify
+culture-positive tuberculosis patients by foreign birth, cavitary 
+disease, and susceptibility of the first isolates to isoniazid.
+Using California tuberculosis registry data from 1994 to 2005, we
+could construct Table~\ref{tbl:fbcavinh}.
+\begin{table}[hbp]
+\caption{\label{tbl:fbcavinh}Isoniazid susceptibility, California
+tuberculosis, 1994--2003. FB: foreign birth. Source: California Department of Health Services.}
+\begin{tabular}{ccccccc}
+Cavitary & FB & Not FB & ~~~~~~~~~~ & Not Cavitary & FB & Not FB \\ \cline{2-3}\cline{6-7}
+INH resistant  & \multicolumn{1}{|c|}{719} & \multicolumn{1}{c|}{146} & & INH resistant & \multicolumn{1}{|c|}{2202} & \multicolumn{1}{c|}{398} \\ \cline{2-3}\cline{6-7}
+INH sensitive & \multicolumn{1}{|c|}{4431} & \multicolumn{1}{c|}{1851} & & INH sensitive & \multicolumn{1}{|c|}{15853} & \multicolumn{1}{c|}{6714} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+We could begin to explore this data by computing observed odds
+ratios.  For instance, among cavitary patients, the odds ratio
+for the association between foreign birth and isoniazid resistance
+is \Sexpr{ signif( 719*1851/(4431*146) ,3)}, just over 2.  Since
+an odds ratio of one corresponds to independence, with so many
+patients, we might suspect
+that values as extreme as we observed would have been unlikely to have
+arisen by chance alone if foreign birth and INH resistance were
+observations from an underlying distribution in which these two
+factors were independent.  Here, however, we will not pursue this
+topic, but instead will explore the probability structure of 
+such tables.\newline
+{\bf Exercise.~~}Find the observed odds ratio (a) between foreign
+birth and INH resistance for non-cavitary patients, (b) between
+foreign birth and INH resistance for all patients (collapsing over
+cavitary patients), (c) between cavitary disease and INH resistance
+for foreign born patients, (d) between cavitary disease and 
+INH resistance for non-foreign born patients, (e) between cavitary
+disease and INH resistance for all patients, (f) between cavitary
+disease and foreign birth for INH resistant patients, (g) between
+cavitary disease and foreign birth for INH sensitive patients, and 
+(h) between cavitary disease and foreign birth for all patients.
+{\it Ans.~~}(a) 2.34, (b) 2.27, (c) 1.17, (d) 1.33, (e) 1.20, (f) 0.89, (g) 1.01, (h) 1.02.
+
+We could also use a two by two by two table to express observed
+relative frequencies.  Returning to the INH resistance example, we could
+divide each cell count by the total number of observations, to get
+the observed relative frequency for each cell.  For instance, the
+observed relative frequency for foreign birth, cavitary disease, 
+and INH resistance is 719/32314 (again among patients with complete
+information on these three variables), or about 0.022.  Thus, about
+2.2\% of the patients under consideration were foreign born cavitary
+patients with INH resistant isolates.\newline
+{\bf Exercise.~~}Complete the table of relative frequencies.
+
+In this section, we'll assume that we have three classifications,
+Y, A, and B, so that there are eight possibilities.  We will always
+code these so that 1 indicates yes and 0 indicates no.  Whenever
+we write $P(A=1)$ we mean the chance that A happened, and this will
+mean that the indicator of A was 1.  We could think of Y as a 
+disease or other outcome of interest (such as the occurrence of
+multidrug-resistance, or of tuberculosis itself, or of a delay in
+diagnosis), and we can think of A and B as predictors of Y.  
+
+\subsection*{Three-way mutual independence}
+If we classify tuberculosis patients by cavitary disease, health
+care worker status, and TST induration of greater or equal to ten
+millimeters, we obtain the results in Table~\ref{tbl:cavhcwind}.
+\begin{table}
+\caption{\label{tbl:cavhcwind}Cavitary disease, California
+tuberculosis, 1994--2003. HCW: health care worker. Source: California Department of Health Services.}
+\begin{tabular}{ccccccc}
+Cavitary & Induration $\geq$ 10 mm & $<$ 10 mm & ~~~~~~~~~~ & Not Cavitary & Induration $\geq$ 10 mm & $<$ 10 mm \\ \cline{2-3}\cline{6-7}
+HCW  & \multicolumn{1}{|c|}{72} & \multicolumn{1}{c|}{47} & & HCW & \multicolumn{1}{|c|}{285} & \multicolumn{1}{c|}{168} \\ \cline{2-3}\cline{6-7}
+Not HCW & \multicolumn{1}{|c|}{4025} & \multicolumn{1}{c|}{2974} & & Not HCW & \multicolumn{1}{|c|}{17491} & \multicolumn{1}{c|}{12517} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+For this three-way classification, the observed odds ratios are 
+approximately 1 in both strata of all three variables, and on all
+three marginal tables.  Of course, they are not exactly equal to
+one, but it might lead one to suspect that these observations could
+be modeled as having arisen from an underlying distribution for which
+all three variables were unrelated to each other.\newline
+{\bf Exercise.~~}Compute the observed relative frequency of 
+health care workers, induration $\geq$ 10 mm, and cavitary disease
+for Table~\ref{tbl:cavhcwind}.
+
+More generally, we may be considering predictors A and B (say), and
+an outcome Y.  Complete three
+way independence may apply.  A 2 by 2 by 2 table shows three
+way (mutual) independence if
+\[
+P(A=i,B=j,Y=k) = P(A=i)P(B=j)P(Y=k) 
+\]
+for every $i$, $j$, and $k$.  This means you can compute the
+chance of being in every cell by just multiplying the marginal.
+For instance, suppose that $P(A=1)=0.2$, $P(B=1)=0.4$, and 
+$P(Y=1)=0.3$.  Then
+\begin{eqnarray*}
+P(A=1,B=1,Y=1) & = & P(A=1)P(B=1)P(Y=1) , \\
+P(A=1,B=1,Y=0) & = & P(A=1)P(B=1)P(Y=0) , \\
+P(A=1,B=0,Y=1) & = & P(A=1)P(B=0)P(Y=1) , \\
+P(A=1,B=0,Y=0) & = & P(A=1)P(B=0)P(Y=0) , \\
+P(A=0,B=1,Y=1) & = & P(A=0)P(B=1)P(Y=1) , \\
+P(A=0,B=1,Y=0) & = & P(A=0)P(B=1)P(Y=0) , \\
+P(A=0,B=0,Y=1) & = & P(A=0)P(B=0)P(Y=1) , \mbox{\rm and} \\
+P(A=0,B=0,Y=0) & = & P(A=0)P(B=0)P(Y=0) . \\
+\end{eqnarray*}
+If we work all these out, we get Table~\ref{tbl:muind}.
+\begin{table}
+\caption{\label{tbl:muind}Example of complete three-way independence.}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{0.024} & \multicolumn{1}{c|}{0.096} & & Y & \multicolumn{1}{|c|}{0.036} & \multicolumn{1}{c|}{0.144} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{0.056} & \multicolumn{1}{c|}{0.224} & & $\bar{Y}$ & \multicolumn{1}{|c|}{0.084} & \multicolumn{1}{c|}{0.336} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+{\bf Exercise.~~}For Table~\ref{tbl:cavhcwind}, use the marginal
+relative frequencies you computed for health care worker status,
+induration $\geq$ 10 mm, and cavitary disease to compute the 
+cell probabilities assuming independence.
+
+For a table to show three-way independence, each and every single cell
+probability must be the product of the three marginals, as shown above.
+Here is an example of a table that does {\it not} show three way
+independence (Table~\ref{tbl:nomuind}).  Table~\ref{tbl:nomuind} is
+almost the same as Table~\ref{tbl:muind}, except that two cells (italics) in the right-hand table have probabilities that don't correspond to three-way
+independence.  The cell for $A=0$, $B=0$, and $Y=1$ shows a probability
+of only 0.14, instead of $0.8 \times 0.3 \times 0.6=0.144$ as in Table
+\ref{tbl:muind} (and the cell for $A=0$, $B=0$, and $Y=0$ differs
+as well).  It does not matter that {\it some} of the cells in the
+table have probabilities that correspond to the product of the marginals.  To show complete three way independence, all of the cells would have 
+probabilities that were the product of the marginals.  Since there are
+cells that don't conform to this formula, the table does not show
+three way independence.
+\begin{table}
+\caption{\label{tbl:nomuind}Example of a table that does {\it not} show complete three-way independence.}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{0.024} & \multicolumn{1}{c|}{0.096} & & Y & \multicolumn{1}{|c|}{0.036} & \multicolumn{1}{c|}{{\it 0.14}} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{0.056} & \multicolumn{1}{c|}{0.224} & & $\bar{Y}$ & \multicolumn{1}{|c|}{0.084} & \multicolumn{1}{c|}{{\it 0.36}} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+If you collected data on 1000 patients and classified them into a 
+Table, you could examine the table for evidence of three way 
+independence or some other relation.  In practice, it is unlikely that
+your data will perfectly fit three way independence, just for reasons
+of chance.  Assessing whether a given table of observations are 
+consistent with an underlying assumption of three way independence is
+discussed in epidemiological analysis books, such as Selvin or Fienberg.
+
+\subsection*{Y is independent of A and B together}
+Another type of relationship is where two of the variables (say A and
+B without loss of generality) may not be independent, but the third
+(here Y) is independent of A and B together.  Specifically,
+\begin{eqnarray*}
+P(Y=1,A=0,B=0) & = & P(Y=1)P(A=0,B=0) , \\
+P(Y=1,A=0,B=1) & = & P(Y=1)P(A=0,B=1) , \\
+P(Y=1,A=1,B=0) & = & P(Y=1)P(A=1,B=0) , \mbox{\rm and}\\
+P(Y=1,A=1,B=1) & = & P(Y=1)P(A=1,B=1) . \\
+\end{eqnarray*}
+Of course, 
+\begin{eqnarray*}
+P(Y=0,A=0,B=0) & = & P(A=0,B=0)-P(Y=1,A=0,B=0) \\
+& = & P(A=0,B=0)-P(Y=1)P(A=0,B=0) \\
+& = & P(A=0,B=0)(1-P(Y=1)) \\
+& = & P(A=0,B=0)P(Y=0) \\
+\end{eqnarray*}
+and similarly for the remaining three cells.
+
+As an example of what this might mean, suppose that Y 
+represented whether or not a patient had extrapulmonary TB or not, 
+that A represented
+private provider status and B represented whether or not the patient
+was a local health jurisdiction employee themselves.
+It is easy to imagine that having a private provider would be
+quite related to whether the patient themselves worked for a health
+department.  Health department employees may be very likely to receive
+health care from their own department rather than an outside provider.
+But while A and B might be very much related to one another, it is
+quite plausible that they have no relation whatever to whether or
+not someone developed extrapulmonary tuberculosis (at least if we
+ignore HIV, which might well be related to private provider status).
+
+For a numerical example, suppose that $P(A=1)=0.3$, $P(B=1)=0.4$,
+and $P(Y=1)=0.2$, but $P(A=1,B=1)=0.15$, $P(A=1,B=0)=0.15$,
+$P(A=0,B=1)=0.25$, and of course $P(A=0,B=0)=0.45$.  A and B are
+not at all independent of each other.  But we're assuming that
+Y is independent of both A and B together, so we can form Table~(\ref{tbl:yindab}).
+\begin{table}
+\caption{\label{tbl:yindab}Y independent of A and B together.}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{P(A=1,B=1)P(Y=1)=0.03} & \multicolumn{1}{c|}{P(A=0,B=1)P(Y=1)=0.05} & & Y & \multicolumn{1}{|c|}{P(A=1,B=0)P(Y=1)=0.03} & \multicolumn{1}{c|}{P(A=0,B=0)P(Y=1)=0.09} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{P(A=1,B=1)P(Y=0)=0.12} & \multicolumn{1}{c|}{P(A=0,B=1)P(Y=0)=0.2} & & $\bar{Y}$ & \multicolumn{1}{|c|}{P(A=1,B=0)P(Y=0)=0.12} & \multicolumn{1}{c|}{P(A=0,B=0)P(Y=0)=0.36} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+Notice that three-way independence implies that each variable is 
+independent of the other two taken together.
+
+Suppose that Y is independent of A and B together, and also that
+A and B are independent.  Then
+\[
+P(ABY) = P(AB)P(Y) = P(A)P(B)P(Y) ,
+\]
+and so on for every cell.  If Y is independent of A and B together,
+then the independence of A and B is all that is needed to 
+guarantee full three-way independence.
+
+Also, suppose that Y is independent of A and B together.  Then
+\[
+P(ABY) = P(AB) P(Y) 
+\]
+and
+\[
+P(\bar{A}BY) = P(\bar{A}B) P(Y) ,
+\]
+so that
+\[
+P(ABY) + P(\bar{A}BY) = P(AB)P(Y)+P(\bar{A}B)P(Y)
+\]
+gives us
+\[
+P(BY) = P(Y) \big( P(AB) + P(\bar{A}B)\big) = P(Y) P(B) .
+\]
+Since we can do this for $P(B\bar{Y})$, etc., we know that B and Y
+are independent.  Similarly, A and Y are independent.
+
+Suppose that Y is independent of A and B together, and B is 
+independent of A and Y together.  Then we can deduce that B is
+independent of A, and that we must have full three-way independence.
+
+\subsection*{Pairwise independence of all three variables}
+It is possible for A and B to be independent, B and Y to be 
+independent, A and Y to be independent, but for three way independence
+not to hold (as we saw in the first lecture).  The canonical 
+example of this is in Table~(\ref{tbl:pair}); we will get a lot
+of mileage out of it and related examples.
+\begin{table}
+\caption{\label{tbl:pair}Pairwise independence of all three variables, but not three-way independence}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{0.25} & \multicolumn{1}{c|}{0} & & Y & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{0.25} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{0.25} & & $\bar{Y}$ & \multicolumn{1}{|c|}{0.25} & \multicolumn{1}{c|}{0} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+We'll discuss practical interpretations of this further on.
+
+Pairwise independence does not imply three-way independence, but three
+way independence does imply pairwise independence.  In other words, if
+A, B, and Y are mutually independent, then A and B are independent,
+B and Y are independent, and A and Y are independent.
+
+\subsection*{Pairwise independence of two variables}
+Let's suppose that Y is independent of A, and that Y is 
+independent of B.  We are assuming that A and B may be related.
+For instance, we may again assume A is private provider status and
+B is county HCW status, with Y representing extrapulmonary disease.  
+But now we're not assuming that Y is independent of A and B together,
+just that Y is independent of A and Y is independent of B.  In 
+other words, we're assuming that Y has no univariate association
+with A and that Y has no univariate association with B.  But the
+outcome Y is still going to be associated with A and B---there will
+be interactions; Y will not be independent of A and B together.  Table
+\ref{tbl:pairind} shows an example of such a table.  
+\begin{table}
+\caption{\label{tbl:pair}A independent of Y and B independent of Y, but A and B together not independent of Y}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{0.148} & \multicolumn{1}{c|}{0.16} & & Y & \multicolumn{1}{|c|}{0.072} & \multicolumn{1}{c|}{0.06} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{0.152} & \multicolumn{1}{c|}{0.24} & & $\bar{Y}$ & \multicolumn{1}{|c|}{0.128} & \multicolumn{1}{c|}{0.04} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+In Table~\ref{tbl:pairind}, $P(A)=0.148+0.152+0.072+0.128=0.5$,
+$P(B)=0.148+0.16+0.152+0.24=0.7$, and $P(Y)=0.148+0.16+0.072+0.06=0.44$.
+Notice that $P(AB)=0.3$, which does not equal $P(A)P(B)=0.5*0.7=0.35$,
+so A and B are certainly not independent.  
+
+On the other hand,
+$P(AY)=0.148+0.072=0.22$, $P(A\bar{Y})=0.152+0.128=0.28$,
+$P(\bar{A}Y)=0.16+0.06=0.22$, and $P(\bar{A}\bar{Y})=0.24+0.04=0.28$.
+Since $P(A)P(Y)=0.5 \times 0.44 = 0.22 = P(AY)$, 
+$P(\bar{A})P(Y)=0.5 \times 0.44 = 0.22 = P(\bar{A}Y)$, 
+$P(A)P(\bar{Y})=0.5 \times 0.56 = 0.28 = P(A\bar{Y})$, and
+$P(\bar{A})P(\bar{Y})=0.5 \times 0.56 = 0.28 = P(\bar{A}\bar{Y})$,
+A and Y are independent.  Of course, if the margins are known we only
+need to check a single cell.
+
+Similarly, $P(BY)=0.148+0.16=0.308=0.7\times 0.44=P(B)P(Y)$,
+$P(\bar{B}Y)=0.072+0.06=0.132 = 0.3 \times 0.44=P(\bar{B})P(Y)$,
+$P(B\bar{Y})=0.152+0.24=0.392=0.7\times 0.56 = P(B)P(\bar{Y})$, and
+$P(\bar{B}\bar{Y})=0.128+0.04=0.168 = 0.3\times 0.56 = P(\bar{B})P(\bar{Y})$.  So B and Y are also independent.  We could have also computed the
+odds ratio $P(BY)P(\bar{B}\bar{Y})/(P(\bar{B}Y)P(B\bar{Y})$; since 
+this equals one, the variables must be independent.
+
+But $P(ABY)=0.148$, and $P(AB)P(Y)=0.3*0.44=0.132$.  Since $P(ABY)\neq P(AB)P(Y)$, Y is not independent of A and B together.  Notice that if we
+just look at the left hand table, we can see that A and Y are
+not conditionally independent given B.  Computing the odds ratio on
+the left hand table gives an odds ratio of approximately 1.46, and on
+the right hand table gives an odds ratio of 0.375.  We have the
+opposite effect in each subtable, and when the table is collapsed
+over $B$, the associations happen to exactly cancel out, leaving
+A and Y independent.  Similarly, the odds ratio for B and Y given A
+is approximately 1.73, while the odds ratio for B and Y given $\bar{A}$
+(not A) is approximately 0.444, and as before opposite effects
+of B at each level of A are canceling each other out, leaving B and
+Y independent.  B and Y are {\it not} conditionally independent given A.
+
+In the previous example, A and B were not independent.  If A and
+B were independent, then we would have three pairwise independent
+variables that were not independent taken all together, and we
+saw an example of this earlier.  
+
+\subsection*{Two variables conditionally independent at all levels of a third}
+\subsubsection*{Definition of conditional independence}
+In this section, we'll define {\it conditional independence}, looking
+at some other examples along the way.  But first, let's look at
+a real-life example, taken from the California Tuberculosis Registry.
+
+The data in Table~\ref{tbl:condind} refer to the acquisition of 
+new multidrug-resistance among California tuberculosis cases, 1994--2003.  Cases are classified as either known to be AIDS or not known to be AIDS cases, as having become newly MDR on follow-up susceptibility results or not, and as being listed as homeless on the RVCT or not.  Note that two cells both have 1478 individuals.  Individuals who were MDR at baseline were excluded, as were
+individuals with missing data.
+\begin{table}
+\caption{\label{tbl:condind}Acquisition of drug resistance in TB.}
+\begin{tabular}{ccccccc}
+AIDS & New MDR & No new MDR & ~~~~~~~~~~ & No AIDS & New MDR & No New MDR \\ \cline{2-3}\cline{6-7}
+Homeless  & \multicolumn{1}{|c|}{4} & \multicolumn{1}{c|}{356} & & Homeless & \multicolumn{1}{|c|}{2} & \multicolumn{1}{c|}{1478} \\ \cline{2-3}\cline{6-7}
+Not homeless & \multicolumn{1}{|c|}{17} & \multicolumn{1}{c|}{1478} & & Not homeless & \multicolumn{1}{|c|}{29} & \multicolumn{1}{c|}{21716} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+If we examine the odds ratio overall, collapsing over AIDS status,
+we find an odds ratio of approximately 1.65.  But stratifying by
+AIDS, we get $(4 \times 1478) / (17 \times 356)$, which is 0.977.
+We simply multiplied the numbers of cases of New MDR in homeless
+with AIDS
+by the numbers for no new MDR in non-homeless individuals with
+AIDS, and 
+divided by the number of cases of new MDR in non-homeless individuals
+with AIDS and the
+number of cases of non-new MDR in homeless individuals with AIDS.  
+This is just the usual cross-product ratio for computing an 
+observed odds ratio.  \newline
+{\bf Exercise.~~}Compute the observed odds ratio in the non-AIDS
+stratum.  {\it Ans.} 1.013.
+
+In a statistics class, we would be interested in drawing inferences
+about the underlying probabilities, and the corresponding
+population odds-ratios, from such tables.  Here, we will 
+discuss these probabilities themselves.  For instance, we may
+believe that the underlying population odds-ratio for the association
+between homelessness and becoming MDR is in fact one for the AIDS
+stratum and the non-AIDS stratum.  The observed odds ratios were
+close to one, and we might believe that the difference between the
+observed values and 1 was due to chance alone, and we could test
+this hypothesis.  
+
+But for now, let's just think about what it would
+mean for the population odds ratio to be one in the AIDS stratum, say.
+It means simply that the odds of new MDR for homeless with AIDS
+divided by the odds of new MDR for non-homeless with AIDS, which
+is to say that the odds of new MDR for homeless with AIDS is the
+same as the odds of new MDR for non-homeless with AIDS.  Now,
+what are the odds of new MDR for homeless with AIDS?  Let's let
+$M$ be the event of new MDR, $H$ homeless status, and $A$ AIDS
+status.  We can then write
+\[
+\frac{P(M|HA)}{P(\bar{M}|HA)} = \frac{P(M|\bar{H}A)}{P(\bar{M})|\bar{H}A)} .
+\]
+This is the same thing as
+\[
+\frac{P(M|HA)}{1-P(M|HA)} = \frac{P(M|\bar{H}A)}{1-P(M|\bar{H}A)} .
+\]
+We can simplify this to
+\begin{equation}
+\label{eq:mha1}
+P(M|HA) = P(M|\bar{H}A) .
+\end{equation}
+This means that the chance of acquiring MDR among homeless patients
+with AIDS is the same as the chance of acquiring MDR among 
+non-homeless patients with AIDS.  (Remember, this is not a conclusion
+we have derived from data, but the meaning of the assumption that
+the odds ratio in the AIDS stratum of the table is equal to one.)
+
+Using the definition of conditional probability in 
+Equation~\ref{eq:mha1}, we have 
+\[
+\frac{MHA}{HA} = \frac{P(M\bar{H}A)}{P(\bar{H}A)} .
+\]
+Since $P(MHA)+P(M\bar{H}A) = P(MA)$ and $P(HA)+P(\bar{H}A) = P(A)$, we
+can rewrite this as
+\[
+\frac{MHA}{HA} = \frac{P(MA)-P(MHA)}{P(A)-P(HA)} .
+\]
+We can rearrange this and cancel terms, giving us
+\[
+P(MHA) P(A) = P(HA) P(MA) ,
+\]
+or
+\[
+P(MHA) = \frac{P(HA) P(MA)}{P(A)} .
+\]
+Dividing by another factor of $P(A)$, we find
+\[
+\frac{P(MHA)}{P(A)} = \frac{P(HA)}{P(A)}\frac{P(MA)}{P(A)} .
+\]
+Finally, we use the definition of conditional probability again
+to see that
+\begin{equation}
+\label{eq:condpex}
+P(MH|A) = P(H|A) P(M|A) .
+\end{equation}
+Equation~\ref{eq:condpex} says that the conditional probability of
+homelessness and new MDR given AIDS equals the conditional probability
+of homelessness given AIDS times the conditional probability of 
+new MDR given AIDS.  It is very similar to the multiplication rule
+for independent probabilities---except this is based on conditional
+probabilities.
+
+Equation~\ref{eq:condpex} expresses the {\it conditional independence}
+of the MDR status and homelessness given that the person had AIDS.  
+Whenever the odds ratio in a stratum equals one, the two variables
+are conditionally independent given the stratum.  If the two
+variables are conditionally independent in all strata, then we can
+simply say that the two variables are conditionally independent
+given the stratifying variable.
+In epidemiology, it is natural to consider 
+questions of the independence of two variables given a third. 
+
+Let's now consider three events in general, $A$, $B$, and $C$.  For
+instance, $A$ might be the event that a person had a certain
+disease, $B$ might be the event that a person had a certain
+risk factor, and $C$ might be the event that a certain confounder
+was present. 
+Another example could be to let $A$ denote a positive result on
+a tuberculin skin test, $B$ denote a positive result on an 
+immunoglobulin-gamma blood test, and $C$ denote the event that the 
+person is truly latently infected with tuberculosis.
+
+Recall again that for two events, say $A$ and $B$, we learned that
+$A$ and $B$ are independent when $P(A\cap B)=P(AB)=P(A)P(B)$ (we
+let $P(A \cap B)$ be denoted $P(AB)$).  The definition of conditional
+independence is similar:  events $A$ and $B$ are conditionally
+independent given event $C$ if 
+\[
+P(AB|C) = P(A|C) P(B|C) .
+\]
+
+Here is a another simple example.  Suppose that we have two urns; urn one has
+nine black balls and one white ball; urn two has nine white balls
+and one black ball.  We toss a fair coin, and choose an urn based on
+the toss.  Once an urn is chosen, person A secretly picks a ball, notes the color,
+and replaces it.  Then person B secretly picks a ball, also notes the
+color, and replaces it, shuffling the balls completely.  
+Let $X_A$ be the event that A picks a black
+ball, $X_B$ be the event that B picks a black ball, and $Y$ be the
+urn we choose (1 or 2).
+In this case, suppose that we have picked urn one.  Then person A
+has a 0.9 chance of picking a black ball, and person B has a 0.9
+chance as well of picking a black ball.  We simply have two independent
+Bernoulli trials.  Similarly, if we pick urn two, we also have two
+independent Bernoulli trials (though now with success probability 0.1).
+The color of A's ball and B's ball are independent given the choice of
+urn:
+\[
+P(X_A=1,X_B=1|Y=1) = P(X_A=1|Y=1) P(X_B=1|Y=1) 
+\]
+and so forth.
+But $X_A$ and $X_B$ are not independent.  Note
+\begin{eqnarray*}
+P(X_A=1,X_B=1) & = & P(X_A=1,X_B=1|Y=1)P(Y=1) + P(X_A=1,X_B=1|Y=2)P(Y=2) \\
+ & = & P(X_A=1|Y=1)P(X_B=1|Y=1)P(Y=1) + P(X_A=1|Y=2)P(X_B=1|Y=2)P(Y=2) \\
+ & = & 0.9 \times 0.9 \times 0.5 + 0.1 \times 0.1 \times 0.5 \\
+ & = & 0.41 .
+\end{eqnarray*}
+But $P(X_A=1)=P(X_A=1|Y=1)P(Y=1) + P(X_A=1|Y=2)P(Y=2)=0.9 \times 0.5 + 0.1 \times 0.5 = 0.5$.  Similarly, $P(X_B=1)=0.5$.  If $X_A$ and $X_B$ were
+independent, then $P(X_A=1,X_B=1)$ would be $P(X_A=1)P(X_B=1)=0.5*0.5=0.25$, which is false.  The color of the balls picked by A and B are highly
+dependent, because they always draw from the same urn.  But given the
+choice of urn, the colors of the balls are independent.
+
+{\bf Exercise.~~}Suppose person A and person B receive needlestick
+injuries with blood from person C, whose Hepatitis C infection status
+is unknown.  Assume that the infection of persons A and B are
+conditionally independent given the infection status of C, and that
+the chance of infection from contaminated blood is 0.03 (and 0 from
+uninfected blood).  Assume the chance that C is infected is 0.1, and
+find the chance that A is not infected given that B is not infected.
+
+Suppose that person C is a case of active tuberculosis, and that
+persons A and B are close household contacts of C.  We assume that
+A and B were not infected before C became a case and that no other
+contact of A and B is infectious.  Let $S$ be 1 if $C$ is smear-positive
+and 0 if $C$ is smear-negative.  Then we will let $X_A$ be 1 if 
+A gets infected and 0 otherwise, and $X_B$ be 1 if B gets infected
+and 0 otherwise.  We know that the infection probabilities must be
+higher if the source case C is smear positive.  Let's assume that
+the infection probability is 0.3 for a smear positive case and 0.05
+for a smear negative case.  So
+\[
+P(X_A=1|S=1) = P(X_B=1|S=1) = 0.3 
+\]
+and
+\[
+P(X_A=1|S=0) = P(X_B=1|S=0) = 0.05 .
+\]
+We could assume that the infection probabilities are conditionally
+independent given smear status:
+\[
+P(X_A=1,X_B=1|S) = P(X_A=1|S)P(X_B=1|S) .
+\]
+We would be treating infection as two independent Bernoulli trials
+given the smear status of the patient.  Unlike the urn example, however,
+we cannot take for granted an assumption of conditional 
+independence.  For instance, there could be other factors besides
+smear status, such as cavitary disease in the source case or a TB
+strain of high virulence.  Or suppose
+that persons A and B are always present together, so that they are
+both exposed in the same way.  As an exercise, assume
+conditional independence and also assume that the
+probability of smear positivity is 0.4 and compute the probability
+that A is infected given that B is infected (this is essentially
+the same problem as the urn problem and the needlestick example
+from before).
+
+\subsubsection*{Application to two by two by two tables}
+Here, we will assume that Y is conditionally independent of A
+given whatever value B takes.  Assume first 
+\[
+P(AY|B) = P(A|B) P(Y|B) .
+\]
+Using the definition of conditional probability, and rearranging, gives
+us
+\[
+P(ABY)P(B) = P(AB)P(BY) .
+\]
+Since $P(AB)=P(AB\bar{Y})+P(ABY)$, $P(BY)=P(ABY)+P(\bar{A}BY)$, and
+$P(B)=P(ABY)+P(\bar{A}BY)+P(AB\bar{Y})+P(\bar{A}B\bar{Y})$, we can
+substitute, giving
+\[
+P(ABY)\big(P(ABY)+P(\bar{A}BY)+P(AB\bar{Y})+P(\bar{A}B\bar{Y}\big)
+=
+\big(P(AB\bar{Y})+P(ABY)\big) \big(P(ABY)+P(\bar{A}BY\big) .
+\]
+After multiplying all this out and cancelling terms, we find that
+\[
+\frac{P(ABY)P(\bar{A}B\bar{Y})}{P(AB\bar{Y})P(\bar{A}BY)} = 1 ,
+\]
+which just says that the odds ratio on the subtable where $B=1$
+must equal 1.
+
+Similarly, $P(AY|\bar{B})=P(A|\bar{B})P(Y|\bar{B})$ states that
+A and Y are conditionally independent given that B did not occur.
+Using the same argument as before, we will find that this condition
+implies that the odds ratio in the subtable where $B=0$ must equal
+1 as well.
+
+Let's look at several examples.  In the first example, A and Y
+will be conditionally independent given B, but A and B will not
+be independent.  If we think of Y as an outcome, A does not affect Y
+once you control for B, but A is related to B.  Our numerical
+example is in Table~\ref{tbl:unigo}.
+
+\begin{table}
+\caption{\label{tbl:unigo}A conditionally independent of Y given B, A and B dependent}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{4/15} & \multicolumn{1}{c|}{2/15} & & Y & \multicolumn{1}{|c|}{1/40} & \multicolumn{1}{c|}{3/40} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{2/15} & \multicolumn{1}{c|}{1/15} & & $\bar{Y}$ & \multicolumn{1}{|c|}{3/40} & \multicolumn{1}{c|}{9/40} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+In Table~(\ref{tbl:unigo}), summing columns shows us that
+$P(AB)=0.4$, $P(\bar{A}B)=0.2$, $P(A\bar{B})=0.1$, and 
+$P(\bar{A}\bar{B})=0.3$; A and B are clearly dependent.  The odds
+ratio is 6; or equivalently, we can see that while $P(A)=0.5$ and
+$P(B)=0.6$, $P(AB)=0.4 \neq 0.5 \times 0.6$.  Similarly,
+$P(BY)=0.4$, $P(\bar{B}Y)=0.1$, $P(B\bar{Y})=0.2$, and
+$P(\bar{B}\bar{Y})=0.3$.  B and Y are also dependent, and the odds
+ratio is 6 also.  
+
+What about A and Y?  Here, $P(AY)=7/24$, $P(\bar{A}Y)=5/24$,
+$P(A\bar{Y})=5/24$, and $P(\bar{A}\bar{Y})=7/24$ again; the odds ratio
+is 1.96, showing that A and Y are not independent.  We have a 
+univariate association between A and Y, just as we do between B and
+Y.
+
+But when we look at the left hand table in Table~(\ref{tbl:unigo}),
+we see that the odds ratio (when $B=1$) is 1, and similarly in the
+right hand table for $B=0$.  Here, A and Y are conditionally
+independent given B, although A is not independent of Y.  We have
+a univariate association between A and Y, which disappears when we
+stratify by B.  In this example, B and Y are related, and A has a
+univariate association with Y because A is related to B.  Stratifying
+by B, however, shows that A and Y are unrelated at each level of B.
+
+Also, if
+we look at the relation between B and Y given A, we find an
+odds ratio of 6, and if we look at the relation between B and Y given
+$\bar{A}$, we also find the same odds ratio of 6.  We will see why
+shortly.
+
+The example in Table~(\ref{tbl:unigo}) assumed not only that
+A and Y were conditionally independent given B, but that A and B
+were dependent.  We found that A and Y were dependent.  It turns out
+that if A and Y are conditionally independent given B, and A and
+B are independent, that A and Y must be independent.  If A and
+Y are conditionally independent given B, then
+\[
+P(AY|B)=P(A|B)P(Y|B) .
+\]
+So
+\[
+P(ABY) = \frac{P(AB)P(YB)}{P(B)} .
+\]
+If also A and B are independent, 
+\[
+P(AB)=P(A)P(B) ,
+\]
+so
+\[
+P(ABY) = \frac{P(A)P(B)P(YB)}{P(B)} = P(A)P(YB) .
+\]
+Similarly,
+\[
+P(A\bar{B}Y) = P(A)P(Y\bar{B}) .
+\]
+Adding these two together gives
+\[
+P(ABY)+P(A\bar{B}Y) = P(A)P(YB) + P(A)P(Y\bar{B}) = P(A)\big(P(YB)+P(Y\bar{B})\big) .
+\]
+This implies
+\[
+P(AY) = P(A)P(Y) .
+\]
+Since we can repeat the same argument for $P(A\bar{Y})$ and so forth,
+A and Y are independent.
+So if A and Y are conditionally independent given B, and A is 
+independent of B, then A is independent of Y.  
+
+Let's ask a slightly different question.  Now suppose that A and Y
+are conditionally independent given B, but assume that A and Y
+are themselves independent.  Can we conclude anything about the
+relationship between A and B, or between B and Y?  Assuming
+conditional independence of A and Y given B guarantees that the
+odds ratios on each stratum are 1, and the independence of A and Y
+overall means that the overall odds ratio between A and Y (ignoring
+B) takes the same value of 1.  What does having the same odds ratio
+of 1 at each stratum of B and on the margins tell us about the
+relationship between A and B or between B and Y?
+
+Actually we can broaden the question slightly; assume that we have
+the same odds ratio $k$ on each stratum of B and on the margins (but not
+necessarily 1); what does this imply?  Let's leave aside everything
+else for the moment and assume only that the odds ratio on each
+stratum of B is the same and is the same as the margin and see what
+can be concluded.
+
+We have
+\[
+\frac{P(ABY)P(\bar{A}BY)}{P(AB\bar{Y})P(\bar{A}B\bar{Y})} = k ,
+\]
+\[
+\frac{P(A\bar{B}Y)P(\bar{A}\bar{B}Y)}{P(A\bar{B}\bar{Y})P(\bar{A}\bar{B}\bar{Y})} = k ,
+\]
+and
+\[
+\frac{(P(ABY)+P(A\bar{B}Y))(P(\bar{A}BY)+P(\bar{A}\bar{B}Y))}{(P(AB\bar{Y})+P(A\bar{B}\bar{Y}))(P(\bar{A}B\bar{Y})+P(\bar{A}\bar{B}\bar{Y}))} =
+\frac{P(AY)P(\bar{A}Y)}{P(A\bar{Y})P(\bar{A}\bar{Y})} = k .
+\]
+Let $P(A\bar{B}Y)=qP(ABY)$, $P(\bar{A}\bar{B}Y)=rP(\bar{A}BY)$,
+$P(A\bar{B}\bar{Y})=sP(AB\bar{Y})$, and $P(\bar{A}\bar{B}\bar{Y})=tP(\bar{A}B\bar{Y})$.
+Substituting into the second equation gives $qt=rs$ after cancellation, 
+or $t=rs/q$, where we are assuming that $q \neq 0$.  
+
+Substituting into the third equation gives (after cancellation)
+\[
+\frac{(1+q)(1+t)}{(1+r)(1+s)} = \frac{(1+q)(1+\frac{rs}{q})}{(1+r)(1+s)} = 1 .
+\]
+After some algebra,
+\[
+q+\frac{rs}{q} = r + s ,
+\]
+which can be expressed
+\[
+q^2 + rs = q(r+s) ,
+\]
+which in turn leads to
+\[
+(q-r)(q-s) = 0 .
+\]
+From here, we see that either $q=r$ or $q=s$.  Now, if $q=r$, then
+$t=rs/q=rs/r=s$.  So we could have $q=r$ and $t=s$.  On the other hand,
+if $q=s$, then $t=rs/q=rs/s=r$.  So we could also have $q=s$ and $t=r$.
+
+Let's first of all look at what the table would look like if $q=r$ and
+$t=s$. 
+Here, $P(A\bar{B}Y)=qP(ABY)$, $P(\bar{A}\bar{B}Y)=qP(\bar{A}BY)$,
+$P(A\bar{B}\bar{Y})=sP(AB\bar{Y})$, and $P(\bar{A}\bar{B}\bar{Y})=sP(\bar{A}B\bar{Y})$.  The odds ratio for A and B assuming Y is then 
+\[
+\frac{P(ABY)P(\bar{A}\bar{B}Y)}{P(\bar{A}BY)P(A\bar{B}Y)} =
+\frac{P(ABY)qP(\bar{A}BY)}{P(\bar{A}BY)qP(ABY)} = 1.
+\]
+And the odds ratio for A and B given $\bar{Y}$ is
+\[
+\frac{P(AB\bar{Y})P(\bar{A}\bar{B}\bar{Y})}{P(\bar{A}B\bar{Y})P(A\bar{B}\bar{Y})} =
+\frac{P(AB\bar{Y})sP(\bar{A}B\bar{Y})}{\bar{A}B\bar{Y}sP(AB\bar{Y})} =
+1 .
+\]
+So if our first possibility $q=r$ and $t=s$ were true, then A would
+be conditionally independent of B given Y.
+
+But what about the second possibility $q=s$ and $t=r$?  
+Here, $P(A\bar{B}Y)=qP(ABY)$, $P(\bar{A}\bar{B}Y)=rP(\bar{A}BY)$,
+$P(A\bar{B}\bar{Y})=qP(AB\bar{Y})$, and $P(\bar{A}\bar{B}\bar{Y})=rP(\bar{A}B\bar{Y})$.
+Let's look
+at the odds ratio for the association of B and Y given A:
+\[
+\frac{P(BYA)P(\bar{B}\bar{Y}A)}{P(B\bar{Y}A)P(\bar{B}YA)} =
+\frac{P(ABY)qP(AB\bar{Y})}{P(AB\bar{Y})qP(ABY)} = 1.
+\]
+Similarly, the odds ratio for the association of B and Y given $\bar{A}$:
+\[
+\frac{P(BY\bar{A})P(\bar{B}\bar{Y}\bar{A})}{P(B\bar{Y}\bar{A})P(\bar{B}Y\bar{A})} =
+\frac{P(\bar{A}BY)rP(\bar{A}B\bar{Y})}{P(\bar{A}B\bar{Y})rP(\bar{A}BY)} = 1.
+\]
+So if the second possibility $q=s$ and $t=r$ is true, then B and Y would
+have to be conditionally independent given A.
+
+What the last few paragraphs have shown is that if A and Y have the
+same odds ratio at each level of B and on the margins (collapsing over
+B), that one of two things must be true: either A and B are
+conditionally independent given Y, or B and Y are conditionally
+independent given A.  This is a very important result (see Fienberg
+for references and further details), telling us when we can collapse
+a two by two by two table over one of the levels without changing
+our measure of association: if the association between A and Y is
+unchanged after collapsing over B, then either A and B are conditionally
+independent given Y, or B and Y are conditionally independent given A.
+
+Now we can return to our earlier question.  Suppose that A and Y
+are conditionally independent given B, and also that A and Y are
+independent.  Since the odds ratios are the same at each level of B
+and collapsing over B, it must be the case that either A and B are
+conditionally independent given Y, or B and Y are conditionally 
+independent given A.
+
+Let's see what it would mean for A and Y to be conditionally
+independent given B, and for B and Y to be conditionally independent
+given A.  Assume both these are true.  Then
+\[
+P(AY|B) = P(A|B)P(Y|B)
+\]
+by assumption. So
+\[
+\frac{P(ABY)}{P(B)} = \frac{P(AB)P(BY)}{P(B)P(B)} ,
+\]
+so that
+\begin{equation}
+\label{eq:eqaby}
+P(ABY) = \frac{P(AB)P(BY)}{P(B)} .
+\end{equation}
+But also,
+\[
+P(BY|A) = P(B|A)P(Y|A) ,
+\]
+so
+\[
+\frac{P(ABY)}{P(A)} = \frac{P(AB)P(AY)}{P(A)P(A)} ,
+\]
+giving 
+\[
+P(ABY) = \frac{P(AB)P(AY)}{P(A)} .
+\]
+Using Equation~\ref{eq:eqaby} gives
+\[
+\frac{P(AB)P(AY)}{P(A)} = \frac{P(AB)P(BY)}{P(B)} .
+\]
+Cancelling,
+\[
+P(Y|A) = P(Y|B) .
+\]
+Similarly,
+\[
+P(AY|\bar{B}) = P(A|\bar{B}) P(Y|\bar{B}) 
+\]
+gives
+\[
+\frac{P(A\bar{B}Y)}{P(\bar{B})} = \frac{P(A\bar{B}) P(Y\bar{B})}{P(\bar{B})P(\bar{B})} ,
+\]
+so that
+\[
+P(A\bar{B}Y) = \frac{P(A\bar{B})P(Y\bar{B})}{P(\bar{B})}
+\]
+In the same way, we start with
+\[
+P(\bar{B}Y|A) = P(\bar{B}|A)P(Y|A) ,
+\]
+and find that
+\[
+P(A\bar{B}Y) = \frac{P(\bar{B}A)P(YA)}{P(A)} .
+\]
+Thus,
+\[
+\frac{P(A\bar{B})P(Y\bar{B})}{P(\bar{B})} = \frac{P(\bar{B}A)P(YA)}{P(A)} .
+\]
+%improve this by not ever expanding out P(Y|barB) and so forth
+Cancelling,
+\[
+\frac{P(Y\bar{B})}{P(\bar{B})} = \frac{P(YA)}{P(A)} ,
+\]
+or
+\[
+P(Y|\bar{B}) = P(Y|A) .
+\]
+Putting this together with what we found earlier shows that
+\[
+P(Y|B) = P(Y|\bar{B}) .
+\]
+This shows that B and Y must be independent.  In a similar way,
+A and Y must be independent.  
+
+But more can be said.  Returning to Equation~\ref{eq:eqaby}, we have
+\[
+P(ABY) = \frac{P(AB)P(BY)}{P(B)} = \frac{P(AB)P(B)P(Y)}{P(B)} = P(AB)P(Y) .
+\]
+Since we could show the analogous result for $P(A\bar{B}Y)$ and so 
+forth, we have shown that Y is independent of A and B together.
+Thus, A conditionally independent of Y given B, and B conditionally
+independent of Y given A, imply that Y is independent of A and B together.
+
+So if A and Y are conditionally independent given B, and A and Y
+are independent (collapsing over B), then either Y is independent
+of A and B together, or A is independent of B and Y together.
+
+Here is another fact: if A and B are jointly independent of Y, then
+A and Y are conditionally independent given B, and B and Y are
+conditionally independent of Y given A.  This is true because if
+A and B are jointly independent of Y,
+\[
+P(ABY) = P(AB) P(Y) .
+\]
+But also, A and B jointly independent of Y implies B is independent
+of Y, so
+\[
+P(BY) = P(B) P(Y) .
+\]
+Thus,
+\[
+P(ABY) = P(AB) \frac{P(BY)}{P(B)} .
+\]
+This tells us that
+\[
+P(AY|B) = P(A|B) P(Y|B) ,
+\]
+so that A and Y are conditionally independent given B.  In the same way,
+B and Y are conditionally independent given A.
+
+\subsection*{Two variables conditionally independent at only one level of a third}
+It is possible for A and Y to be conditionally independent given
+that B occurred, but for A and Y to be dependent given that $\bar{B}$
+occurred.  In this case, we must be careful with language, since
+the phrase ``A and Y are conditionally independent given B'' is 
+usually taken to mean that A and Y are conditionally independent
+at all levels of B.  Table~\ref{tbl:onecondi} gives an example.
+\begin{table}
+\caption{\label{tbl:onecondi}A and Y conditionally independent given that B occurred, but dependent given $\bar{B}$}
+\begin{tabular}{ccccccc}
+C & B & $\bar{B}$ & ~~~~~~~~~~ & $\bar{C}$ & B & $\bar{B}$ \\ \cline{2-3}\cline{6-7}
+A  & \multicolumn{1}{|c|}{0.08} & \multicolumn{1}{c|}{0.12} & & A & \multicolumn{1}{|c|}{0.2} & \multicolumn{1}{c|}{0.4} \\ \cline{2-3}\cline{6-7}
+$\bar{A}$ & \multicolumn{1}{|c|}{0.02} & \multicolumn{1}{c|}{0.03} & & $\bar{A}$ & \multicolumn{1}{|c|}{0.1} & \multicolumn{1}{c|}{0.05} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+Here, the odds ratio in the left table is 1, but in the right hand
+table it is 1.  
+
+{\bf Problem.~~}Let A, B and Y be three variables forming a 
+two by two by two table.  Assume that we know the marginal
+joint distribution of A and B.  Show that it is always possible
+for A and B to be conditionally independent given Y.  This shows that
+A and B can have any joint marginal distribution whatever, even though
+A and B are conditionally independent at every level of Y.
+%Answer: if A and B given Y are qab, qa(1-b),q(1-a)b and q(1-a)(1-b)
+%and A and B given not Y are qcd, qc(1-d),q(1-c)d, and q(1-c)(1-d)
+% with qab+(1-q)cd = e
+% qa(1-b)+(1-q)c(1-d)=f
+% q(1-a)b+(1-q)(1-c)d=g
+% then
+% a=(e-de-df)/(-d+e+g)
+% b=(e+g+d(q-1))/q
+% c=(e^2+fg+e(f+g)-eq+d(e+f)(q-1))/((d-e-g)(q-1))
+% let r=e/(e+f), s=g/(g+h)
+% pick d< min(e+g,r,s)
+% and q such that rq+d(1-q)<e+g, sq+d(1-q)<e+g  (always possible)
+
+{\bf Problem (continued).~~}
+Consider the use of interferon-gamma blood
+assays for tuberculosis infection, as compared to the tuberculin
+skin test.  For instance, in a study of health care workers in India
+(Pai et al, 2005), using a cutoff of 10mm of induration for the TST,
+226 were positive on both tests, 72 were TST positive only, 62 were 
+IGA positive only, and 359 were negative on both.  One very simple
+model of the test results (which may even be useful for some purposes) 
+is to assume that the results of the tests are conditionally independent
+given true infection status; of course, we know that other factors
+are involved---such as HIV infection, BCG vaccination, or
+other factors (Pai et al. 2004).  As an exercise, let A and B
+denote the results on the TST and IGA assay (respectively), and 
+construct a two-by-two-by-two table with another variable Y, such
+that A and B are conditionally independent given Y, but have the
+observed marginal joint distribution.  Note: the answer is not
+unique; many solutions are possible; an example is given in
+Table~(\ref{tbl:prsol}).
+\begin{table}
+\caption{\label{tbl:prsol}Example.}
+\begin{tabular}{ccccccc}
+C & B & $\bar{B}$ & ~~~~~~~~~~ & $\bar{C}$ & B & $\bar{B}$ \\ \cline{2-3}\cline{6-7}
+A  & \multicolumn{1}{|c|}{0.309858} & \multicolumn{1}{c|}{0.067378} & & A & \multicolumn{1}{|c|}{0.0044675} & \multicolumn{1}{c|}{0.032761} \\ \cline{2-3}\cline{6-7}
+$\bar{A}$ & \multicolumn{1}{|c|}{0.018698} & \multicolumn{1}{c|}{0.004066} & & $\bar{A}$ & \multicolumn{1}{|c|}{0.067533} & \multicolumn{1}{c|}{0.495239} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+\subsection*{Tables without independence}
+In general, we simply have eight probabilities in a table, as
+in Table~(\ref{tbl:gen}).  Each of the eight numbers can 
+vary independently--provided they all add up to one.  So in
+general we have a full seven degrees of freedom.  
+
+\subsubsection*{Marginal probabilities}
+We could specify the marginal probabilities $P(A)$, $P(B)$, and
+$P(C)$.  This nevertheless leaves four degrees of freedom in
+the table.  We'll talk more about the role of the
+marginal probabilities below.
+
+\subsubsection*{Marginal joint distributions}
+Is it possible to freely specify the three marginal joint distributions?
+In general, of course not.  To begin with, we have
+twelve equations for only eight variables:
+\begin{eqnarray*}
+P(AB) & = & P(ABY)+P(AB\bar{Y})  \\
+P(\bar{A}B) & = & P(\bar{A}BY)+P(\bar{A}B\bar{Y})  \\
+P(A\bar{B}) & = & P(A\bar{B}Y)+P(A\bar{B}\bar{Y})  \\
+P(\bar{A}\bar{B}) & = & P(\bar{A}\bar{B}Y)+P(\bar{A}\bar{B}\bar{Y})  \\
+P(AY) & = & P(ABY)+P(A\bar{B}Y) \\
+P(\bar{A}Y) & = & P(\bar{A}BY)+P(\bar{A}\bar{B}Y) \\
+P(A\bar{Y}) & = & P(AB\bar{Y})+P(A\bar{B}\bar{Y}) \\
+P(\bar{A}\bar{Y}) & = & P(\bar{A}B\bar{Y})+P(\bar{A}\bar{B}\bar{Y}) \\
+P(BY) & = & P(ABY) + P(\bar{A}BY) \\
+P(\bar{B}Y) & = & P(A\bar{B}Y) + P(\bar{A}\bar{B}Y) \\
+P(B\bar{Y}) & = & P(AB\bar{Y}) + P(\bar{A}B\bar{Y}) \\
+P(\bar{B}\bar{Y}) & = & P(A\bar{B}\bar{Y}) + P(\bar{A}\bar{B}\bar{Y}) \\
+\end{eqnarray*}
+In reality, however, 
+\[
+P(AB)+P(\bar{A}B)+P(A\bar{B})+P(\bar{A}\bar{B}) = 1 ,
+\]
+so we can eliminate the equation for $P(\bar{A}\bar{B})$; once 
+we specify $P(AB)$, $P(A\bar{B})$, and $P(\bar{A}B)$, 
+$P(\bar{A}\bar{B})$ is decided; it's simply a matter of the probabilities
+all adding up to one.  The fourth equation is nothing more than one
+minus the sum of the first three; it is not a separate constraint at
+all.  Similarly, the eighth and twelfth equations also just repeat
+information we already have.  So we are down to nine equations (plus
+the requirements that $P(\bar{A}\bar{B})=1-P(AB)-P(A\bar{B})-P(\bar{A}B)>0$, etc.)
+
+Since $P(A)=P(AB)+P(A\bar{B})$ and $P(A)=P(AY)+P(A\bar{Y})$, we have
+an additional constraint on the margins:
+\begin{equation}
+\label{eq:contbl1}
+P(AB)+P(A\bar{B}) = P(AY)+P(A\bar{Y}) .
+\end{equation}
+This constraint arises from the need for consistency in $P(A)$ between
+the two margins that involve $A$.  Similarly, we have
+\begin{equation}
+\label{eq:contbl2}
+P(AB) + P(\bar{A}B) = P(BY) + P(B\bar{Y}) 
+\end{equation}
+and
+\begin{equation}
+\label{eq:contbl3}
+P(AY)+P(\bar{A}Y) = P(BY)+P(\bar{B}Y) .
+\end{equation}
+Substituting these back in gives us six equations:
+\begin{eqnarray*}
+P(ABY) + P(AB\bar{Y}) & = & P(AB) \\
+P(\bar{A}BY) + P(\bar{A}B\bar{Y}) & = & P(\bar{A}B) \\
+P(A\bar{B}Y) + P(A\bar{B}Y) & = & P(A\bar{B}) \\
+P(ABY) + P(A\bar{B}Y) & = & P(AY) \\
+P(\bar{A}BY) + P(\bar{A}\bar{B}Y) = P(\bar{A}Y) , \mbox{\rm ~and} \\
+P(ABY)+P(\bar{A}BY) = P(BY) ,\\
+\end{eqnarray*}
+plus the requirements that 
+\[
+P(A\bar{Y})=P(AB)+P(A\bar{B})-P(AY)>0, 
+\]
+\[
+P(B\bar{Y}) = P(AB)+P(\bar{A}B)-P(BY) > 0, 
+\]
+and
+\[
+P(\bar{B}Y) = P(AY)+P(\bar{A}Y)-P(BY) > 0 .
+\]
+
+We can now find a way to express seven of the unknown cell probabilities
+in terms of the eighth.  If we solve in terms of $P(AB\bar{Y})$
+for instance, we get
+\begin{eqnarray}
+\label{eq:sol1}
+P(ABY) & = & P(AB)-P(AB\bar{Y}) \\
+P(\bar{A}BY) & = & P(BY) - P(AB) + P(AB\bar{Y}) \\
+P(\bar{A}\bar{B}) & = & P(AB) + P(\bar{A}B) - P(BY) - P(AB\bar{Y}) \\
+P(A\bar{B}Y) & = & P(AY) - P(AB) + P(AB\bar{Y}) \\
+P(\bar{A}\bar{B}Y) & = & P(AB) + P(\bar{A}Y) - P(BY) - P(AB\bar{Y})  \\
+P(A\bar{B}\bar{Y}) & = & P(AB) + P(A\bar{B}) - P(AY) - P(AB\bar{Y}) , \mbox{\rm ~and} \\
+P(\bar{A}\bar{B}\bar{Y}) & = & 1-2P(AB)-P(\bar{A}B)-P(A\bar{B})-P(AY)+P(BY)+P(AB\bar{Y}) .
+\end{eqnarray}
+{\bf Exercise.~~}Verify that the Equation~\ref{eq:sol1} 
+satisfies the two by two by two table.
+
+%Note the terms P(AB\bar{Y}) have the same sign on tetrahedral corners
+% could write this in vector form
+% what value of c makes it independent if possible
+
+{\bf Exercise.~~}Show that if $P(AB)=P(\bar{A}B)=P(AY)=P(\bar{A}Y)=0.25$,
+$P(A\bar{B})=0.27$, and $P(BY)=0.01$, there is no value of $P(AB\bar{Y})$ that provides cell probabilities between zero and one for all eight cells
+in the two by two by two table.
+
+As suggested in the above exercise, not all possible marginal two by
+two tables can be margins of a two by two by two table.  Several
+additional constraints must be satisfied.  For instance, it is 
+necessary that
+\begin{equation}
+\label{eq:req1}
+P(A\bar{B})+P(BY)>P(AY) .
+\end{equation}
+Suppose this weren't true; say we pick $P(AY)=0.3$, but $P(A\bar{B})=0.1$ and $P(BY)=0.1$.  Since $P(A\bar{B})+P(BY)=P(A\bar{B}Y)+P(A\bar{B}\bar{Y})+P(ABY)+P(\bar{A}BY)<P(ABY)+P(A\bar{B}Y)$ now, we must have
+$P(A\bar{B}\bar{Y})+P(\bar{A}BY)<0$, which is not possible.\newline
+{\bf Exercise.~~}Show that in addition to Equation~\ref{eq:req1}, the
+following additional conditions are necessary and sufficient for there
+to be a two by two by two table corresponding to given (putative) 
+margins.  Assume that all the marginal tables have nonnegative
+cell probabilities, i.e. $P(AB)\geq 0$, $P(\bar{A}B)\geq 0$,
+$P(A\bar{B})\geq 0$, $P(\bar{A}\bar{B})\geq 0$, etc.  Including
+Equation~\ref{eq:req1}, the conditions are
+\begin{eqnarray}
+\label{eq:contbl4}
+P(A\bar{B})+P(BY) & \geq & P(AY) \\
+P(\bar{A}B)+P(AY) & \geq & P(BY) \\
+P(AY)+P(\bar{A}Y) & \geq & P(BY) \\
+P(\bar{A}\bar{B})+P(BY) & \geq & P(\bar{A}Y) \\
+P(AB)+P(\bar{A}B) & \geq & P(BY) \\
+P(AB) + P(\bar{A}Y) & \geq & P(BY) \\
+P(AB) + P(A\bar{B}) & \geq & P(AY) \\
+\end{eqnarray}
+(a) Show that any of these could be violated while satisfying the 
+others.  (b) Show that if any of these are violated, there is no
+two by two by two table satisfying the margins.  (c) Show that if all
+are satisfied, there is at least one two by two by two table
+satisfying the margins. (d) Show that if all the inequalities are
+strictly satisfied, there are many possible tables, and one degree
+of freedom.
+
+\subsubsection*{Marginal odds ratios}
+Given a general table such as Table~(\ref{tbl:gen}),
+we can compute the marginal odds ratios
+\[
+O_{AB}=\frac{P(AB)P(\bar{A}\bar{B})}{P(\bar{A}B)P(A\bar{B})},
+\]
+\[
+O_{AY}=\frac{P(AY)P(\bar{A}\bar{Y})}{P(\bar{A}Y)P(A\bar{Y})} ,
+\]
+and
+\[
+O_{BY}=\frac{P(BY)P(\bar{B}\bar{Y})}{P(\bar{B}Y)P(B\bar{Y})} .
+\]
+\begin{table}
+\caption{\label{tbl:gen}General table.}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{$P(ABY)$} & \multicolumn{1}{c|}{$P(\bar{A}BY)$} & & Y & \multicolumn{1}{|c|}{$P(A\bar{B}Y)$} & \multicolumn{1}{c|}{$P(\bar{A}\bar{B}Y)$} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{$P(AB\bar{Y})$} & \multicolumn{1}{c|}{$P(\bar{A}B\bar{Y})$} & & $\bar{Y}$ & \multicolumn{1}{|c|}{$P(A\bar{B}\bar{Y})$} & \multicolumn{1}{c|}{$P(\bar{A}\bar{B}\bar{Y})$} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+Suppose that we decide to let $D=\bar{A}$.  Then $\bar{D}=A$; D happens
+when A does not happen.  This gives us a new table, shown as
+Table~(\ref{tbl:gend}).
+\begin{table}
+\caption{\label{tbl:gend}General table, with $D=\bar{A}$.}
+\begin{tabular}{ccccccc}
+B & D & $\bar{D}$ & ~~~~~~~~~~ & $\bar{B}$ & D & $\bar{D}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{$P(\bar{A}BY)$} & \multicolumn{1}{c|}{$P(ABY)$} & & Y & \multicolumn{1}{|c|}{$P(\bar{A}\bar{B}Y)$} & \multicolumn{1}{c|}{$P(A\bar{B}Y)$} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{$P(\bar{A}B\bar{Y})$} & \multicolumn{1}{c|}{$P(AB\bar{Y})$} & & $\bar{Y}$ & \multicolumn{1}{|c|}{$P(\bar{A}\bar{B}\bar{Y})$} & \multicolumn{1}{c|}{$P(A\bar{B}\bar{Y})$} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+Now the marginal odds ratios are
+\[
+O_{DB}=\frac{P(\bar{A}B)P(A\bar{B})}{P(AB)P(\bar{A}\bar{B})} = \frac{1}{O_{AB}} ,
+\]
+\[
+O_{DY}=\frac{P(\bar{A}Y)P(A\bar{Y})}{P(AY)P(\bar{A}\bar{Y})} = \frac{1}{O_{AY}} ,
+\]
+and
+\[
+O_{BY}=\frac{P(BY)P(\bar{B}\bar{Y})}{P(\bar{B}Y)P(B\bar{Y})}  .
+\]
+Whenever we reframe the probabilities in terms of $\bar{A}$ instead
+of $A$, we change the effect of two of the odds ratios, leaving the
+third unchanged.  Thus, if $O_{AB}<1$ and $O_{AY}<1$, we could
+express the table in terms of $D=\bar{A}$ and get $O_{DB}>1$ and
+$O_{DY}>1$. 
+
+{\bf Exercise.~~}Show that by reexpressing two of the classifications
+in terms of their complements changes the direction of two and only
+two of the odds ratios (assume none equal one).
+
+{\bf Exercise.~~}Show that by reexpressing a two by two by two
+table in terms of complements of events, the three marginal odds
+ratios can be either all less than one or all greater than one.  
+
+{\bf Exercise.~~}Show that if all the marginal odds ratios of a two
+by two by two table are less than one, no reexpression in terms of
+complements of single events can render all the odds ratios greater
+than one.
+
+In the next section, we'll explore how the marginal odds ratios
+depend on the cell probabilities.  To begin with, we'll let
+$P(ABY)=P(\bar{A}\bar{B}\bar{Y})=a$, and let all the other
+cell probabilities be the same value $x$.  If we do this, then
+all the marginal odds ratios equal the same value
+$\frac{(a+x)^2}{4x^2}$.  If we wish to find $a$ and $x$ such that
+the marginal odds ratios equal some value $k$, we can do so provided
+$\frac{a+x}{x}=2\sqrt{k}$.  As long as we pick $2\sqrt{k}>1$, we can
+always do so.  So contrasting the diagonal $P(ABY)$--$P(\bar{A}\bar{B}\bar{Y})$ with the rest of the table can allow us to have any common odds
+ratio greater than 1/4.
+
+It is also interesting that it is possible to have all the odds
+ratios less than one.  Thus, A can be negatively associated with Y, 
+A can be negatively associated with B, and B can itself be negatively
+associated with Y.   For a simple example of this, assume that
+$b=c=e=1$ and $d=f=g$, with $a=0$ and $h=0$ (see Table~\ref{tbl:gen}).
+Under these assumptions, every odds ratio equals $d/(1+d)^2$.  
+We can always find a $d$ such that $d/(1+d)^2$ equals any desired
+value less than 1/4.  For an example of three variables whose
+marginal odds ratios are all approximately 0.001, see Table~(\ref{tbl:anticor}).
+\begin{table}
+\caption{\label{tbl:anticor}All marginal odds ratios approximately 0.001.}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{0.0003336673} & & Y & \multicolumn{1}{|c|}{0.0003336673} & \multicolumn{1}{c|}{0.3329997} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{0.0003336673} & \multicolumn{1}{c|}{0.3329997} & & $\bar{Y}$ & \multicolumn{1}{|c|}{0.3329997} & \multicolumn{1}{c|}{0} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+It is possible that Y, for instance, could be positively associated
+with A, for A to be positively associated with B, but for Y and B
+to be negatively associated with each other.  This is very easy
+to see by just switching A and $\bar{A}$ in Table~(\ref{tbl:anticor}).
+This gives us the example in Table~(\ref{tbl:intransit}).
+\begin{table}
+\caption{\label{tbl:anticor}A variable positively associated with
+two others that are negatively associated with each other}
+\begin{tabular}{ccccccc}
+B & A & $\bar{A}$ & ~~~~~~~~~~ & $\bar{B}$ & A & $\bar{A}$ \\ \cline{2-3}\cline{6-7}
+Y  & \multicolumn{1}{|c|}{0.003336673} & \multicolumn{1}{c|}{0} & & Y & \multicolumn{1}{|c|}{0.3329997} & \multicolumn{1}{c|}{0.0003336673} \\ \cline{2-3}\cline{6-7}
+$\bar{Y}$ & \multicolumn{1}{|c|}{0.3329997} & \multicolumn{1}{c|}{0.0003336673} & & $\bar{Y}$ & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{0.3329997} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+How do each of the cell values affect the marginal odds ratios?
+Note that the cells come in pairs; increases in $a$ and $h$ 
+increase all three odds ratios.  Increases in $b$ and $g$ increase
+$O_{BY}$ but decrease the other two, increases in $c$ and $f$
+increase $O_{AB}$ but decrease the other two, and finally
+increases in $d$ and $e$ increase $O_{AY}$ while decreasing the
+other two.
+
+It turns out that the marginal odds ratios can be anything (positive);
+two of them, in general, do not constrain the third when speaking
+of probabilities.  Put differently, given any three positive numbers
+to be marginal odds ratios, there is a two by two by two 
+table of probabilities satisfying it.  In fact, in general, there 
+are many such tables.
+
+\renewcommand{\baselinestretch}{1.2} \small
+Here is one simple construction of such a table.  We have
+two possibilities: all the odds ratio are greater than one or all are 
+less than one.  Suppose
+all three numbers are greater than one; without loss of generality
+take $O_{AY}>O_{BY}>O_{AB}>1$ to be the odds ratios (the same
+arguments work if any two happen to equal each other; we'll ignore
+those special cases).  Then take $P(ABY)=a$, $P(\bar{A}BY)=b$,
+$P(\bar{A}B\bar{Y})=d$, with all the others equal to some $z$.
+To simplify the equations, we'll ignore the need for all the 
+probabilities to sum to one and just work with positive numbers; 
+we can simply divide each by their sum at the end to obtain
+probabilities.  Thus, choose $z=1$.
+Then $O_{AY}=\frac{(a+1)(d+1)}{2(b+1)}=N$, 
+$O_{AB}=\frac{(a+1)}{(b+d)}=K$, and $O_{BY}=\frac{(a+b)}{(d+1)}=M$ 
+(where we also replaced the subscripted odds ratios by single letters
+for clarity).  
+
+{\bf Exercise.~~}Continuing to assume $n>m>k>1$, 
+show that $a=(b+d)k-1$ and $b=(1+m+d(m-k))/(k+1)$. 
+Show that $d$ satisfies $Ad^2+Bd+C=0$, where $A=k(m+1)$,
+$B=2(k(m+1)-n(m-k))$, and $C=k(m+1) - 2n(2+k+m)$; show that there
+is always a real $d>1$.  Show that $a>0$ and $b>0$. \newline
+{\it Solution.~~}Note $A>0$, so the quadratic is open up.  Observe
+that since $n>k$, we know $4n>k$; since $n>m$, $2kn>km$; these 
+give us $4n+2kn>k+km$, and certainly $2nm+4n+2kn>k+km$.
+Then subtracting, $0>k+km-2nm-4n-2kn$; thus $C<0$.  We know that
+there must be a real positive root.  Evaluating $Ad^2+Bd+C$ at
+$d=1$ gives us $A+B+C$, which is $-4(m+1)(n-k)$; since $A+B+C<0$,
+there must be a root above $d=1$.  This guarantees that $a>0$; $b>0$
+because $m>k$.  Many such solutions are possible.
+% is there a solution with a 3-way simpson paradox?
+
+{\bf Exercise.~~}Suppose that $O_{AY}=4$, $O_{BY}=3$, and $O_{AB}=2$.
+Find a two by two by two classification of probabilities
+that satisfies this (use the solution in the above problem). \newline
+{\it Solution.~~}$P(ABY)=0.4375$, $P(\bar{A}BY=0.125$, 
+$P(\bar{A}B\bar{Y})=0.125$, with all other cells 0.0625.
+% check one more time
+
+<<echo=false,results=hide>>=
+mktb <- function(k,m,n) {
+  biga <- k*(m+1)
+  bigb <- 2*(k*(m+1)-n*(m-k)) 
+  bigc <- k*(m+1) - 2*n*(2+k+m)
+  disc <- bigb*bigb-4*biga*bigc
+  d <- (-bigb+sqrt(disc))/(2*biga)
+  b <- (1+m+d*(m-k))/(k+1)
+  a <- (b+d)*k-1 
+  c(a=a,b=b,d=d,ck=(a+1)/(b+d),cm=(a+b)/(d+1),cn=(a+1)*(d+1)/(2*(b+1)))
+}
+@
+
+To construct a table with all the odds ratios less than one, we can use
+the following example.  Let $a=e=f=g=h=1$; we will normalize again at the
+end.  With $K=2(d+1)/((b+1)(c+1))$, $M=(b+1)/(c+d)$, and $N=(c+1)/(b+d)$,
+we can solve and substitute to find $Ac^2+Bc+C=0$, where $A=-KM(N+1)$,
+$B=2(1-KM-MN-KMN)$, and $C=(2-KM)+(2-K)MN+4N$; $A<0$ and $C>0$, so we must
+have one positive real root for $c$, $c=(-B-\sqrt{B^2-4AC})/(2A)$.  Then
+$d=(1+N+C(1-MN))/(N(M+1))$, which must be positive, and also
+$b=\frac{(CMN+CM+M-N)}{N(1+M)}$.  For this to be positive, $c>c^*=\frac{N-M}{M(N+1)}$; this is automatically satisfied if $N<M$, since we know $c>0$ anyway.  If
+$N>M$, we can observe that $Ac^{*2}+Bc^*+C=N(1+M)(2-KN+(2-K)MN+4M>0$, so
+$c^*<c$.  
+
+{\bf Exercise.~~}Construct a table with marginal odds ratios of 0.1, 0.2, 
+and 0.01.  Try all the permutations of 0.1, 0.2, and 0.01; how do the 
+cell frequencies change?
+<<echo=false,results=hide>>=
+mktb2<-function(k,m,n) {
+  biga <- -k*m*(1+n)
+  bigb <- 2*(1-k*m-m*n-k*m*n)
+  bigc <- 2-k*m+4*n+2*m*n-k*m*n
+  disc <- bigb*bigb-4*biga*bigc
+  c <- (-bigb - sqrt(disc))/(2*biga)
+  d <- (1+c+n-c*m*n)/(n*(1+m))
+  b <- m*(c+d)-1
+  norm <- 5+c+d+b
+  tbl=c(1,b,c,d,1,1,1,1)/norm
+}
+@
+
+{\bf Exercise.~~}Suppose that $O_{AY}=20$, $O_{BY}=10$, and $O_{AB}=0.2$.
+Find a two by two by two classification of probabilities
+that satisfies this.
+
+Is it possible to specify marginal probabilities $P(A)=\alpha$, $P(B)=\beta$,  and
+$P(Y)=\gamma$, together with the odds ratios $O_{AB}=\Omega_1$, 
+$O_{BY}=\Omega_2$, and $O_{AY}=\Omega_3$?  Let's consider just one
+of the marginal tables first.
+
+Suppose we look at 
+the AY table.  If $w=P(AY)$, then $P(\bar{A}Y)=\gamma-w$,
+$P(A\bar{Y})=\alpha-w$, $P(\bar{A}\bar{Y})=1-\gamma-\alpha+w$, and
+$\Omega_3=w(1-\gamma-\alpha-w)/((\alpha-w)(\gamma-w))$.  It turns
+out that this equation always has a positive solution for $w$
+between 0 and 1; you can always construct a two by two table with
+specified marginals and a specified odds ratio.
+tables that meet such a specification.  \newline
+{\bf Exercise.~~}Find two by two tables with an odds ratio of (a)
+0.1 and (b) 10 for (i) $P(A)=0.9$, $P(Y)=0.9$, 
+(ii) $P(A)=0.1$, $P(Y)=0.9$, 
+(iii) $P(A)=0.9$, $P(Y)=0.1$, and
+(iv) $P(A)=0.1$, $P(Y)=0.1$.
+
+If we try to construct three marginal joint distributions by 
+beginning with the probabilities $P(A)$, $P(B)$, and $P(C)$, and
+then applying marginal odds ratios, we are guaranteed to meet the
+requirements of Equations~\ref{eq:contbl1}, \ref{eq:contbl2}, 
+and \ref{eq:contbl3}.  Unfortunately, the resulting tables may
+violate Equations~\ref{eq:contbl4}.  When these constraints are not
+violated, in general there is one additional degree of freedom.
+\newline
+{\bf Exercise.~~}Find examples of tables, or show no such tables
+exist, with (a) $P(A)=P(B)=P(Y)=0.5$ and $O_{AB}=0.1$, $O_{AY}=2$, and $O_{BY}=1$, (b) 
+$P(A)=P(B)=P(Y)=0.5$ and $O_{AB}=0.1$, $O_{AY}=2$, and $O_{BY}=10$.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+\subsection*{Yule-Simpson Paradox}
+To explain this, let's stay away from public health examples
+for a moment.
+Suppose we wish to test whether one gubernatorial candidate in
+California is a better weight lifter than the other.  Imagine
+that we do this in the following quite unrealistic way.  Every
+day we ask each candidate to lift one very heavy weight a certain
+height, and we record whether or not the candidate was successful.
+Each will perform the test 100 times, and we'll tally up the number
+of successes at the end.
+
+Suppose that I want to make sure my candidate wins, and I arrange to
+have my candidate use a much lighter barbell.  The other candidate
+might well be stronger, but because the contest was unfair, we might
+well find that at the end, the candidate with the light weights
+may have had say 75 out of 100 successes, while the other candidate
+had only 40 out of 100 successes.  These results don't allow us
+to conclude anything about the real skill of the candidates, because
+each candidate experienced very different conditions, conditions
+that affected the outcome of the contest.  This is the essence of
+the Yule-Simpson paradox. 
+
+Imagine that instead of giving my candidate the light weights every
+time, we had given my candidate the light weights 90 times and
+the heavy weights 10 times.  But suppose we are still cheating; we
+give our opponent the heavy weights 90 times and the light weights
+ten times.  We are still rigging the contest; the contestants still
+experience very different conditions that matter.  Suppose that our
+candidate is successful with the heavy weights one time out of ten,
+but the opponent is successful with the heavy weights thirty times
+out of his ninety tries.  The opponent is more successful with the
+heavy weights than our candidate is; on the other hand, our opponent
+had to use the heavy weights much more often.  Suppose that
+the opponent is successful with the light weights 9 out of his 10 
+tries, but our candidate is only successful 70 out of his ninety
+tries.  The opponent is still better than our candidate even on the
+light weights, but our candidate gets the light weights more often.
+Since our candidate is better on the light weights than the opponent
+on the heavy weights, this works to our advantage.  Overall, the
+opponent was successful 39\% of the time, compared with our 
+candidate's overall 71\% success rate.  Our candidate was more
+successful overall because our candidate got to use the light
+weights more often, and did better on the light weights than our
+opponent did on the heavy weights.  Because the candidates were
+differentially exposed to something that affected the outcome, it
+was possible to bias the overall results.  Our candidate had a
+higher success rate, even though our candidate was worse on both the
+heavy and light weights.  This is an example of the Yule-Simpson
+paradox, summarized in Table~(\ref{tbl:yule}).
+
+\begin{table}
+\caption{\label{tbl:yule}Yule-Simpson Paradox.}
+\begin{tabular}{ccccccc}
+Heavy & Candidate A & Candidate B & ~~~~~~~~~~ & Light & Candidate A & Candidate B \\ \cline{2-3}\cline{6-7}
+Success  & \multicolumn{1}{|c|}{30} & \multicolumn{1}{c|}{1} & & Success & \multicolumn{1}{|c|}{9} & \multicolumn{1}{c|}{70} \\ \cline{2-3}\cline{6-7}
+Failure & \multicolumn{1}{|c|}{60} & \multicolumn{1}{c|}{9} & & Failure & \multicolumn{1}{|c|}{10} & \multicolumn{1}{c|}{90} \\ \cline{2-3}\cline{6-7}
+\end{tabular}
+\end{table}
+
+Note that if we had used the heavy weights equally on both candidates,
+this effect could not have happened.  There would have been no bias.
+The overall success rates would have been different, but neither 
+candidate would have had an advantage.  The candidate better on both
+heavy and light weights would have had the better overall score.
+So even though the heaviness of the weights makes a difference to the
+success of each individual, no bias would result if the assignments
+were independent of the individual.
+
+What if we tried something different?  Suppose we are superstitious,
+and believe that anyone lifting weights while we stir coffee clockwise
+gains an advantage.  We decide to attempt to cheat by stirring 
+coffee clockwise while our candidate lifts weights, but not to do so
+for the opponent.  Since in reality this intervention does not make
+any difference, it does not matter whether or not it is unfairly
+applied.  Since the success rate is independent of this intervention,
+no bias results even though the intervention is differentially applied.
+The Yule-Simpson paradox can only arise when something that makes
+a difference to the outcome is differentially applied; it can be
+considered to be simply an extreme example of confounding.  Our
+results earlier in this chapter give the mathematical details; see
+Fienberg (1991) for further details and references.
+
+Yule-Simpson paradoxes arise frequently in public health or
+biomedical applications, if, for instance, a better drug is
+given to sicker patients.  In tuberculosis control, suppose that
+directly observed therapy is given to patients for which noncompliance
+is believed to be likely.  If compliant patients without DOT
+do better than noncompliant patients with DOT, you might well find
+that DOT looks worse.  DOT could look worse overall even though
+compliant patients do better on DOT and noncompliant patients do
+better on DOT.  The underlying propensity of the patient to comply
+with therapy would be a confounder; you would never try to analyze
+data like this without considering such an issue.
+
+\section*{References}
+Fienberg SE. 1991. The Analysis of Cross-Classified Categorical
+Data, MIT Press.
+
+Pai M, Gokhale K, Joshi R, Dogra S, Kalantri S, Mendiratta DK, Narang P, Daley CL, Granich RM, Mazurek GH, Reingold AL, Riley LW, Colford JM. 2004. {\it Mycobacterium tuberculosis} infection in health care workers in rural India. Comparison of a whole-blood interferon-$\gamma$ assay with tuberculin skin testing. Journal of the American Medical Association 293(22):2746--2755. 
+
+Pai M, Riley LW, Colford JW. 2004. Interferon-$\gamma$ assays in the
+immunodiagnosis of tuberculosis: a systematic review. Lancet Infectious
+Diseases 4:761--776.
+
+\vfill
+\end{document}
+

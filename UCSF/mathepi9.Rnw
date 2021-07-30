@@ -1,0 +1,771 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\section*{Mathematical Modeling of Infectious Disease, Lecture 9}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\subsection*{Probability Generating Functions}
+Suppose that a traffic control agency decides to impose fines 
+according to the following rule.  If a single violation occurs,
+a base number is simply used as the fine.  If the base number
+is 10, then the fine is simply \$10.  For two violations, the
+base number is multiplied by itself twice, yielding \$100 as the
+fine.  Three violations yield a \$1000 fine, and in general, if 
+$Y$ is the number of violations and $u$ is the base amount, then
+$u^Y$ is the dollar amount of the fine.  
+
+Let us suppose that $X$ is a binomial random variable with $N$ trials
+and success probability $p$ per trial.  What is the expected value
+of the traffic fine?  Essentially, we wish to compute $E(u^X)$ for
+different values of $u$, the base number.  
+
+In a previous lecture, we learned that the expected value of a 
+function, say $f(u)$, of a random variable $X$ was found from
+\[
+E(f(X)) = \sum_{x} f(x) P(X=x) .
+\]
+Here, our function is $u^X$ for various values of $u$.  With $X$
+a binomial random variable, we have
+\[
+E(u^X) = \sum_{x=0}^N u^x {N \choose x} p^x (1-p)^{N-x} .
+\]
+We first rewrite this in the form
+\[
+E(u^X) = \sum_{x=0}^N {N \choose x} (up)^x (1-p)^{N-x} .
+\]
+To compute this, we must digress momentarily to a topic from algebra.
+Recall that 
+\[
+(a+b)^2 = a^2 + 2ab + b^2 .
+\]
+This is true because we can write
+\begin{eqnarray*}
+(a+b)^2 & = & (a+b)(a+b) = a(a+b) + b(a+b) = a^2 + ab + ba + b^2 \\
+& = & a^2 + 2ab + b^2 .
+\end{eqnarray*}
+Next, 
+\begin{eqnarray*}
+(a+b)^3 & = & (a+b)(a+b)^2 = a(a+b)^2 + b(a+b)^2 \\
+ & = & a(a^2 + 2ab + b^2) + b(a^2 + 2ab+b^2) \\
+ & = & a^3 + 2a^2b + ab^2 + ba^2 + 2ab^2 + b^3 \\
+ & = & a^3 + 3a^2b + 3ab^2 + b^3 .
+\end{eqnarray*}
+This does not quite reveal what is going on.  Consider the next
+product:
+\begin{eqnarray*}
+(a_0+b_0)(a_1+b_1)(a_2+b_2) & = & (a_0+b_0)(a_1(a_2+b_2)+b_1(a_2+b_2)) \\
+& = & (a_0+b_0)(a_1a_2+a_1b_2+b_1a_2+b_1b_2) \\
+& = & a_0a_1a_2 + a_0a_1b_2 + a_0b_1a_2 + a_0b_1b_2 + b_0a_1a_2 + b_0a_1b_2 + b_0b_1a_2 + b_0b_1b_2  \\
+\end{eqnarray*}
+The first term corresponds to picking an $a$ from the first factor
+$(a_0+b_0)$, an $a$ from the second factor, 
+and an $a$ from the third factor.  Then, the second term corresponds
+to an $a$ from the first and second factors, but $b$ from the third
+factor.  Each of the eight ways to choose $a$ and $b$ from the
+three factors $a_i+b_i$ ($i=0,1,2$) corresponds to a term in the
+expanded product.  If we then go ahead and assume that
+$a_0=a_1=a_2=a$ and $b_0=b_1=b_2=b$, then the three terms
+$a_0a_1b_2=a_0b_1a_2=b_0a_1a_2=a^2b$, so that 
+$a_0a_1b_2+a_0b_1a_2+b_0a_1a_2=3a^2b$.  The factor 3 arises because
+there are three ways to choose the two terms that will contribute the
+$a$'s to the product $a^2b$ out of the three terms in the original
+product.
+
+This is a heuristic explanation of the {\it binomial formula}:
+\[
+(a+b)^N = \sum_{i=0}^N {N \choose i} a^i b^{N-i} .
+\]
+
+If we just look at the binomial probability formula itself, 
+\[
+P(X=x) = {N \choose x} p^x (1-p)^{N-x} .
+\]
+Thus,
+\[
+\sum_{x=0}^N P(X=x) = \sum_{x=0}^N {N \choose x} p^x (1-p)^{N-x} .
+\]
+Applying the binomial formula with $a=p$ and $b=1-p$, we find that
+$\sum_{x=0}^N P(X=x) = (p+1-p)^N = 1^N = 1$.  So the sum of the
+binomial probabilities is one, as it should be.
+
+Finally, we can actually compute $E(u^X)$:
+\begin{eqnarray*}
+E(u^X) & = & \sum_{x=0}^N {N \choose x} (up)^x (1-p)^{N-x} \\
+& = & (up+1-p)^N .
+\end{eqnarray*}
+
+This tells us what the value of $E(u^X)$ is for different values of
+$x$.  Returning to our traffic fine example, we could compute the
+expected traffic fine for different values of the base level $u$
+using the function $g(u)=E(u^X)$.  We showed that for the binomial
+distribution, $g(u)=(up+1-p)^N$.  Of course, for the traffic fine
+example, we would expect the base $u$ to be greater than one, so that
+the fine would increase with the number of violations.  However, we
+have computed the function $g(u)=(up+1-p)^N$ for the binomial 
+distribution for any value of $u$.  
+
+In general, for a discrete probability distribution
+taking values on the nonnegative integers, $g(u)=E(u^X)$
+is called the {\it probability generating function}.  
+
+To get some idea of the power of the probability generating function,
+we will show that $E(X) = g'(1)$.  In general, we may write
+\[
+g(u) = p_0 + p_1u + p_2u^2 + p_3u_3 + \cdots .
+\]
+Notice that $g(1)=p_0+p_1+p_2+\cdots=1$.  
+
+Then, $g'(u)$ is
+\[
+g'(u) = p_1 + 2p_2u + 3p_3u^2 + \cdots + np_nu^{n-1} + \cdots .
+\]
+Evaluating this at $u=1$, 
+\[
+g'(1) = p_1 + 2p_2 + 3p_3 + \cdots + np_n + \cdots = \sum_{i=0}up_u .
+\]
+This last sum is just the definition of the expected value of $X$!
+
+Probability generating functions turn out to be useful in a number of 
+analyses.
+
+In general, the probability generating function of a random
+variable $X$, taking values in $0, 1, 2, \ldots$, is
+\begin{equation}
+g(u) = E[u^X] .
+\end{equation}
+
+We have already learned that the expected value of a 
+function, say $f(u)$, of a discrete random variable $X$ was found from
+\[
+E(f(X)) = \sum_{x} f(x) P(X=x) .
+\]
+Thus, the probability generating function of $X$ can be expressed
+\begin{eqnarray}
+\label{eq:pgfdef}
+g(u) & = & P(X=0) + uP(X=1) + u^2P(X=2) + \cdots \\
+ & = & \sum_{i=0}^{\infty} u^iP(X=i) .
+\end{eqnarray}
+
+As a specific example, let us compute this for a binomial random 
+variable with $N=3$ and $p=0.2$.  Here, there are four possible
+values, whose probabilities are given in the table.
+\begin{table}
+\begin{tabular}{cccc}
+$x$ & $P(X=x)$ & $u^x$ & $P(X=x)u^x$  \\ \hline
+0 & ${3 \choose 0} (0.2)^0 (1-0.2)^3 = 0.512$ & $u^0=1$ & 0.512 \\
+1 & ${3 \choose 1} (0.2)^1 (1-0.2)^2 = 0.384$ & $u^1=u$ & $0.384\,u$ \\
+2 & ${3 \choose 2} (0.2)^2 (1-0.2)^1 = 0.096$ & $u^2$ & $0.096\,u^2$ \\
+3 & ${3 \choose 3} (0.2)^3 (1-0.2)^0 = 0.008$ & $u^3$ & $0.008\,u^3$ \\ \hline
+\end{tabular}
+\end{table}
+Thus, the expected value of $u^X$ is $g(u)=0.512+0.384u+0.096u^2+0.008u^3$.  This is the probability generating function of a binomial with $N=3$ and
+$p=0.2$.
+
+{\bf Exercise 3.}~~Plot this function as $u$ ranges from 0 to 1, using
+R.
+
+Here, our function is $u^X$ for various values of $u$.  With $X$
+a binomial random variable, we have
+\[
+E(u^X) = \sum_{x=0}^N u^x {N \choose x} p^x (1-p)^{N-x} .
+\]
+We first rewrite this in the form
+\begin{equation}
+\label{eq:binpgf1}
+E(u^X) = \sum_{x=0}^N {N \choose x} (up)^x (1-p)^{N-x} .
+\end{equation}
+
+\subsection{The binomial theorem}
+\subsubsection{The statement of the binomial theorem}
+To compute this, we need the algebraic fact that 
+\begin{equation}
+\label{eq:binthm}
+(a+b)^N = \sum_{i=0}^N {N \choose i} a^i b^{N-i} .
+\end{equation}
+This is known as the {\it binomial theorem}.  
+
+\subsubsection{The proof of the binomial theorem (optional)}
+The binomial theorem is true
+because expanding a product of binomials such as $(a+b)^2=(a+b)(a+b)$,
+or more generally, $(a+b)^N$, leads to a sum of terms, each term of 
+which contains a factor chosen from each binomial factor in the
+original product.  When considering a term in the expansion of 
+$(a+b)^2$, for instance, we have $a^2+ab+ba+b^2 = a^2+2ab+b^2$.
+Considering $(a+b)^3$, we have
+\begin{eqnarray*}
+(a+b)^3 & = & aaa+aab+aba+abb+baa+bab+bba+bbb \\
+& = & a^3 + a^2b + a^2b + ab^2 + a^2b + ab^2 + ab^2 + b^3 \\
+& = & a^3 + 3a^2b + 3 ab^2  + b^3 . \\
+\end{eqnarray*}
+Each of the terms we started with, such as $abb$ or $bba$, or any
+of the six others, may be considered as the result of having made
+a choice of either $a$ or $b$ for each of the $N$ original factors
+in $(a+b)^N$.  Because $abb=bab=bba=ab^2$, these terms can be collected.
+There are three terms that equal $ab^2$, because there are three 
+possible ways to choose one $a$ out of $N=3$ choices.  Thus, the
+coefficient of $ab^2$ must be ${3 \choose 1}=3$.  In general, there
+are ${N \choose i}$ terms that equal $a^ib^{N-i}$ in the expansion of
+$(a+b)^N$.
+
+Formally, we can use {\it mathematical induction} to prove the 
+binomial theorem, Equation~(\ref{eq:binthm}).  
+Substituting $N=1$ into Equation~(\ref{eq:binthm}), we have on the
+left, $(a+b)^1$.  On the right, we have a sum from $i=0$ to $N=1$:
+\[
+\sum_{i=0}^1 {1 \choose i} a^i b^{N-i} = {1 \choose 0} a^0 b^1 + {1 \choose 1} a^1 b^0 = 1 \times b + 1 \times a = a + b.
+\]
+Thus, we have directly verified Equation~(\ref{eq:binthm}) for
+the base case $N=1$.  
+
+We must now assume that Equation~(\ref{eq:binthm}) is true for some
+value of $N$, and show that it must also be true for $N+1$.  First,
+let us multiply both sides of Equation~(\ref{eq:binthm}) by $a+b$,
+and simplify:
+\begin{eqnarray}
+\label{eq:e1}
+(a+b)(a+b)^N & = & (a+b) \sum_{i=0}^N {N \choose i} a^i b^{N-i} \\
+(a+b)^{N+1} & = &  a \sum_{i=0}^N {N \choose i} a^i b^{N-i} + b \sum_{i=0}^N {N \choose i} a^i b^{N-i} \\
+ & = &  \sum_{i=0}^N {N \choose i} a^{i+1} b^{N-i} + \sum_{i=0}^N {N \choose i} a^i b^{N+1-i} \\
+ & = &  \sum_{i=1}^{N+1} {N \choose i-1} a^{i} b^{N+1-i} + \sum_{i=0}^N {N \choose i} a^i b^{N+1-i} \\
+ & = & b^{N+1-i} + \sum_{i=1}^{N+1} ({N \choose i-1} + {N \choose i}) a^i b^{N+1-i} . \\
+\end{eqnarray}
+By definition, 
+\begin{eqnarray*}
+ {N \choose i-1} + {N \choose i} & = & \frac{N!}{(i-1)!(N+1-i)!} + \frac{N!}{i!(N-i)!} \\
+ & = & \frac{N!}{(i-1)!(N+1-i)!} + \frac{N!}{i!(N-i)!} \\
+ & = & \frac{N!}{(i-1)!(N+1-i)(N-i)!} + \frac{N!}{i(i-1)!(N-i)!} \\
+ & = & \frac{iN!}{i(i-1)!(N+1-i)(N-i)!} + \frac{(N+1-i)N!}{i(i-1)!(N+1-i)(N-i)!} \\
+ & = & \frac{iN! + (N+1-i)N!}{i(i-1)!(N+1-i)(N-i)!}  \\
+ & = & \frac{N!(i + N+1-i)}{i(i-1)!(N+1-i)(N-i)!}  \\
+ & = & \frac{N!( N+1)}{i(i-1)!(N+1-i)(N-i)!}  \\
+ & = & \frac{(N+1)!}{i!(N+1-i)!}  \\
+ & = & {N+1 \choose i} .  \\
+\end{eqnarray*}
+We may then substitute this result back into Equation~(\ref{eq:e1}):
+\begin{eqnarray*}
+(a+b)^{N+1} & = & b^{N+1-i} + \sum_{i=1}^{N+1} {N+1 \choose i} a^i b^{N+1-i} . \\
+\end{eqnarray*}
+Finally, we can combine these two terms and simply sum from $i=0$, since
+${N+1 \choose 0}=1$ and $a^0=1$.  Therefore, 
+\[
+(a+b)^{N+1}  =  \sum_{i=0}^{N+1} {N+1 \choose i} a^i b^{N+1-i} .
+\]
+This is just Equation~(\ref{eq:binthm}), with $N+1$ substituted for
+$N$.  So we showed that if we assume that Equation~(\ref{eq:binthm})
+is true for some $N$, it is true for $N+1$.  This, together with the
+base case where it was shown that Equation~(\ref{eq:binthm}) was true
+for $N=1$, is sufficient to show that it is true for all positive
+integers $N$.
+
+The probabilities in the binomial distribution appear
+as the terms of the expansion of $(p+(1-p))^N$, using the binomial
+theorem with $a=p$ and $b=1-p$.  This is the origin of the name
+{\it binomial distribution}:
+\[
+(p+1-p)^N = \sum_{i=0}^N {N \choose i} p^i (1-p)^{N-i} .
+\]
+Since $p+1-p=1$, this shows that the sum of the binomial probabilities
+is one (as it should be).
+
+\subsection{The probability generating function of the binomial}
+Now that we have the binomial theorem Equation~(\ref{eq:binthm}), 
+we may simplify Equation~(\ref{eq:binpgf1}).
+\[
+E(u^X) = \sum_{x=0}^N {N \choose x} (up)^x (1-p)^{N-x} = (up + 1-p)^N .
+\]
+
+This tells us what the value of $E(u^X)$ is for different values of
+$x$.  Returning to our traffic fine example, we could compute the
+expected traffic fine for different values of the base level $u$
+using the function $g(u)=E(u^X)$.  We showed that for the binomial
+distribution, $g(u)=(up+1-p)^N$.  Of course, for the traffic fine
+example, we would expect the base $u$ to be greater than one, so that
+the fine would increase with the number of violations.  However, we
+have computed the function $g(u)=(up+1-p)^N$ for the binomial 
+distribution for any value of $u$.  
+
+\subsection{The shape of the probability generating function}
+The probability generating function of $X$ is defined as
+$g(u)=E(u^X)=P(X=0)+uP(X=1)+u^2P(X=2)+u^3P(X=3)+\cdots$.  For $u=0$,
+this becomes simply $P(X=0)$.  Thus, the graph of the probability
+generating function has a $y$-intercept at the probability that the
+random value takes the value 0.
+
+Also, note that if $u=1$, we have $g(1)=P(X=0)+1\times P(X=1) +
+1^2 \times P(X=2) + \cdots$.  This sum must be one, since this is the
+sum of the probabilities of all the possible values the random variable
+can take.  Thus, when $u=1$, the graph of the probability generating
+function takes the value 1.
+
+Recall from calculus that the first derivative of a function at a 
+point gives the slope of that function at the point in question.
+To explore the slope of the probability generating function, we will
+take the first derivative.
+\begin{eqnarray*}
+\frac{d}{du}g(u) & = & \frac{d}{du}\sum_{i=0}^{\infty}u^iP(X=i) \\
+ & = & \frac{d}{du}\lim_{N \rightarrow \infty}\sum_{i=0}^{N}u^iP(X=i) \\
+\end{eqnarray*}
+Taking the derivative involves taking a limit, and the infinite sum
+also involves a limit.  In principle, you simply cannot interchange
+limits; we will omit discussion of such technicalities in this lecture.
+\[
+\frac{d}{du}g(u) = g'(u) = \sum_{i=0}^{\infty}iu^{i-1}P(X=i) = \sum_{i=1}^{\infty}iu^{i-1}P(X=i) .
+\]
+Notice that this is a sum of positive terms, and so can never be 
+negative.  The slope of the probability generating function is always
+positive (unless $P(X=x)=0$ for all $x>0$, in which case the slope is
+zero). 
+
+The slope at $u=1$ is particularly interesting.  Substituting in
+the value $u=1$, we find
+\[
+g'(1) = \sum_{i=1}^{\infty}i1^{i-1}P(X=i) = \sum_{i=1}^{\infty}iP(X=i) .
+\]
+This is just the definition of the expected value of $X$!  Thus,
+we showed why $g'(1)=E(X)$, if $g(u)$ is the probability generating
+function of $X$. 
+
+Moreover, if we take the second derivative (again ignoring convergence),
+we get
+\[
+\frac{d^2}{du^2}g(u)=\frac{d}{du}g'(u)=\sum_{i=2}^{\infty}i(i-1)u^{i-2}P(X=i) .
+\]
+This is also a sum of nonnegative terms, and so we find that the slope
+itself keeps increasing (or better, never decreases) as $u$ grows.  As
+discussed in calculus, the function is concave-up.
+
+Returning to the fact that $g'(1)=E(X)$, 
+let us see if this works for the binomial distribution.
+Recall
+that we have shown that the probability generating function of a
+binomial random variable (with $N$ trials and success probability $p$)
+is $g(u)=(up+1-p)^N$.  
+Then
+\[
+g'(u) = \frac{d}{du} (up+1-p)^N =  N(up+1-p)^{N-1} p .
+\]
+Evaluating this at $u=1$ gives $g'(1) = Np$, which is what we know
+the mean to be.
+
+{\bf The Poisson distribution} (optional)~~Earlier we had claimed that if we 
+considered binomial distributions
+with very large $N$ and small $p$, the distribution could be approximated
+by the {\it Poisson distribution}.  Let us consider the limit $L$ as
+$N \rightarrow \infty$ of the binomial probability generating
+function, holding the mean $\lambda=Np$ constant:
+\[
+L = lim_{N \rightarrow \infty} (u\frac{\lambda}{N}+1-\frac{\lambda}{N})^N .
+\]
+For simplicity, let $k=\lambda(u-1)$.  This becomes
+\[
+L = lim_{N \rightarrow \infty} \Big(1+\frac{k}{N}\Big)^N  =
+lim_{N \rightarrow \infty} e^{\log (1+\frac{k}{N})^N} .
+\]
+Without going through this in exacting detail, we next use the 
+fact that since $e^x$ (and $\log(x)$) are continuous, 
+\[
+L = lim_{N \rightarrow \infty} e^{\log (1+\frac{k}{N})^N} =
+e^{lim_{N \rightarrow \infty} \log (1+\frac{k}{N})^N} =
+e^{lim_{N \rightarrow \infty} N \log (1+\frac{k}{N})} =
+e^{lim_{x \rightarrow 0} \frac{ \log (1+kx)}{x} } .
+\]
+Unfortunately, since $\lim_{x \rightarrow 0} \log(1+kx)=0$ and 
+$\lim_{x \rightarrow 0} x=0$, this is an {\it indeterminate form}. 
+We invoke a method from calculus, known as {\it L'H\^{o}pital's Rule}.
+This states that if $\lim_{x \rightarrow a} f(a) = 0$ and
+$\lim_{x \rightarrow a} g(a) = 0$, $\lim_{x \rightarrow a} \frac{f(x)}{g(x)} = \lim_{x \rightarrow a} \frac{f'(x)}{g'(x)}$.  Letting $f(x)=\log(1+kx)$
+and $g(x)=x$, we have $f'(x)=\frac{k}{1+kx}$ and $g'(x)=1$.
+Thus,
+\[
+L = 
+e^{lim_{x \rightarrow 0} \frac{ \log (1+kx)}{x} } =
+e^{lim_{x \rightarrow 0} \frac{k}{1} } = e^k .
+\]
+Recalling that $k=\lambda(u-1)$, we have
+\[
+L = e^{\lambda(u-1)} .
+\]
+ 
+From calculus, we also have the fact that under certain restrictions,
+a function $h(x)$ may be represented as a {\it Taylor series}:
+\[
+h(x) = h(0) + x h'(0) + \frac{1}{2!} x^2 h''(0) + \frac{1}{3!}x^3 h'''(0) + \cdots .
+\]
+For the exponential function, 
+\[
+e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots .
+\]
+Using $x=\lambda u$, 
+\[
+e^{\lambda(u-1)} = e^{-\lambda} \Big( 1 + \lambda u + \frac{\lambda^2 u^2}{2!} + \frac{\lambda^3 u^3}{3!} + \cdots \Big).
+\]
+
+The coefficient of $u^i$ is $e^{-\lambda} \frac{\lambda^i}{i!}$.
+First, notice that all the coefficients of $u$ are nonnegative.  
+Furthermore, we can sum them all up by setting $u=1$, arriving at
+$e^0=1$; the sum of all the coefficients is one.  Thus, the coefficients
+themselves must be a probability distribution, and we have previously
+identified it as the Poisson distribution.
+
+Let us compute the mean of the Poisson distribution.  If $X$ has 
+a Poisson distribution, the probability generating function is
+$g_X(u)=e^{\lambda(u-1)}$.  We first take the derivative, obtaining
+$g'_X(u)=e^{-\lambda}\lambda e^{u\lambda}$.  Evaluating this at
+$u=1$, $g'(1)=e^{-\lambda}\lambda e^{\lambda}=\lambda$.  Since we
+fixed the mean of the binomial distributions we took the limit of
+at $\lambda = Np$, this is the result we expected.
+
+\subsection{Further features of the probability generating function}
+\subsubsection{Mixture distributions}
+Suppose that we have two nonnegative integer random variables $X$
+and $Y$, and a Bernoulli trial $W$ with success probability $p$. 
+We assume $X$, $Y$, and $W$ are all independent.
+Suppose $V$ is defined to be $X$ if $W=1$ and $Y$ otherwise:
+\[
+V = WX + (1-W)Y .
+\]
+ 
+What is the distribution of $V$?  We know that the only way for $V$
+to take the value $i$ is for $W=1$ and $X=i$, or $W=0$ and $Y=i$.  Since
+these are disjoint, we can use the addition rule of the probabilities
+of disjoint events.
+\begin{eqnarray*}
+P(V=x) & = & P(W=1 \cap X=i) + P(W=0 \cap Y=i) \\
+ & = & P(W=1) P(X=i) + P(W=0) P(Y=i) \\
+ & = & p P(X=i) + (1-p) P(Y=i) . \\
+\end{eqnarray*}
+
+What is the probability generating function of $V$?  Let us denote the
+probability generating function of $V$ by $g_V(u)$, and similarly
+for $g_X(u)$ and $g_Y(u)$.
+Using
+Equation~(\ref{eq:pgfdef}), we find
+\begin{eqnarray*}
+g_V(u) & = & \sum_{i=0}^{\infty} u^i (pP(X=i) + (1-p)P(Y=i)) \\
+& = & \sum_{i=0}^{\infty} u^i pP(X=i) + \sum_{i=0}^{\infty} u^i (1-p)P(Y=i) \\
+& = & p\sum_{i=0}^{\infty} u^i P(X=i) + (1-p)\sum_{i=0}^{\infty} u^i P(Y=i) \\
+& = & pg_X(u) + (1-p)g_Y(u) . \\
+\end{eqnarray*}
+So the weighted average of the probability generating functions of 
+$X$ and $Y$ is the probability generating function of $V$.  Random
+variables such as $V$ are said to have {\it mixture distributions};
+such variables are commonly used to represent heterogeneity in
+various applications.
+
+Similarly, we could imagine that $W$ could take three values.  Assume
+we have $X_1$, $X_2$, and $X_3$, and let $Y$ be $X_1$ when $W=1$, 
+$X_2$ when $W=2$, and $X_3$ when $W=3$.  Assuming that $X_1$, 
+$X_2$, $X_3$, and $W$ are all independent, 
+\[
+g_Y(u) = P(W=1)g_{X_1}(u) + P(W=2)g_{X_2}(u) + P(W=3)g_{X_3}(u) .
+\]
+This even works when $W$ is itself a nonnegative integer random
+variable.  
+
+\subsubsection{The multivariate case}
+Suppose we have more than one nonnegative
+integer random variable, say $Y_1$ and $Y_2$.
+It is standard to define the multivariate probability generating
+function as $g(u_1, u_2) = E(u_1^{Y_1} u_2^{Y_2})$.  
+
+If $Y_1$ and $Y_2$ are independent, then $u_1^{Y_1}$ and $u_2^{Y_2}$
+are independent as well.  Thus, we could write
+\begin{equation}
+\label{eq:mvgf}
+E(u_1^{Y_1} u_2^{Y_2}) = E(u_1^{Y_1}) E(u_2^{Y_2}) .
+\end{equation}
+If $g_1$ is the probability generating function of $Y_1$, and so 
+forth, then $g(u_1, u_2) = g_1(u_1) g_2(u_2)$.
+
+\subsubsection{Sums of independent random variables}
+If $Y_1$ and $Y_2$ are independent nonnegative integer valued random
+variables, suppose we are interested in the sum of the
+random variables.  Substituting $u_1=u_2=u$ in Equation~(\ref{eq:mvgf}),
+we have
+\[
+g(u,u) = E(u^{Y_1} u^{Y_2}) = E(u^{Y_1}) E(u^{Y_2}) = E(u^{Y_1 + Y_2}) . 
+\]
+Thus, if $Z=Y_1+Y_2$ is the sum of two independent random variables,
+then the probability generating function of the sum is the product of
+the two generating functions.
+\[
+g_Z(u) = g_{Y_1}(u) g_{Y_2}(u) .
+\]
+
+Suppose we denote $P(X=i)$ by $p_i$ and $P(Y=i)$ by $q_i$.  Then
+\[
+g_X(u) = p_0 + p_1u + p_2 u^2 + p_3 u^3 + \cdots
+\]
+and
+\[
+g_Y(u) = q_0 + q_1u + q_2 u^2 + q_3 u^3 + \cdots .
+\]
+Then, 
+\begin{eqnarray*}
+g_X(u)g_Y(u) & = & (p_0 + p_1u + p_2 u^2 + p_3 u^3 + \cdots ) (q_0 + q_1u + q_2 u^2 + q_3 u^3 + \cdots ) \\
+ & = & p_0q_0 + (p_0q_1 + p_1q_0)u + (p_0q_2 + p_1q_1 + p_2q_0) u^2 + \cdots \\
+\end{eqnarray*}
+The probability that the sum of $X$ and $Y$ is zero is the probability
+that $X$ is zero and $Y$ is zero; since the random variables are
+independent, $P(X=0,Y=0)=P(X=0)P(Y=0)=p_0q_0$. Similarly, the only
+way the sum could be 1 is if either $X$ is 0 and $Y$ is 1, or $X$ is
+1 and $Y$ is 0; this happens with probability $p_0q_1+p_1q_0$.  The
+probability generating function provides a convenient way to 
+conduct what can become cumbersome computations in determining the
+distribution of the sum of independent random variables.
+
+As an example, consider the distribution of the sum $X$ of two 
+independent binomial random variables $X_1$ and $X_2$, with $N_1$
+trials on the first and $N_2$ trials on the second, and each having
+the same success probability $p$.  Intuitively, this sum is the
+count of the number of successes in $N_1+N_2$ independent Bernoulli
+trials, and it should be a binomial distribution with $N_1+N_2$
+trials and success probability $p$.  Here, 
+\[
+g_X(u) = g_{X_1}(u)g_{X_2}(u) = (up+1-p)^{N_1} (up+1-p)^{N_2} = (up+1-p)^{N_1+N_2} .
+\]
+Since the probability generating function of $X$ is $(up+1-p)^{N_1+N_2}$, $X$ is binomial with $N_1+N_2$ trials and success probability $p$.
+
+\subsubsection{Summing a random number of random variables}
+When we consider the Galton-Watson process, we will need to be 
+adding up the sum of a random number of random variables.  Specifically,
+we assume that $Y$ is a random variable, and that $X_1, X_2, X_3, \ldots$ are independent random variables (of each other and of $Y$).  We also
+assume that all of the variables $X$ have the same distribution, and the
+generating function of each is denoted $g_X(u)$. Finally,
+to keep the notation simple, let $p_i=P(Y=i)$.
+
+Let $W$ be the sum of the first $Y$ random variables $X_i$.  In other
+words, $W=\sum_{i=0}^Y X_i$, and we can think of $W$ as being
+0 whenever $Y=0$, $X_1$ whenever $Y=1$, $X_1+X_2$ whenever $Y_2$, and
+so on.  In other words, $W$ is a mixture of the distributions of 
+0, $X_1$, $X_1+X_2$, $X_1+X_2+X_3$, and so forth.
+
+We have already worked out how to determine the probability 
+generating function of a mixture distribution.  We need to know the
+probability generating function of 0, $X_1$, $X_1+X_2$, and so on.
+
+What is the probability generating function of 0?  That is, what is
+the probability generating function of a random variable $Z$ which takes
+the value 0 with probability 1.  By definition, 
+\[
+g_Z(u) = u^0P(Z=0) + u^1P(Z=1) + u^2P(Z=2) + \cdots = 1 .
+\]  
+The probability generating function of $\sum_{i=0}^j X_i$ is
+$\prod_{i=0}^j g_X(u) = (g_X(u))^j$.
+
+So the probability generating function of $W$ must be the the
+mixture
+\[
+g_W(u) = p_0 + p_1 g_X(u) + p_2 (g_X(u))^2 + p_3 (g_X(u))^3 + \cdots .
+\]
+If we let $v=g_X(u)$, this is 
+\begin{equation}
+\label{eq:comp}
+g_W(u) = p_0 + p_1 v + p_2 v^2 + p_3 v^3 + \cdots = g_Y(v) = g_Y(g_X(u)) .
+\end{equation}
+So the probability generating function of a sum of an (independently)
+random number $Y$ of independent random variables is found by the 
+{\it composition} of the generating functions.
+
+\subsection{An immigration-death process}
+\subsubsection{Review of the Poisson distribution}
+We've previously discussed the Poisson distribution, and its use as
+a model of randomly occurring phenomena such as arrivals.  We will
+discuss this further in a later lecture.  
+
+To review, the Poisson distribution can arise when we consider a
+sequence of binomial distributions, each with a number $N_i$ of
+trials ($i=1,2,\ldots$) and a corresponding success probability
+$p_i$.  We require that $N \rightarrow \infty$, but keep the
+expected value $\lambda=N_ip_i$ fixed.  The limiting distribution of
+these binomial distributions is the Poisson distribution.  If $X$ has 
+a Poisson distribution, then
+\[
+P(X=i) = \frac{e^{- \lambda}\lambda^i}{i!} .
+\]
+The probability generating function is 
+\[
+g_X(u) = e^{\lambda (u-1)}
+\]
+Remember that if $g_X(0)$ is $P(X=0)$; evaluating this at $u=0$ gives
+us $e^{-\lambda}$.  
+
+Suppose that $X$ is a Poisson random variable with $\lambda$ as the
+mean and that $Y$ is an independent Poisson random variable with 
+mean $\mu$.  We argued before that the generating function of a sum
+of independent random variables is the product of the generating
+functions, so therefore the generating function of $W=X+Y$ must be
+\[
+g_W(u) = g_X(u) g_Y(u) = e^{\lambda (u-1)} e^{\mu (u-1)} = e^{(\lambda + \mu)(u-1)} .
+\]
+So $W$ is a Poisson random variable with mean $\lambda + \mu$.  
+
+{\bf Exercise.}~~Suppose the number of patients arriving at service
+center 1 during the 9-10 o'clock hour is Poisson with mean 4.2, and
+the number of patients arriving at service center 2 during the same
+hour is Poisson with mean 3.2.  Suppose the two service centers are
+across the street from one another and serve the same patients.  Should
+you assume independence?  Now assume they serve different clients 
+on opposite sides of town; should you assume independence of the
+number of arrivals?  Assume independence; what is the distribution of
+the total number of clients served during the first hour?  Simulate
+one thousand variates from this distribution and plot a histogram
+of the results.  Note: \verb+rpois(100,lambda=2.3)+ is an example
+showing how to draw 100 variates with $\lambda$ equal to 2.3.  Note
+also that $hist(vs)$ will plot a histogram of the values in the 
+vector \verb+vs+.
+
+\subsubsection{An immigration-death process}
+Suppose that the incidence of disease is modeled as a Poisson 
+distribution with mean $\lambda$ in a fixed interval of time.  We are
+going to assume that the number $X_i$ of cases of disease at the 
+beginning
+of a time interval $i$ is determined as follows.  
+We assume that we
+immediately add
+a number of new cases at the beginning of interval $i$; denote
+this random variable by $Y_i$.  We assume $Y_i$ is Poisson with 
+mean $\lambda$.  We assume that $Y_i$ is independent of all other
+$Y_j$ ($i \neq j$) and of all the $X_i$'s ($i=0,1,\ldots$) Then, 
+we assume that each case (the original $X_i$ cases, plus the new
+$Y_i$ cases) are subject to an independent risk of mortality $p$.
+The number of cases that survive this interval becomes the new value
+$X_{i+1}$.  Here, the values of $X_i$ correspond to case counts
+just prior to the influx $Y_i$.
+
+As an aside, note that we could also have defined our variables
+in a different, but equally correct, way, provided we understood
+clearly the interpretation.  We could have defined $X'_{i}$ to be the
+count just after the influx $Y_i$.  Thus, the first step would be to
+subject all the individuals to the risk of mortality, and then 
+add in the value of $Y_{i+1}$ to get $X'_{i+1}$.
+
+Returning to the original convention, we note that $X_{i+1}$ is
+binomial, with $X_i+Y_i$ trials at success probability $1-p$, and
+$Y_i$ having an independent Poisson distribution with mean $\lambda$;
+we assume the generating function of all of them is $g_Y(u)=e^{\lambda (u-1)}$.
+The generating function of each Bernoulli survival trial is
+$p+(1-p)u$, and we sum up $X_i+Y_i$ of them.  If $g_W(u)$ is the
+generating function of $X_i+Y_i$, then the probability generating
+function of $X_{i+1}$ is
+\[
+g_{X_{i+1}}(u) = g_W(p+(1-p)u) .
+\]
+But $g_W(u) = g_{X_i}(u) g_Y(u) = g_{X_i}(u) e^{\lambda (u-1)}$
+because the $Y_i$'s are independent of $X_i$.
+Therefore, 
+\[
+g_{X_{i+1}}(u) = g_{X_i}(p+(1-p)u) e^{\lambda (p+(1-p)u-1)} .
+\] 
+Let's differentiate this, substitute $u=1$, and see what we can learn
+about the expected value.
+\[
+g'_{X_{i+1}}(u) = g'_W(p+(1-p)u) (1-p) .
+\]
+But 
+\begin{eqnarray*}
+g'_W(u) & = & g'_{X_i}(u)g_Y(u) + g_{X_i}g'_Y(u) \\
+ & = & g'_{X_i}(u)e^{\lambda (u-1)} + g_{X_i}(1)e^{\lambda (u-1)}\lambda \\
+\end{eqnarray*}
+So $g'_W(1)=g'_{X_i}(1) + \lambda$.  Putting all this together gives
+us
+\[
+g'_{X_{i+1}}(1) = g'_W(p+(1-p)) (1-p) = g'_W(1) (1-p) = \Big(g'_{X_i}(1) + \lambda\Big) (1-p) .
+\]
+Thus, $E(X_{i+1}) = (E(X_i)+\lambda)(1-p)$.  If we let $N_{i}=E(X_i)$,
+we have $N_{i+1}=(N_i+\lambda)(1-p)$.  We have arrived at a linear
+recurrence, similar to one we discussed in Lecture 2.  If we plot
+$N_{i+1}$ on the vertical axis and $N_i$ on the horizontal, we reveal
+a straight line with intercept $\lambda(1-p)$ and slope $1-p$.  The
+slope is less than one provided that $p<1$ (there is some chance of
+mortality), but the line starts above the 45-degree line (when $p<1$).
+Iteration leads to the value $\bar{N}$ where the graph intersects
+the 45-degree line; this value satisfies
+\[
+\bar{N} = \Big(\bar{N}+\lambda\Big)(1-p) .
+\]
+Solving gives us $\bar{N}=\frac{\lambda(1-p)}{p}$.  What does this
+mean?  Remember that we census the population right before the new
+incident cases $Y_i$; the first time the new cases are counted, they
+have already been subjected to one time unit of mortality risk.  So
+the number of new incident cases is effectively $\lambda (1-p)$.  
+The average waiting time to death is $1/p$ for a geometric waiting time,
+so the expected equilibrium prevalence of cases is the incidence rate 
+times the duration.
+
+Many related immigration-death processes yield results with a similar
+interpretation in terms of a prevalence equaling an incidence rate
+times a duration of whatever state you are interested in the prevalence
+of.  Observe that in this case, the result arises as a long-term
+limit; at the beginning, the prevalence does not equal the 
+incidence rate times the duration.
+
+Let us conduct a simulation of this immigration-death process.
+<<>>=
+end.time <- 200
+times <- 0:end.time
+lambda <- 3
+pp <- 0.2
+theor.equil <- lambda*(1-pp)/pp
+xx <- 0
+for (ii in 1:end.time) {
+  xx.new <- rbinom(1,xx[ii]+rpois(1,lambda=lambda),prob=1-pp)
+  xx <- c(xx,xx.new)
+}
+@
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(times,xx,type="l",col="black")
+points(times,rep(theor.equil,length(times)),type="l",lty=2,col="red")
+@
+\end{figure}
+Notice that the early part of the simulation is quite different from
+the values subsequently.  Many simulations, in applications quite
+unrelated from this, generate such behavior.
+
+Using the generating functions, we could
+determine the variance, and with some care, we could derive the
+joint generating function of $X_i$ and $X_{i+1}$ and use that to
+determine the asymptotic covariance of the sequence.
+
+{\bf Exercise.} Replicate the above simulation three times, using
+identical parameters.
+
+{\bf Exercise.} Replicate the above simulation using $\lambda=30$ 
+instead of $\lambda=3$.  What is the theoretical equilibrium value?
+Now use $\lambda=300$.  Interpret your result.
+
+{\bf Exercise.} Replicate the above simulation using $\lambda=0.3$
+and $p=1/41$.  What is the theoretical equilibrium value?  Run a total
+of three replications and compare with the original set of parameters
+($\lambda = 3$, $p=0.2$).  Interpret the result.
+
+\section*{References}
+\noindent Metz JAJ, Diekmann O. 1986. The dynamics of physiologically structured
+populations, Springer-Verlag, Berlin.\newline
+
+\vfill
+
+\end{document}
+
+\vfill
+
+\end{document}

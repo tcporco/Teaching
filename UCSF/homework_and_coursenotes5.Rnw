@@ -1,0 +1,594 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+
+\section*{Lecture 5}
+Version 1.1---modified 22 Feb 2019
+
+\section*{Negative binomial}
+Let's quickly review some things about the negative binomial and about generating functions,
+taking a second look at some items we examined last time.  
+
+We found last time that the negative binomial could be represented as a sum of
+geometrics.  We wrote the generating function as
+\[
+g^*(u) = \frac{p^k}{(1-u(1-p))^k}
+\]
+And we know that if $Y$ has the negative binomial with parameters $p$ and $k$, $EY={g^*}'(1)$.  Let's do this
+using a computer algebra package called {\tt Sage} (freely available from {\tt sagemath.org}):
+Set it up:
+\begin{verbatim}
+sage: u=var('u')
+sage: p=var('p')
+sage: k=var('k')
+\end{verbatim}
+Now:
+\begin{verbatim}
+sage: diff( p^k/(1-(1-p)*u)^k, u).subs(u=1).simplify()
+-(p - 1)*k/p
+\end{verbatim}
+which is just $(1-p)k/p$, from last time.
+
+Let's find a few of the probabilities using Sage.  We know
+\[
+g^*(u) = u^0P(Y=0) + u^1 P(Y=1) + u^2 P(Y=2) + \cdots
+\]
+so $g^*(0) = P(Y=0)$.  Well, $P(Y=0)$ is not too bad; put $u=0$ in the generating function and you get $P(Y=0)=p^k$.
+
+To get $P(Y=1)$ we need the coefficient of $u$ in the expansion.  If we were to differentiate this once, we'd have
+\begin{equation}
+\label{eq:e1}
+{g^*}'(u) =  u^0 P(Y=1) + 2 u^1 P(Y=2) + 3 u^2 P(Y=3) + \cdots
+\end{equation}
+Substituting $u=0$ in blows all that stuff away that is to the right of the first {\tt +} sign, so we have
+$P(Y=1)={g^*}'(0)$.  The derivative evaluated AT ZERO gives us the chance of $Y=1$.
+Help, {\tt Sage}:
+\begin{verbatim}
+sage: diff( p^k/(1-(1-p)*u)^k, u).subs(u=0).simplify()
+-(p - 1)*p^k*k
+\end{verbatim}
+So, $P(Y=1) = k(1-p)p^k$.
+
+How about another one?
+\begin{equation}
+\label{eq:e2}
+{g^*}''(u) = 2u^0P(Y=2) + 3\cdot 2 u^1 P(Y=3) + 4 \cdot 3 u^2 P(Y=4) + \cdot
+\end{equation}
+Substituting $u=0$ again blows a lot of noise away, and we get
+\[
+P(Y=2) = \frac{1}{2}{g^*}''(0) .
+\]
+Play with this a while and you can convince yourself
+\[
+P(Y=i) = \frac{1}{i!}g^{*(i)}(0) .
+\]
+where I mean take the $i$-th derivative, substitute 0 in, and divide by $i!$ ($i$ factorial).  We just derived the Taylor series
+expansion of the generating function.
+Let's at least do one more with the negative binomial:
+\begin{verbatim}
+sage: (diff( p^k/(1-(1-p)*u)^k, u, 2).subs(u=0)/2).simplify().factor()
+1/2*(p - 1)^2*(k + 1)*p^k*k
+\end{verbatim}
+So it is $\frac{1}{2}k(1-p)^2(1+k)p^k$.  
+
+Before we go much further: there are some important things to look at very closely.  The first is that ANY probability
+generating function---no matter what it is---is always increasing; the slope is NEVER negative.  You can see this
+from Equation~\ref{eq:e1}; the probabilities are always positive and the first derivative is a sum of positive terms.  
+The only partial exception is if every $P(Y=i)=0$ for $i>0$ and $P(Y=0)=1$; then the first derivative is zero; you have
+the dreary random variable that is 0 with probability 1.  
+
+The next is that the second derivative is never negative.  Typically, it is positive; look at Equation~\label{eq:e2}.  If 
+any of the probabilities of $Y=2$ or above are positive, the second derivative is always positive and the function is
+{\it convex}.  Only if you have Bernoulli trials---random variables supported on $\{0,1\}$, do you have a vanishing
+second derivative.  
+
+{\bf Exercise \theexno.}\stepcounter{exno}  What is the generating function of a Bernoulli trial with
+success probability $p$?  Use the generating function to find its mean and variance.  If you add up fixed $N$ of
+them (independent, identical), what is the generating function?  
+\ding{122} \vskip 6pt
+
+One of the things you need to know to deal with the literature and software out there is that different people 
+parameterize the standard distributions in different ways.  There's no fix for it; we just have to live with it.
+The program R has functions for the negative binomial.  The function {\tt dnbinom} generates the probabilities
+for the negative binomial, and the help file for it tells us:
+\begin{quote}
+\begin{verse}
+{\tt dnbinom(x, size, prob, mu, log = FALSE)}\\
+\end{verse}
+The negative binomial distribution with {\tt size} $= n$ and {\tt prob} $= p$
+$\ldots$ represents the number of failures which occur in a sequence of Bernoulli trials before a target number of successes is reached. 
+The mean is $n(1-p)/p \ldots$
+\end{quote}
+It's clear that their $n$ is our $k$, and their $p$ is our $p$.  Careful---sometimes their $p$ might be our $1-p$ and so on.
+Let's look at one:
+<<>>=
+barplot(dnbinom(0:20,size=2,prob=0.6))
+@
+Here, $k=2$ and $p=0.6$, and we went out to 20.   What is the mean for this one?  It is $2*(1-0.6)/0.6=4/3$.  
+
+{\bf Exercise \theexno.}\stepcounter{exno}  Use R's function {\tt dnbinom} to plot some negative binomial plots; 
+pick $k=0.1$, $k=1$, $k=2$, $k=10$; try $p=0.1$, $p=0.5$, $p=0.8$; go out further than 20 if you have to (plot out
+far enough that the tiny probabilities don't show up any more on barplot.  Play with it; turn 2 or 3 plots in.
+\ding{122} \vskip 6pt
+
+Now, let's plot the probability generating function for it (and add a line for where the value on the x-axis equals
+the value on the y-axis in blue):
+<<>>=
+uz <- seq(0,1,by=1/1024)
+pg <- function(u,p=0.6,k=2){p^k/((1-u*(1-p))^k)}
+plot(uz,pg(uz),type="l",xlim=c(0,1),ylim=c(0,1))
+abline(a=0,b=1,col="blue")
+@
+
+Now, let's keep $k=2$ but make $p=0.8$.  The mean now is $2*0.2/0.8=1/2$.  Here is the generating function:
+<<>>=
+plot(uz,pg(uz,p=0.8),type="l",xlim=c(0,1),ylim=c(0,1))
+abline(a=0,b=1,col="blue")
+@
+
+And what about $k=2$ and $p=2/3$?  The mean is $2*(1/3)/(2/3)=1$:
+<<>>=
+plot(uz,pg(uz,p=2/3),type="l",xlim=c(0,1),ylim=c(0,1))
+abline(a=0,b=1,col="blue")
+@
+Look at that---the slope at $u=1$ is exactly 1, and the curve is just tangent to the 45 degree line right there.  Of course
+the slope is 1 at $u=1$ since the mean is 1; the slope at $u=1$ is the mean.
+
+\section*{Detour on Convexity}
+Geometrically, a function $f(u)$ is {\it convex} on an interval $[u_0,u_1]$ if, and only if, for every $u_0 \leq a < b \leq u_1$, 
+the segment joining the point $(a,f(a))$ on the left with $(b,f(b))$ on the right lies over the curve.  If the straight line
+lies over the curve, the curve has to start out increasing more slowly and then get steeper and steeper to catch up.  The slope
+of the curve has to be increasing.  
+
+%Here's an informal outline how you go from convexity to positive second derivative.
+%Let's assume we have a smooth curve that actually has a second derivative everywhere (no sharp corners).  Now let's
+%assume the curve is convex, so the secant lies over the curve everywhere.  If we 
+%pick $a < x < b$, then we also have points on the curve $f(a)$, $f(x)$, and $f(b)$.  The average slope over the
+%whole interval $(a,b)$ is $m_0=(f(b)-f(a))/(b-a)$.  The point $x$ lies $x-a$ to the right of $a$, and so if we start at 
+%$f(a)$ and go an extra distance $x-a$ with slope $m_0$, we wind up at height $f(a) + m_0(x-a)$.  So this is the point on the
+%secant just above $f(x)$.  We've been promised
+%\[
+%f(a) + m_0(x-a) > f(x) .
+%%\]
+%So $m_0 > (f(x)-f(a))/(x-a)$; the slope over the whole interval is greater than on the first part on the way to $x$.
+%We can also find out that $(f(b)-f(x))/(b-x) > m_0$, i.e. the slope over the whole interval is less than the slope from $x$ to the
+%end.  Now: there has got to be a point $x_1$ in $(a,x)$ so that $f'(x_1) = (f(x)-f(a))/(x-a)$, and there has to be a point
+%$x_2$ in $(x,b)$ so that $f'(x_2)=(f(b)-f(x))/(b-x)$.  So we have $x_1 < x_2$ with $f'(x_1) < f'(x_2)$.  So there is an $x^*$
+%in $x_1 < x^* < x_2$ with $f''(x^*) = (f'(x_2)-f'(x_1))/(x_2-x_1) > 0$.  If I then let $a \rightarrow x$ and $b \rightarrow x$, we
+%squeeze everything together toward $x$ and it still works, because the secant is above the curve all the time, no matter where we
+%put $a$ and $b$.  What is going to happen is $x^* \rightarrow x$ and so $f''(x^*) \rightarrow f''(x)$.  Since $f''(x^*) > 0$, we must
+%have $f''(x)>0$.  
+%
+%The proof is easier the other way, since we assume a positive second derivative and show the secants are above the curve (omitted here).
+
+Imagine we have a convex function $f$, and we have a random variable $X$.  The mean of $X$ is $EX$, whereever that
+is.  Imagine we write $f(X)$.  If a function is convex, we know it lies below every one of its secants.  But it lies above all its
+tangent lines.  Let's pick the tangent line that crosses the function right at the mean.  Let $m$ be the slope right there at the
+mean, and use the point-slope form: $f(EX)+ m(X-EX)$ is a line that touches the function $f(X)$ right at where $X$'s mean is.  By
+convexity, $f(X) > f(EX)+m(X-EX)$.  Now, take the expectation of both sides: $E[f(X)] > E[f(EX)] + mE[X-EX]$, which gives
+us $E[f(X)] > f(EX) + m \cdot 0$, so that $E[f(X)] > f(E[X])$.  If $f$ is convex, the expected transform beats the transformed
+expectation.  This comes up all over the place, and is known as {\bf Jensen's Inequality}.
+
+Note $f(x)=x^2$ is convex because the second derivative is 2, which is positive.  So $E[X^2]>(EX)^2$, which we already knew.  What
+if we consider $f(x)=1/x$, on $0 < x < \infty$ for example?  (No zero.)  Then $f'(x) = (-1)x^{-2}$ and $f''(x)=-(-2)x^{-3}>0$.  
+So now we know $E[1/X] > 1/EX$ for $X>0$.  Or this: let $f(x) = -\log(x)$ on $x>0$.  Here, $f''(u)=1/u^2>0$.  So minus the log
+is convex, so $E[-\log(X)] > -\log(EX)$, or $\log(EX)>E[\log(X)]$.  
+
+\section*{The Galton-Watson Process}
+We will now analyze the Galton-Watson process as a model of a simple epidemic.  The naturalness of the branching
+process approach for epidemic analysis has been known for a long time, and was emphasized by Bartoszynski long
+ago.  
+
+The basic model is simplicity itself.  We will let $X_0$ be the number of index cases, and we will usually 
+make this equal to 1.  The index cases each independently give rise to secondary cases.  The number of
+secondary cases caused by a single case follows a distribution with probability generating function $g^*(u)$.  The
+next generation consists of all the cases produced by the previous generation.
+
+For example, imagine a single case of measles introduced into some county in California.  Suppose that this
+person causes three secondary cases.  The initial generation has 1 case (the index case).  The second generation
+consists of three cases.  Now, suppose the first case in the second generation causes 1 case themselves before
+recovering.  Suppose the second case produces no new cases, and finally, suppose the third case produces two cases.
+The third generation then has 1 + 0 + 2 cases.  And so on it would go.
+
+We are modeling this as a random process, so the number of cases in each generation will be treated as a 
+random variable.  Even if we insist that $X_0$ is always one, it is still random.  It is a kind of degenerate
+special case of randomness where it takes the value 1 with probability 1.  The generating function of this is
+\[
+g_0(u) = u^0 P(X_0=0) + u^1 P(X_1=1) + u^2 P(X_2=2) + \cdots
+\]
+which is
+\[
+g_0(u) = 0 + u + 0 + \cdots = u.
+\]
+This might seem kind of cheap, but it works.  
+
+Remember the expected value of a random variable is $E[X] = g'(1)$ ?  Let's try it with $X_0$ having $g_0(u)=u$.
+\[
+g'_0(u) = \frac{d}{du}u = 1 .
+\]
+This is just one all the time, no matter what $u$ is, so for $u=1$ it is also 1.  This tells us that the mean of 
+a random variable which takes the value 1 with probability 1 is just 1 (as it really had better be!)
+
+What about the variance?  We know $E[X(X-1)] = g''(1)$, so $E[X^2] - E[X] = g''(1)$.  Then
+\[
+E[X^2] - (E[X])^2 = E[X]+g''(1)-(E[X])^2 ,
+\]
+so $\var(X)=g''(1) - (g'(1))^2 + g'(1)$.
+Here, $g''(u)=\frac{d}{du}1=0$, so we have the variance equals $0-1^2+1=0$.  Again not too suprising; a constant
+random variable has variance 0.
+
+{\bf Exercise \theexno.}\stepcounter{exno}  Suppose that a random variable takes the value 2 with probability 1.
+Write the generating function, and from it, find the mean and variance.  \ding{122} \vskip 6pt
+
+Now.  Imagine we are on generation $i$.  The number of cases is $X_i$; this is, in general, random.  Each of these
+randomly generates new cases, according to the secondary case distribution $g^*(u)$.  
+
+If $X_i=0$, then we have zero secondary cases in the next generation, with certainty.  If $X_i=0$, then the distribution
+of the next generation looks like 0 with probability 1, and that's it.  The generating function of that is
+going to be just 1 for all $u$: $u^0 P(X_i=0) + u^1 P(X_i=1) + \cdots = 1$ if $P(X_i=0)=1$.
+
+If $X_i=1$, then what is the size of the next generation?  We just take $g^*(u)$, the secondary case distribution.
+
+If $X_i=2$, then we have to add up the secondary cases generated by two people.  And here we will now {\it assume} they
+are independent.  In a real epidemic they might not be, but as a model, let's start here.  So we need to add up
+two independent random variables.  We have already learned the slick trick for this---multiplying the generating
+function; the generating function for the number of secondary cases in generation $i+1$ conditional on there being two cases
+in generation $i$ is $(g^*(u))^2$.  
+
+If $X_i=3$, for the same reason, we will have $(g^*(u))^3$ and so on.  
+
+If we wrote:
+\[
+E[u^{X_{i+1}}] = E[ E[u^{X_{i+1}} | X_i ] = E[u^{X_{i+1}}|X_i=0]P(X_i=0) + \cdots
+\]
+\[
+E[u^{X_{i+1}}] = E[u^{X_{i+1}}|X_i=0]P(X_i=0) + E[u^{X_{i+1}}|X_i=1]P(X_i=1) + 
+ E[u^{X_{i+1}}|X_i=2]P(X_i=2) + \cdots + E[u^{X_{i+1}}|X_i=j]P(X_i=j) + \cdots
+\]
+This becomes
+\[
+E[u^{X_{i+1}}] = 1 \cdot P(X_i=0) + (g^*(u)) P(X_i=1) + 
+ (g^*(u))^2 P(X_i=2) + \cdots + (g^*(u))^j P(X_i=j) + \cdots
+\]
+Suppose we just let $v=g^*(u)$.  Then this whole thing is
+\[
+E[u^{X_{i+1}}] = v^0 \cdot P(X_i=0) + (v)^1 P(X_i=1) + 
+ (v)^2 P(X_i=2) + \cdots + (v)^j P(X_i=j) + \cdots
+\]
+Of course we know what that is.  It is $E[v^{X_i}]=g_i(v)$, the generating function of $X_i$ evaluated at $v$.  So
+the generating function of $X_{i+1}$, which is $g_{i+1}(u)$, is the generating function of $X_i$ evaluated at $v$.
+But $v$ is $g^*(u)$, so
+\begin{equation}
+\label{eq:mr}
+g_{i+1}(u) = g_{i}(g^*(u)) .
+\end{equation}
+
+Let's stop here for a minute.  Let's look at the mean.  Remember: differentiate. 
+\[
+\frac{d}{du}g_{i+1}(u) = g'_{i}(g^*(u))\frac{d}{du}g^*(u)
+\]
+evaluated at 1.  First of all, what happens if you evaluate a generating function at $u=1$?  
+\[
+g(u) = P(X=0) + uP(X=1) + u^2P(X=2) + u^3P(X=3) + \cdots .
+\]
+At 1, this is just 
+\[
+g(1) = P(X=0) + P(X=1) + P(X=2) + P(X=3) + \cdots = 1.
+\]
+So $g'_i(g^*(1)) = g'_i(1) = E[X_i]$.  And if we evaluate the derivative of $g^*(u)$ at 1, we get the mean number of
+secondary cases per case.  On the left we have the derivative of $g_{i+1}(u)$ evaluated at $u=1$, which is the mean
+of the next generation.  Let $R$ equal the mean number of secondary cases per case.  Then:
+\[
+E[X_{i+1}] = RE[X_i] .
+\]
+If $R<1$, this just gets smaller and smaller, and closer and closer to 0 with time.  If $R>1$, on average this just
+gets bigger and bigger, exponentially/geometrically with time.
+And: if $R=1$, the mean is constant over time.
+
+Let's compute the variance.
+\[
+\frac{d^2}{du^2}g_{i+1}(u) = \frac{d}{du}\left(g'_i(g^*(u))\right)g^*(u) + g'_i(g^*(u))\frac{d}{du}g^*(u)
+\]
+\[
+\frac{d^2}{du^2}g_{i+1}(u) = g''_i(g^*(u)) {g^*}'(u) g^*(u) + g'_i(g^*(u)){g^*}'(u)
+\]
+At 1:
+\[
+\frac{d^2}{du^2}g_{i+1}(u)|_{u=1} = g''_i(g^*(1)) {g^*}'(1) g^*(1) + g'_i(g^*(1)){g^*}'(1)
+\]
+\[
+\frac{d^2}{du^2}g_{i+1}(u)|_{u=1} = E[X_i(X_i-1)] R + E[X_i]R
+\]
+\[
+E[X_{i+1}(X_{i+1}-1)] = E[X_i(X_i-1)] R + E[X_i]R
+\]
+\[
+E[(X_{i+1})^2] - E[X_{i+1}] = (E[X_i^2]-E[X_i]) R + E[X_i]R
+\]
+\[
+E[(X_{i+1})^2]  = E[X_i^2] R -E[X_i] R + E[X_i]R + E[X_{i+1}]
+\]
+\[
+E[(X_{i+1})^2]  = E[X_i^2] R + R E[X_i]
+\]
+Now: $\var(Y) = E[Y^2]-(EY)^2$, so $E[Y^2] = \var(Y) + (EY)^2$.
+\[
+\var(X_{i+1}) + (E[X_{i+1}])^2  = \var(X_i) R + E[X_i]^2 R + R E[X_i]
+\]
+\[
+\var(X_{i+1}) = \var(X_i) R + E[X_i]^2 R + R E[X_i] - R^2 E[X_i]^2
+\]
+\[
+\var(X_{i+1}) = \var(X_i) R + R E[X_i] 
+\]
+We can show that if $R<1$, this actually goes to 0.  But if $R=1$, this keeps growing even though $EX_i=1$!
+More on this in a moment.
+
+The next move the mathematicians came up with is even slicker.  Suppose now we start with $X_0=1$, and $g_0(u)=u$.
+Then, 
+\[
+g_1(u) = g_0(g^*(u)) .
+\]
+But what is $g_0(u)$? It is $u$.  It is the thing that maps its input to itself.  It gives you back what you put in.  
+So $g_0(g^*(u))=g^*(u)$.  
+\[
+g_1(u) = g^*(u) .
+\]
+And then
+\[
+g_2(u) = g_1(g^*(u)) = g^*(g^*(u)) .
+\]
+In general the $n$ generation is the n-fold composition of $g^*$ with itself.  
+\[
+g_i(u) = g^*(g^* \cdots (u)) \cdots )).
+\]
+We could just as well write
+\[
+g_{i+1}(u) = g^*(g_i(u)) 
+\]
+{\it as long as} we start with just one person at the beginning.
+
+One of the questions we have is what happens in the long run.  If the epidemic ever hits 0 cases, it stays there forever.
+Zero is a so-called {\it absorbing state}.  The state space is $\{0, 1, 2, \ldots\}$.  This is an infinite set, and there
+is a lot of room at the top.  In this model, the epidemic might keep going and {\it never} come back.
+
+We can find the probability of extinction on a certain generation by looking at $P(X_i=0)$, which is just the generating
+function evaluated at 0: $g_i(0)=P(X_i=0)$.  So
+\[
+g_{i+1}(0) = g^*(g_i(0)) .
+\]
+
+If we start with 1 case, we have $g_1(0) = g^*(0)$.  It is the chance of extinction in the first round of transmission, i.e.
+the chance a case just produces no secondary cases.
+
+Then, $g_2(0) = g^*(g^*(0))$.  Now, the long run extinction probability is the long run limit of this iteration.
+We know a generating function is convex.  Say the slope at $u=1$ is less than 1.  It can then never touch the 45 degree line.
+Every time you iterate, you get a bigger number, and geometrically you must converge to 1---certainty of ultimate extinction.
+
+The same thing is true if the slope at $u=1$ is exactly equal to 1!  So even if on average $R=1$, the epidemic goes
+extinct with probability 1 in the long run.  But strangely, the mean always equals 1, and the variance keeps increasing.
+What is happening is that if you imagine an ensemble of these epidemics happening at the same time, the average
+stays the same.  More and more of them hit 0 and go extinct as you keep watching.  But those that don't go extinct 
+get bigger and bigger.  
+
+Finally, what if the slope at $u=1$ is greater than 1?  Now, the graph of the generating function has another intersection
+with the identity line.  In the long run, the iterates converge to that intersection, and there is in general a nonzero
+chance the epidemic will escape to infinity and never die out.  But a nonzero chance the epidemic will die out is
+something we see as well.  So the simplicity of the recurrence for the mean conceals what is really happening.  A certain
+number of these epidemics die out.  Infinity isn't part of epidemiology, so what we really think is that when the number
+of cases gets large enough, eventually we can't use the same secondary case distribution; we run out of susceptibles.  The
+approximation we made in the Galton-Watson process no longer applies.  We think of the Galton-Watson process as a model
+of the beginning of an epidemic $\ldots$ as a model of invasion.
+
+Here, the slope at 1 is the basic reproduction number, the mean of the secondary case distribution.  We see that when
+the basic reproduction number is less than OR EQUAL TO 1, the process dies out.  Strictly speaking, we have to say that
+it converges in probability to 0.  We also found that the intersection of the generating function with the identity line
+gives the chance of ultimate extinction (starting from 1) when the basic reproduction number is greater than 1.  
+
+{\bf Exercise \theexno.}\stepcounter{exno} 
+Make barplots of the negative binomial distribution with mean 2 for $k=20$, $k=2$, $k=1$, and $k=0.1$.  Holding the
+mean constant, how can you have more superspreading by changing $k$?
+\ding{122} \vskip 6pt
+
+{\it Worked Exercise.}
+Assume a negative binomial distribution with $k=20$ and mean 2.  Roughly calculate the extinction probability;
+find that place where the pgf crosses the 45 degree line by trial and error, or by reading it approximately off of a graph.  Try
+it for $k=2$, $k=1$, and $k=0.1$.  \newline
+{\it Solution.}  First, the mean is given by $k(1-p)/p$, so if $k=20$ and the mean is 2, we have $20(1-p)/p=2$; $p=10/11$.  
+Let's do this using R, numerically:
+<<>>=
+g <- function(u,p,k) {p^k/(1-(1-p)*u)^k}
+uniroot(function(u)g(u,p=10/11,k=20)-u,c(0.0001,0.9999))
+@
+If you look at the value of \verb+$root+ in the output of {\tt uniroot}, we find out the answer is about 22\%.  It might
+be cleaner if we coded this up to solve for the value of $p$ for us.  The point is that we are changing $k$ but keeping
+the mean constant.  
+<<>>=
+g2 <- function(u,mu,k) {
+  p <- k/(k+mu)
+  g(u,p,k) 
+}
+uniroot(function(u)g2(u,mu=2,k=20)-u,c(0.0001,0.9999))$root
+uniroot(function(u)g2(u,mu=2,k=2)-u,c(0.0001,0.9999))$root
+uniroot(function(u)g2(u,mu=2,k=1)-u,c(0.0001,0.9999))$root
+uniroot(function(u)g2(u,mu=2,k=0.1)-u,c(0.0001,0.9999))$root
+@
+What is happening to the extinction probability?  Why?
+
+Let's simulate a Galton-Watson process in R with a
+negative binomial secondary case parameter.  Call with {\tt n} the number of
+index cases, {\tt cumul} set to 0, {\tt rr} the mean we assume, {\tt agg} the
+assumed aggregation parameter ($k$).
+<<>>=
+gwsim <- function(n,cumul,rr,agg,curit=0,maxit=1024,mxclus=4096) {
+  if (rr<0) {
+    error("invalid r")
+  }
+  if (curit>maxit || cumul>=mxclus) {
+    cumul
+  } else if (n <= 0) {
+    cumul
+  } else {
+    nc <- sum(rnbinom(n,size=agg,mu=rr))
+    gwsim(nc,cumul+n,rr,agg,curit+1,maxit)
+  }
+}
+gwsim(1,0,0.6,2)
+@
+This gives you the cumulative outbreak size.  But this is random, and we can't stop with just one run.
+
+Let's do a lot of runs and plot the distribution:
+<<>>=
+gwsim.rep <- function(reps,n,cumul,rr,agg) {
+  values <- rep(NA,reps)
+  for (ii in 1:reps) {
+    values[ii] <- gwsim(n,cumul,rr,agg)
+  }
+  values
+}
+tbl <- function(aa) {
+  t1 <- table(aa)
+  nz <- setdiff(0:(max(aa)),unique(sort(aa)))
+  t1a <- as.vector(t1)
+  names(t1a) <- NULL
+  t2 <- data.frame(s=as.numeric(names(t1)),num=t1a)
+  t2a <- data.frame(s=nz,num=rep(0,length(nz)))
+  t3 <- rbind(t2,t2a)
+  t4 <- t3[order(t3$s),]
+  t5 <- t4[,2]
+  names(t5) <- t4[,1]
+  t5
+}
+barplot(tbl(gwsim.rep(65536,1,0,0.6,2)))
+@
+
+Let's try some more; here with a mean of 0.9:
+<<>>=
+barplot(tbl(gwsim.rep(65536,1,0,0.9,2)))
+@
+
+{\bf Exercise \theexno.}\stepcounter{exno} Try to simulate the Galton-Watson model with a negative
+binomial distribution with a mean of say, 0.7.  How does the extinction probability change as you
+change the aggregation parameter $k$ ({\tt agg})?
+\ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Modify the program {\tt gwsim} to generate the number
+of cases in each generation, and not just the final size.  Plot ten such time series (ten separate
+realizations of epidemics) for $R=0.7$, as $k=0.1$, $k=1$, and $k=5$.  Try $R=0.2$; try $R=2$---being
+careful to make sure you still cut the simulation off after either a certain number of generations
+or a certain size!  
+\ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Modify the program {\tt gwsim} to tell us how long an epidemic
+lasts (in generations) as well as the outbreak size.  (Just return something like {\tt c(curit,cumul)}
+at the end.)  Plot a scatterplot of outbreak duration against size for 100 replications
+for $R=0.7$, as $k=0.1$, $k=1$, and $k=5$.  Try it for $R=0.3$ and $R=0.95$.  
+\ding{122} \vskip 6pt
+
+{\bf Exercise \theexno.}\stepcounter{exno} Rewrite the {\tt gwsim} program to accept a
+secondary case distribution other than the negative binomial.  Try a distribution with $p_0=0.01$,
+$p_1=0.989$, and $p_{10000} = 0.001$.  What is $R$?  Can you estimate the extinction probability by
+simulation?  Can you have a huge $R$, a huge extinction probability, even though a case almost
+always yields at least one other case?
+\ding{122} \vskip 6pt
+
+\section*{Application}
+Let's apply this to a real epidemic.  First, let's consider the winter measles outbreak centered on Disneyland in California from
+late 2014--2015.  Full details are on the California department of Public Health website.  We will assume that a total of 42 people
+were exposed in Disneyland from an unknown number of index cases, and that the total outbreak size was 139.  
+
+Essentially, we had 97 transmissions from 139 total cases, so we could simply think of this as indicating $R=97/139$.   You get
+the same thing if you assume each generation is a factor of $R$ smaller than the previous.  The total cluster size would be
+\[
+C = \sum_{i=0}R^i = \frac{1}{1-R} 
+\]
+counting each index case.  If we solve for R, we would get $R=1-1/C$.  The mean cluster size $C$ is $139/42 \approx \Sexpr{signif(139/42,3)}$,
+which gives us $1-1/C=0.69$, the same thing.
+
+How could we get a confidence interval?  It turns out there is a closed form likelihood for this problem if we assume the
+negative binomial distribution.  But that is lucky and special.  What would we do in general?
+
+From prior work, we had reason to believe the aggregation parameter $k$ was known; let's say $k=0.21$.  Now, we'd like a confidence
+interval.  The question is, assuming this model, how big would the true $R$ have to be before you had a 2.5\% chance of
+seeing anything as small as (or smaller than) the real answer.  
+<<>>=
+do.gwsim <- function(val,agg,reps=65536,nstart=42) {
+  ans <- rep(0,reps)
+  for (ii in 1:reps) {
+    ans[ii] <- gwsim(nstart,0,rr=val,agg=agg)
+  }
+  sim.cluster.size <- ans/nstart
+  rr = 1 - (1/sim.cluster.size)
+  quantile(rr,c(0.025,0.975))
+}
+do.gwsim(1.10,0.27)
+@
+Based on these numbers, we get an upper bound of around 1.10 for our confidence interval.  This is how large $R$ can be
+with the LOWER confidence bound just touching our estimate.  This program assumes a subcritical epidemic (unlike the 
+formula), by the way; pay no attention here to the ``upper bound''.  Now, let's see how low we can take $R$ and have
+the estimated value just barely be on the edge of the confidence interval:
+<<>>=
+do.gwsim(0.50,0.27)
+@
+
+{\bf Exercise \theexno.}\stepcounter{exno} Assume now the aggregation parameter is 0.45, and compute the confidence interval
+(approximately).
+\ding{122} \vskip 6pt
+
+To summarize:
+\begin{itemize}
+\item The Galton-Watson process can be used to model an outbreak, when the number of cases
+is small compared to the population size.
+\item In the Galton-Watson process, each case causes a random number or secondary cases each
+generation.  Each case produces cases independent of other cases, and the distribution never
+changes over time.
+\item The expected number of secondary cases produced by a case, i.e., the mean of the secondary
+case distribution, is the reproduction number.  If everyone is immune, this is the basic
+reproduction number.  
+\item If the reproduction number exceeds 1 (supercritical case), a Galton-Watson epidemic might grow to be larger
+than any given value.  As long as it is possible to have no secondary cases, the epidemic
+might become extinct even though $R>1$.  In reality, as the case count grows, eventually the
+assumptions underlying the model become invalid.
+\item If the reproduction number is less than 1 (subcritical case), the Galton-Watson epidemic always goes extinct.
+\item The expected size of the $j$-th generation follows a geometric growth law: $E[X_j]=R^j$.
+\item If $R<1$, the average cluster size $C=1/(1-R)$, and this can be used as a guide to
+what the reproduction number is---given the subcriticality assumption!  
+\end{itemize}
+Soon we will relax the assumptions of the Galton-Watson model, and look at more general
+epidemic models.
+
+{\bf Exercise \theexno.}\stepcounter{exno} How long did this assignment take you?  \ding{122} \vskip 6pt
+
+\vfill
+
+\end{document}

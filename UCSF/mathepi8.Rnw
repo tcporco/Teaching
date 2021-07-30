@@ -1,0 +1,649 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\section*{Mathematical Modeling of Infectious Disease, Lecture 8}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section*{A simple example of a Markov chain}
+As a simple example of a mathematical model, we will develop a
+simple example of a Markov chain.  The model is not meant to be
+particularly realistic, though it could be applied in practice
+provided the assumptions were kept in mind.
+
+We will consider a very simple example of needle contamination.
+Accepted public health practice is to never reuse a needle after it
+has been used to draw blood.  Despite this, incidents of needle
+reuse have occurred.  Suppose that (contrary to accepted practice)
+a needle is reused on successive individuals, and we will assume
+that the probability that a person in this group is infected is
+given by $r$.  Whenever a needle is used on a person infected
+with a specific blood-borne pathogen (such as HIV), the
+needle becomes contaminated, but when a needle is used on an 
+uninfected person, we assume the needle has not become contaminated.
+
+We denote the successive usages of the needle by $t=0,1,2,\ldots$,
+and we let $X(t)$ denote the contamination status of the needle at
+usage $t$; $X(t)=1$ indicates that the needle is contaminated,
+and $X(t)=0$ indicates that the needle is not contaminated.  Our
+assumptions imply that $P(X(t+1)=1|X(t)=0)=r$.  We are assuming the
+infection status of the individuals that the needle is being
+reused on are independent Bernoulli trials with the probability of
+being infected given by $r$.
+
+If the needle is contaminated, we assume that it remains contaminated
+if it is used again on an infected person.  However, if the needle
+is used on an uninfected person, we assume there is a chance $p$ of
+becoming decontaminated due to flushing, dilution, the passage of
+time, and so forth.  Thus, if we symbolize contamination by $C$, 
+use on an infected person by $I$, we may write $P(C)=P(C \cap I) +
+P(C \cap I^c)$.  But $P(C \cap I) = P(C|I)P(I)$, and by our
+assumptions $P(C|I)$, the probability of contamination given use on
+an infected person, is one, and the probability of use on an infected
+person is the probability of infection, $r$.  Then, $P(C \cap I^c)=
+P(C|I^c)P(I^c)$.  Here, $P(I^c)=1-P(I)=1-r$, and $P(C|I^c)$ is one
+minus the decontamination probability, or $1-p$.  Thus,
+\[
+P(X(t+1)=1|X(t)=1) = r + (1-r)(1-p) = 1-p(1-r).
+\]
+
+We can write the probability of being contaminated as
+\[
+P(X(t+1)=1) = P(X(t+1)=1|X(t)=1) P(X(t)=1) + 
+              P(X(t+1)=1|X(t)=0) P(X(t)=0) .
+\]
+For notational simplicity, we denote $P(X(t)=1)$ by $u(t)$; thus,
+$P(X(t)=0) = 1-u(t)$.  Thus,
+we have 
+\[
+u(t+1) = (1-p(1-r)) u(t) + r (1-u(t)) .
+\]
+We can simplify this to
+\begin{equation}
+\label{eq:ndyn}
+u(t+1) = r + (1-r)(1-p)u(t) .
+\end{equation}
+This is known as a {\it linear recurrence} or a {\it difference
+equation}.  As a consistency check, we may verify that if $u(0)=0$,
+$u(1)=r$, and if $u(0)=1$, $u(1) = 1-p(1-r)$.
+
+Let's solve the difference equation for the contamination 
+probability over time.  We know that
+\[
+u(1) = r+(1-r)(1-p)u(0) .
+\]
+Then,
+\begin{eqnarray*}
+u(2) & = & r+(1-r)(1-p)u(1) \\
+ & = & r+(1-r)(1-p)(r+(1-r)(1-p)u(0)) \\
+ & = & r+r(1-r)(1-p) + ((1-r)(1-p))^2 u(0) \\
+\end{eqnarray*}
+For the next one,
+\begin{eqnarray*}
+u(3) & = & r+(1-r)(1-p)u(2) \\
+     & = & r + (1-r)(1-p) (r + r(1-r)(1-p) + ((1-r)(1-p))^2 u(0) ) \\
+     & = & r + r (1-r)(1-p) + r((1-r)(1-p))^2 + ((1-r)(1-p))^3 u(0) ) \\
+\end{eqnarray*}
+Sensing the pattern, we may conjecture that the $n$-th value is
+\begin{equation}
+\label{eq:needle}
+u(n) = r\sum_{i=0}^{n-1} ((1-r)(1-p))^i + ((1-r)(1-p))^n u(0) .
+\end{equation}
+This formula works for the first values.  If $n=1$, the formula
+gives $r + (1-r)(1-p) u(0)$, for instance.  To check it in general,
+we will substitute it into the equation and see if we get an identity.
+\begin{eqnarray*}
+u(n+1) & = & r + (1-r)(1-p)u(n) \\
+ & = & r + (1-r)(1-p) \Big( r \sum_{i=0}^{n-1}((1-r)(1-p))^i + ((1-r)(1-p))^n u(0) \Big) \\
+ & = & r + r \sum_{i=0}^{n-1}((1-r)(1-p))^{i+1} + ((1-r)(1-p))^{n+1} u(0) \\
+ & = & r + r \sum_{i=1}^{n}((1-r)(1-p))^i + ((1-r)(1-p))^{n+1} u(0) \\
+ & = & r (1 + \sum_{i=1}^{n}((1-r)(1-p))^i ) + ((1-r)(1-p))^{n+1} u(0) \\
+ & = & r \sum_{i=0}^{n+1-1} ((1-r)(1-p))^i + ((1-r)(1-p))^{n+1} u(0) \\
+\end{eqnarray*}
+The last equation is exactly the form that $u(n+1)$ should have
+according to our solution Equation~(\ref{eq:needle}).  
+So we know the contamination probability over time to be
+\[
+u(t) = r\sum_{i=0}^{t-1} ((1-r)(1-p))^i + ((1-r)(1-p))^t u(0) .
+\]
+
+Observe that this contains two expressions, one of the form
+$\sum_{i=0}^{n}a^i$, and another of the form $a^n$, both with $0<a<1$.
+Here, $a=(1-r)(1-p)$.  We would like to know the long run behavior of
+this system, i.e. $\lim_{t \rightarrow \infty} u(t)$.  Also, there
+is a formula for series of the form $\sum_{i=0}^na^i$, known as
+{\it geometric series}.  
+
+\subsection*{Limits, Sequences, and Series}
+In general, if $c_n$ is a sequence (a function defined on the
+integers $n=0,1,2,\ldots$), $L$ is the limit of the sequence if
+for every tolerance $\epsilon > 0$, there is an integer $N$ such
+that the difference $|c_n-L|<\epsilon$ whenever $n>N$.  For any
+tolerance, all the terms sufficiently ``far out'' in the sequence are 
+within that tolerance.  A sequence is said to {\it converge} to
+its limit. Not every sequence has a limit; the
+sequence $-1,1,1,-1,\ldots$ has no limit.  If there is a number $B$
+such that $c_n<B$ for every $N$, the sequence is bounded above; if
+$c_n < c_{n+1}$, the sequence is {\it increasing}.
+In advanced mathematics,
+the study of sequences is of fundamental importance; for instance,
+a major axiom (the completeness axiom) defining the real number 
+system is often stated as the assumption that every bounded
+increasing sequence has a limit.
+
+One result we can verify is that if $0<a<1$, the limit of the
+sequence $c_n=a^n$ is zero.  Whenever $n>log(\epsilon)/log(a)$, 
+$a^n<\epsilon$.
+
+Calculus textbooks prove various important properties of 
+sequences and limits.  For instance, if $L$ is the limit of
+$c_n$, then $kL$ is the limit of $kc_n$.  Also, if $L$ is the 
+limit of $c_n$ and $M$ the limit of $d_n$, then $L+M$ is the 
+limit of $c_n+d_n$.
+
+Cumulative sums of sequences are usually referred to as series.
+A geometric series is a sum of powers of some number.
+\[
+1+a+a^2+a^3+\cdots
+\]
+for $0<a<1$.
+This is an infinite sum, and it is defined to be 
+\[
+\lim_{n \rightarrow \infty} (1+a^2+a^3+\cdots +a^n)
+\]
+It turns out that $1+a^2+a^3+\cdots$ can be shown to be equal to
+$\frac{1}{1-a}$.  Here is how this is shown. First, 
+\begin{equation}
+\label{eq:ser1}
+1+a+a^2+\cdots+a^n = \frac{1-a^{n+1}}{1-a}.
+\end{equation}
+This can be seen by first verifying this for $n=1$: $1+r=\frac{(1-a^2)}{1-a}=\frac{(1-a)(1+a)}{1-a}=1+a$.  Then, assume that 
+Equation~(\ref{eq:ser1}) is true for $n$.  Then, it must be true
+for $n+1$:
+\begin{eqnarray*}
+1+a+a^2+\cdots+a^n+a^{n+1} & = & \frac{1-a^{n+1}}{1-a}+a^{n+1} \\
+ & = & \frac{1-a^{n+1}}{1-a} + \frac{a^{n+1}(1-a)}{1-a} \\
+ & = & \frac{1-a^{n+1}}{1-a} + \frac{a^{n+1}-aa^{n+1})}{1-a} \\
+ & = & \frac{1-a^{(n+1)+1}}{1-a}.
+\end{eqnarray*}
+This is a standard technique, called {\it mathematical induction}.
+Now, we only need to take the limit as $n \rightarrow \infty$.  So 
+we get $\lim_{n \rightarrow \infty} \frac{1-a^{n+1}}{1-a}$.  But
+$\lim_{n \rightarrow \infty} a^{n+1}$ is zero for $0<a<1$, as
+we just showed.  So
+\[
+1+a+a^2 + \cdots = \sum_{i=0}^{\infty}a^i = \frac{1}{1-a} .
+\]
+
+\subsection*{Equilibrium distributions}
+Returning to the needle reuse example, we found that the
+contamination probability on use $t$ was
+\[
+u(t) = r\sum_{i=0}^{t-1} ((1-r)(1-p))^i + ((1-r)(1-p))^t u(0) ,
+\]
+where $t=0$ was the first usage.
+To determine the limit as $t \rightarrow \infty$, we take the 
+limit on both sides of the equality.
+\[
+\lim_{t\rightarrow \infty}u(t) = \lim_{t\rightarrow \infty} \Big(r\sum_{i=0}^{t-1} ((1-r)(1-p))^i + ((1-r)(1-p))^t u(0) \Big) .
+\]
+On the right hand side, the limit of the sum is the sum of the limits,
+so
+\begin{eqnarray*}
+\lim_{t\rightarrow \infty}u(t) & = & \lim_{t\rightarrow \infty} r\sum_{i=0}^{t-1} ((1-r)(1-p))^i + \lim_{t\rightarrow \infty} ((1-r)(1-p))^t u(0) \\
+ & = &  r\sum_{i=0}^{\infty} ((1-r)(1-p))^i + u(0) \lim_{t\rightarrow \infty} ((1-r)(1-p))^t  \\
+ & = &  r\frac{1}{1-(1-r)(1-p)} + u(0) \times 0  \\
+ & = &  r\frac{1}{1-(1-r)(1-p)} . \\
+\end{eqnarray*}
+The long run value of the contamination probability only depends on
+the prevalence of infection $r$ and the decontamination probability 
+$p$.  The initial value $u(0)$ becomes less and less important over 
+time and in the long run plays no role at all.
+
+To check the plausibility of the result we have obtained, we may 
+check special cases.  For instance, suppose that $r=0$, so that
+no one is infected.  In this case, the formula reduces to 0/1, so that
+the long run contamination probability is zero (in fact, the
+solution $u(t)$ shows that it is never contaminated).  
+Then, suppose that
+$r=1$, so that every patient is infected.  Then, the formula becomes
+1/(1-0), or 1; if all the patients are infected, the needle is 
+certainly contaminated in the long run (and in fact always as well).
+Now, suppose the decontamination probability were zero; this is an
+assumption that if the needle is reused, no matter how many times,
+on uninfected individuals, it would stay contaminated.  Under this
+assumption, the denominator in the long run formula becomes
+$1-(1-r)(1-0)=1-(1-r)=r$, so that the long run contamination 
+probability is still 1.  Under this assumption, the needle will 
+sooner or later be used on an infected person, whereupon it is
+contaminated for good.  Finally, suppose that the decontamination
+probability is 1, so that use on an uninfected person always clears
+any prior contamination.  Then the denominator in the long run 
+formula becomes $1-(1-r)(1-1)=1$, so the long run contamination 
+probability is $r$, the chance the last person it was reused on was
+infected.
+
+This long run probability can be solved for in a more simple way.
+From Equation~(\ref{eq:ndyn}), we can simply assume that 
+$u(t+1)=u(t)=\bar{u}$ and solve for $\bar{u}$.
+\[
+\bar{u} = r + (1-r)(1-p)\bar{u} ,
+\]
+which yields the same formula as before.  Crucially, however, the
+earlier argument shows that $u(t) \rightarrow \bar{u}$ as $t\rightarrow \infty$, while this latter computation does not.
+
+The value $\bar{u} = r/(1-(1-r)(1-p))$ is called the equilibrium of
+this difference equation.  A difference equation is one of the
+fundamental types of dynamical system.  Mathematicians have shown that
+even seemingly simple difference equations may exhibit complex
+behavior.  
+
+Our needle contamination model is a simple example of a {\it Markov
+chain}, and we have shown that the probabilities for this particular 
+Markov chain converge to an equilibrium in the long run.  
+
+A process $X_0, X_1, X_2, \ldots$ is called a Markov chain if
+$P(X_t = x | X_0, X_1, \ldots, X_{t-1}) = P(X_t = x | X_{t-1})$
+for every $t$ and for every $x$.  What this says is that everything
+before $t-1$ has no effect; the chance of being in state $x$ at
+time $t$ depends only on the value at $t-1$.  The intricate
+theory of Markov chains is heavily developed, and only a small part of
+it is within the scope of our course.  What we have seen is a simple
+example of the convergence of an irreducible, ergodic Markov chain
+to its stationary value.  Some of this theory, including these
+definitions, will be discussed further in future lectures.
+
+\subsection*{Expected values}
+Instead of examining the probability that the needle is contaminated,
+suppose we try to compute the expected value of the contamination
+variable.  Imagine that we have many many needles being simultaneously
+reused, and we wish to know the average contamination rate at time $t$.
+In this case, however, the expected value of the needle contamination
+variable is simply the probability of contamination, since the
+needle contamination variable is a Bernoulli trial; 
+$E(X(t))=0\times P(X(t)=0) + 1 \times P(X(t)=1)=P(X(t)=1)$.
+So we also have
+\begin{equation}
+E(X(t+1)) = r + (1-r)(1-p)E(X(t)) .
+\end{equation}
+In this particular case, the expected value obeys the same equation
+and has the same solution.  
+
+\subsection*{Introduction to dynamics of difference equations}
+Let us return to the recurrence relation or difference equation we
+have been discussing, Equation~(\ref{eq:ndyn}).  We proved directly
+that from any starting value, the probability of needle contamination
+approaches $\bar{u}=r/(1-(1-r)(1-p))$.  
+
+Let's consider a slightly more general linear recurrence,
+\begin{equation}
+\label{eq:gen}
+u(t+1) = a + bu(t) .
+\end{equation}
+With $a=r$ and $b=(1-r)(1-p)$, this reduces to Equation~(\ref{eq:ndyn}).
+The same technique we used to determine the solution before reveals
+\[
+u(t) = a\sum_{i=0}^{t-1} b^i + b^t u(0) .
+\]
+If $|b|>1$, then we would soon iterate to values of $u$ that were
+outside the range between 0 and 1, using Equation~(\ref{eq:gen}).  We
+will assume that $|b|<1$ and that $a>0$ and $a+b<1$.  Under these
+assumptions we always get convergence of $u(t)$ to an equilibrium
+value.  Once the system attains the equilibrium value, it no longer
+changes: if $u(t)=a/(1-b)$, then $u(t+1)=a+ba/(1-b)=(a(1-b)+ba)/(1-b)$,
+which becomes $(a-ba+ba)/(1-b)$, or $a/(1-b)$ again.
+
+For more complex or nonlinear recurrences, however, we may not
+have a general formula for the result at time $t$ of which the
+limit may be taken.  We may still examine the stability of the
+equilibrium using the following standard technique.  We know that
+for the equilibrium itself, applying the recurrence will yield the 
+same value at the next time period.  But suppose we apply the
+recurrence to a slightly different value; will the difference become
+greater over time, indicating a departure from the neighborhood of
+the equilibrium?  Or will the difference gradually decay, indicating an
+approach back to the equilibrium?  
+
+To examine this for the simple linear recurrence, let $u(t)=\bar{u}+\epsilon$, where $\epsilon$ is a small value.  Then
+\[
+u(t+1)=a+b(\bar{u}+\epsilon) = a + b\bar{u} + b\epsilon = \bar{u}+b \epsilon .
+\]
+Since $|b|<1$, the difference $b \epsilon$ is actually getting smaller;
+the value at $t+1$ is closer to $\bar{u}$ than it was at $t$.  This
+is another way to see that the equilibrium $\bar{u}$ is {\it stable}.
+
+Recurrences or difference equations arise frequently in mathematical
+modeling.  Since the 1970s, mathematicians have studied the complex
+mathematical behavior of nonlinear recurrences in detail, and while 
+this theory is far beyond the scope of our class, we will pause at this
+time to discuss further aspects of such systems.  
+
+As a simple example of a nonlinear recurrence that may arise from a
+simple epidemic model, consider the transmission of disease by
+hard ticks (Ixodidae).  Hard ticks have three stages, larvae, 
+nymphs, and adults, and feed once each stage.  Each stage may seek
+host animals at different times of the year, and the life cycle itself
+may take several years.  For Lyme disease, for instance, the second
+(nymphal) stage feeds on host mice in the spring, spreading infection
+to them, and the first (larval) stage of the next generation feeds
+later that summer, acquiring infection which they maintain until the
+next spring.  Suppose that
+the prevalence of disease among nymphal ticks is given by $x(t)$, and 
+that on average, each animal of a host species will receive $A$ tick 
+bites.  The average number of infectious tick bites is then $x(t)A$, 
+and assuming the Poisson distribution, we have an infection probability
+of $1-e^{-x(t)A}$, assuming one bite is sufficient to infect a
+host animal.  
+
+We are going, for simplicity, to assume that the host population 
+is constant over time, but that each host animal only has a chance
+$s$ of surviving the spring to be bitten by the next generation of
+ticks.  So by the time the next generation of ticks is feeding, only
+the fraction $s(1-e^{-x(t)A})$ are still infected; we assume that
+the fraction $(1-s)(1-e^{-x(t)A})$ of infected host animals that
+did not survive were replaced by new uninfected animals.  So by the
+time the next generation of ticks feeds, the prevalence among host
+animals is $s(1-e^{-x(t)A})$.  We finally ignore tick mortality 
+between the generations and assume that the tick population is constant
+from year to year.  This is a highly simplified model of transmission
+of disease among host animals by juvenile hard ticks, and it
+leads to a very simple model for the change in
+the infection prevalence among ticks from year to year:
+\[
+x(t+1)=s(1-e^{-x(t)A}) .
+\]
+
+If $A$ is equal to zero, then we just have 
+$x(t+1)=s(1-e^{-x(t)0})=1-1=0$,
+which tells us that without tick bites, the infection rate becomes
+zero immediately.  Let us then suppose $A>0$.  If $x(t)=0$, we also
+find that $x(t+1)=0$; with no infection to start with, there is no
+infection next year.  Essentially, we are assuming that there is
+no introduction of disease from outside the system. 
+We have found that no matter what $A$ is,
+$x=0$ is an equilibrium of the system.  We would like to know whether
+or not $x=0$ is {\it stable}; if a small amount of infection is 
+introduced, does it increase or decrease?  
+
+Suppose then that $x(0)=\epsilon$, a small number.  Then 
+\[
+x(1)=s(1-e^{-\epsilon A}) .
+\]
+What does this mean?  Remembering that we have assumed that $\epsilon$
+is very small.  We will use the {\it Taylor series} expansion of the
+exponential to understand this result.
+
+In calculus, we had the important principle that under certain
+conditions, a function may be approximated by a {\it Taylor series}
+around a point.  The Taylor series expansion around zero is written
+\[
+f(x) = f(0) + xf'(0) + \frac{1}{2!}f''(0)x^2 + \frac{1}{3!}f'''(0)x^3 + \ldots ,
+\]
+where $f'(x)$ is the first derivative, $f'(0)$ is the first derivative
+evaluated at $x=0$, $f''(x)$ is the second derivative (the derivative
+of the first derivative), and so forth.  
+
+Remember that the derivative of $f(x)$ is defined to be
+\[
+f'(x) = \frac{d}{dx}f(x) = \lim_{\Delta x \rightarrow 0} \frac{f(x+\Delta x) - f(x)}{\Delta x} .
+\]
+For practice, we will evaluate the derivative of a straight line
+function, $f(x)=a+bx$.
+Let's verify that $b$ is the slope of the linear function using
+calculus.  What is $\frac{d}{dx}(a+bx)$?  There are two ways to do 
+this, and the first of these is straight from the definition. 
+Substituting $f(x)=a+bx$ gives
+\begin{eqnarray*}
+\frac{d}{dx}(a+bx) & = & \lim_{\Delta x \rightarrow 0} \frac{(a+b(x+\Delta x)) - (a+bx)}{\Delta x} \\
+& = & \lim_{\Delta x \rightarrow 0} \frac{(a+bx+b \Delta x) - a-bx}{\Delta x} \\
+& = & \lim_{\Delta x \rightarrow 0} \frac{(b \Delta x) }{\Delta x} \\
+& = & b . \\
+\end{eqnarray*}
+
+It will be useful to try this a different way.  We'll begin by
+using the addition rule, which states
+\[
+\frac{d}{dx}(f(x)+g(x)) = \frac{d}{dx}f(x) + \frac{d}{dx}g(x) .
+\]
+This can also be written 
+\[
+(f(x)+g(x))' = f'(x) + g'(x) .
+\]
+We then get $\frac{d}{dx}(a+bx)=\frac{d}{dx}a + \frac{d}{dx}bx$.
+What are we going to do with $\frac{d}{dx}a$?  The derivative of a
+constant is just zero.  For the second term, we'll use
+\[
+\frac{d}{dx}(c f(x)) = c \frac{d}{dx}f(x) 
+\]
+if $c$ is a constant.  
+This can be written 
+\[
+(c f(x))' = c f'(x) .
+\]
+So we have $\frac{d}{dx}bx=b\frac{d}{dx}x$.
+The derivative of $x$ is simply 1, as you can verify from the 
+definition.  Once again, the derivative of $a+bx$ can be seen to
+be just $b$.
+
+In calculus courses, it is proven that the derivative of the
+exponential is simply the exponential again; the exponential equals
+its own derivative.  Thus, 
+\[
+\frac{d}{dx} e^x = e^x.
+\]
+
+To differentiate $e^{-Ax}$, we will need the chain rule:
+\[
+(f(g(x)))' = f'(g(x)) g'(x)  
+\]
+For the problem at hand, let $f(x)=e^x$ and $g(x)=-Ax$, so
+$e^{-Ax}=f(g(x))$.  The derivative of $f(x)=e^x$ is simply $e^x$;
+the derivative of $g(x)=-Ax$ is $-A$. So
+using the chain rule gives us $f'(g(x))g'(x)$, which is $e^{-Ax}(-A)$.
+
+Now, we are ready to compute the Taylor series of $e^{-Ax}$.  Here,
+$f'(0)=(-A)e^{-A\times 0}=-A$.  
+
+To compute the second derivative, we must find $\frac{d}{dx}(-Ae^{-Ax})$.   We can use the fact that $\frac{d}{dx}cf(x)=cf'(x)$.  Thus,
+we find that $\frac{d}{dx}(-Ae^{-Ax})=(-A)^2e^{-Ax}$.  Evaluating this
+at zero, $f''(0)=(-A)^2$.  It is not difficult to see that the
+$n$-th derivative of this function evaluated at 0 is $(-A)^n$.  So the
+Taylor series is
+\[
+e^{-Ax} = 1 - Ax + \frac{1}{2!} A^2 x^2 - \frac{1}{3!} A^3 x^3 + \cdots
+\]
+If $Ax$ is very small, then $A^2x^2$ is much less than $Ax$; we will
+explore this numerically in our computer lab soon.
+We may ignore all but the first two terms:
+\[
+e^{-Ax} \approx 1 - Ax
+\]
+Thus, $1-e^{-Ax} \approx 1-(1-Ax) = Ax$.  We finally return to our dynamic model,
+substitute $\epsilon$ for $x$, and we find
+\[
+x(1)=s A \epsilon .
+\]
+So if $sA > 1$, the infection is growing; if $sA<1$, the infection is
+diminishing.  We may interpret $sA$ as follows.  If an infected tick
+were introduced and infected an animal 
+at the outset, then by the time the second generation of ticks are
+feeding, the expected of infected animals has already diminished
+by multiplying by $s$.  The only amplification of disease occurs
+when more than one tick feeds on an animal; if the expected number of
+ticks feeding on one animal is $A$, then the expected number of newly
+infected ticks is $sA$.  If this exceeds one, then the disease is
+able to become amplified.
+
+If the small amount of infection we introduced can
+grow, we assume that the no-disease equilibrium is unstable and 
+conditions favor epidemic growth.  If the small amount of infection
+tends to die out, and the prevalence return to zero, then the
+conditions do not favor epidemic spread.
+
+More generally, suppose we have a different model:
+\[
+x(t+1)=f(x(t)) .
+\]
+If we assume that $x$ is small, we can write $f(x) \approx f(0)+f'(0)x$;
+thus, 
+\[
+x(t+1)=f(0)+x(t)f'(0) .
+\]
+Let us continue to assume no introduction of disease from outside, so
+that $f(0)=0$.  Thus,
+\[
+x(t+1)=x(t)f'(0) .
+\]
+If $f'(0)<1$, then the small amount of disease we introduced is
+tending to die out and the no-disease equilibrium is stable.  If
+$f'(0)>1$, the small amount of disease we introduced increases and
+the equilibrium is unstable.
+<<echo=false,results=hide>>=
+xs <- seq(0,1,by=0.001)
+ss <- 0.9
+aa1 <- 3
+aa2 <- 0.8
+ys1 <- ss*(1-exp(-aa1*xs))
+ys2 <- ss*(1-exp(-aa2*xs))
+@
+Let us suppose that the no-disease equilibrium is unstable.  The
+graph then may be seen as follows.
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(xs,ys1,xlab="x(t)",ylab="x(t+1)",type="l")
+points(xs,xs,type="l")
+@
+\end{figure}
+Any point where $x=f(x)$ is an equilibrium. Observe that here, we have
+both the no-disease equilibrium where $x=0$, and an endemic equilibrium
+where disease persists from year to year at the same level.  As can
+be seen from the Figure, the slope is greater than one at zero.
+
+Note that when the no-disease equilibrium is stable, there is no
+endemic equilibrium, as can be seen in the next Figure.
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(xs,ys2,xlab="x(t)",ylab="x(t+1)",type="l")
+points(xs,xs,type="l")
+@
+\end{figure}
+
+We can see that the endemic equilibrium is stable using the same
+methods.  Let $\bar{x}$ be the endemic equilibrium value, where
+$\bar{x}=1-e^{-A\bar{x}}$.  Let $x=\bar{x}+\epsilon$.  Then
+\[
+x(t+1)=s(1-e^{-A(\bar{x}+\epsilon}) .
+\]
+We must expand this in a Taylor series around $\bar{x}$.  Here, we
+use the fact that
+\[
+f(x) = f(x_0) + f'(x_0)(x-x_0) + \cdots
+\]
+is the more general expression of a Taylor series expansion around
+the point $x_0$. So 
+\[
+e^{-A(\bar{x}+\epsilon)} \approx e^{-A\bar{x}} + (-A)e^{-A\bar{x}}\epsilon
+\]
+This gives us
+\[
+x(t+1) \approx s(1-e^{-A \bar{x}} - s(-A) e^{-A \bar{x}} \epsilon
+\]
+But $s(1-e^{-A \bar{x}})=\bar{x}$.  So we have
+\[
+x(t+1) - \bar{x} \approx \epsilon sAe^{-A \bar{x}} .
+\]
+If $|sAe^{-A \bar{x}}|<1$, the magnitude of the difference $\epsilon$
+has actually decreased and the equilibrium is stable.  If
+$|sAe^{-A \bar{x}}|>1$, the equilibrium is unstable, and if
+$|sAe^{-A \bar{x}}|=1$, we can't tell using this method.
+
+More generally, if 
+\[
+x(t+1) = f(x(t)), 
+\]
+let $x(t)=\bar{x}+\epsilon$ where $\bar{x}$ is an equilibrium.  
+Then $x(t+1)=f(\bar{x}+\epsilon)$, and
+this is approximated by $f(\bar{x}) + f'(\bar{x})\epsilon$. So
+\[
+x(t+1) \approx f(\bar{x}) + f'(\bar{x})\epsilon ,
+\]
+so the difference is
+\[
+x(t+1)-\bar{x} \approx f'(\bar{x}) \epsilon .
+\]
+If $|f'(\bar{x})|<1$, the difference decreases in absolute value, and
+if $|f'(\bar{x})|>1$, the difference is increasing in magnitude.  From
+the Figure, we can easily see that the slope at our endemic equilibrium
+is less than one in magnitude.
+
+The definition of stability we have been using is more properly known
+as {\it local asymptotic stability}, and the criterion we just 
+derived is sufficient to establish local asymptotic stability for
+many equilibria of difference equations.  In our case, we found that
+if the no-disease equilibrium is stable, there is no endemic equilibrium
+at all; if the no-disease equilibrium is stable, we have a single
+endemic equilibrium which is locally asymptotically stable.  This holds
+for very many disease models---but, as we shall see later in the 
+course, not for all.
+
+Mathematicians last century discovered many surprising complexities
+in nonlinear recurrences.  In particular, the seemingly simple
+equation
+\[
+x(t+1)=ax(t)(1-x(t))
+\]
+has astonishingly complex behavior.  We will explore it in our
+computer lab soon.
+
+{\bf Further reading}.\newline
+Devaney RL. An introduction to chaotic dynamical systems. Redwood City: Addison-Wesley, 1989.\newline
+Li TY, Yorke JA. Period three implies chaos. American Mathematical Monthly 82:985--992, 1975.\newline
+May RM. Simple mathematical models with very complicated dynamics. Nature 261:459, 1976.\newline
+Sharkovskii OM. Coexistence of cycles of a continuous mapping of a line onto itself. Ukran. Math. Z. 16:61-71, 1964.
+
+\section*{Assignment}
+\noindent{\bf Exercise 1.}~~For the needle reuse example, show that
+$0 \leq r + (1-p)(1-r) \leq 1$.
+
+\noindent{\bf Exercise 2.}~~The following three functional forms
+are useful in modeling qualitative features of different systems, as
+we will discuss next class.  Calculate the first derivative of these:
+(a) $f(x)=axe^{-bx}$, (b) $f(x)=\frac{kx}{x+x_0}$, and (c) 
+$f(x)=\frac{kx^2}{x^2+x_0^2}$. 
+
+\noindent{\bf Exercise 3.}~~Returning to the simple model of tick-borne
+infection we discussed, consider each of the two scenarios $sA<1$ and
+$sA>1$.  For each of these, plots were provided of $x(t+1)=f(x(t))=s(1-e^{-Ax(t)})$.  Recall that for each of these, $x=0$ is an equilibrium, but 
+when $sA>1$, there is a second nonzero equilibrium.  For each of these,
+illustrate how a cobweb diagram (as shown in class) can be used to 
+qualitatively explore the sequence of successive values 
+$x(0), x(1), x(2), \ldots$.  Begin with a value of $x(0)$ other than
+an equilibrium value in each case.  
+
+\noindent{\bf Exercise 4.}~~Consider the system $x(t+1)=ax(t)(1-x(t))$,
+with $a$ taking values between 3 and 4, say.  Note that if $x(t)$ is
+between 0 and 1, $x(t+1)$ is between 0 and 1, and that there are two
+equilibria.  Begin with $x(0)$ at some value other than an equilibrium
+value, and illustrate sequential values $x(1), x(2), \ldots$ using
+a cobweb diagram.
+
+\vfill
+
+\end{document}

@@ -1,0 +1,202 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\section*{Sample size planning for the MUTT project via simulation}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section*{Rationale}
+This document describes some simple methods for sample size
+planning for the MUTT project using simple simulation methods,
+which are generally applicable.
+
+The specific aims for the project are
+\begin{enumerate}
+\item {\bf To determine which treatment (voriconazole or natamycin) 
+results in better visual acuity.}  Best spectacle-corrected visual 
+acuity three months after presentation will be compared between the 
+study arms, correcting for pre-treatment vision in a multiple linear 
+regression model.  We will look at secondary outcomes (infiltrate/scar 
+size, adverse events, re-epitheliazation time) and subgroup analyses 
+(results in cases of {\it Fusarium} spp. versus {\it Aspergillus} spp).
+\item {\bf To determine whether a treatment (voriconazole or natamycin)
+results in better results in a subgroup of organisms.}  Interactions 
+between arm and organism ({\it Aspergillus flavus}, {\it Fusarium 
+solani}, etc.) will be assessed.
+\item {\bf To determine whether there is a correlation between 
+antifungal susceptibility and clinical outcome in fungal keratitis.}  
+The best corrected visual acuity three months after enrollment will be 
+correlated with {\it in vitro} susceptibility of the fungus at 
+presentation, as measured by minimum inhibitory concentration to the 
+study medication.
+
+\section*{First specific aim}
+The sample size for the proposal is powered based on the first 
+specific aim.  The aim will be to detect a difference of 0.15 logMAR 
+(log of the minimum angle of resolution, expressed in minutes of 
+arc) between the two groups. 
+
+Based on preliminary data from the SCUT trial (Steroids for Corneal
+Ulcers Trial), the approximate distribution will be
+derived.  Based on a small subset (source: Tom Lietman, 
+email 12 Jan 07), the distribution has heavy tails.
+<<>>=
+scut.before <- c(0.68,0.16,1.5,0.34,0.38,0.2,1,2.3,1.3,2,2,2,0.7,2.3,0.8,0.5,0.8,1.7,1.7,1.7,2.3,0.8)
+scut.after <- c(0.1,0,NA,0.2,0.3,0,0.5,2.3,0.78,NA,1.7,2,0.2,2.6,0.1,NA,0,0.2,NA,0.3,NA,0)
+@
+Based on 33 patients from the full SCUT pilot, the final
+visual acuity had a mean of 0.7 and a standard deviation of 0.8
+(source: Nisha Acharya, email 3 Jan 07).  For the initial
+acuity, based on the subset of data, the mean was approximately
+1.2 and the standard deviation 0.7.
+
+We will conduct the preliminary analysis based on the normal
+distribution and then proceed to the more natural lognormal.
+
+We will first assume that there are two sets of $N/2$ patients
+each, and no difference between the two groups.
+
+<<>>=
+mu1.in <- 1.2
+sd1.in <- 0.7
+mu2.in <- 0.7
+sd2.in <- 0.8
+rho.in <- 0.8
+gen.obs <- function(mu,sd,rho,nn,covariate.value) {
+  lt <- t(chol(rbind(c(sd[1]*sd[1],rho*sd[1]*sd[2]),c(rho*sd[1]*sd[2],sd[2]*sd[2]))))
+  ans <- lt %*% rnorm(2) + c(mu[1],mu[2])
+  for (ii in 2:nn) {
+    ans <- cbind(ans,lt %*% rnorm(2) + c(mu[1],mu[2]))
+  }
+  t(rbind(ans,rep(covariate.value,nn)))
+}
+mk.data <- function(dif,mubase,sd,rho,nn) {
+  mufor0 <- c(mubase[1],mubase[2]-dif/2)
+  mufor1 <- c(mubase[1],mubase[2]+dif/2)
+  ans <- rbind(gen.obs(mufor0,sd,rho,floor(nn/2),0),
+               gen.obs(mufor1,sd,rho,floor(nn/2),1)) 
+  colnames(ans) <- c("pre","post","arm")
+  as.data.frame(ans)
+}
+rejections <- function(nsubj,dif=0.15,nsims=1000,mubase=c(mu1.in,mu2.in),sd=c(sd1.in,sd2.in),rho1=rho.in,tcrit=1.96,verbose=FALSE) {
+  ps <- c()
+  for (ii in 1:nsims) {
+    if (verbose) {cat(ii);cat("\n");}
+    u <- mk.data(dif,mubase,sd,rho1,nsubj)
+    zorg.u <<- u
+    ps[ii] <- summary(lm(post ~ pre + arm, data=u))$coefficients["arm","Pr(>|t|)"]
+  } 
+  sum(ps<0.05)/nsims
+} 
+loss.to.fu <- 0.15
+ns0 <- 250
+ns0.fu <- floor(ns0*(1-loss.to.fu))
+pwr15<-NA
+#pwr15 <- rejections(ns0)
+@
+%The power to detect a difference of 0.15 logMAR is approximately
+%\Sexpr{pwr15} with \Sexpr{ns0} subjects (assuming a loss to follow-up
+%of \Sexpr{loss.to.fu}.
+
+\section*{Second specific aim}
+In this section, we determine whether one treatment or another is
+better for a subset of organisms.  
+<<>>=
+org.prs <- c(0.5,0.3,0.15,0.05)
+@
+For the purpose of this
+analysis, we will assume that there are four organisms, with
+probabilities \Sexpr{org.prs[1]}, \Sexpr{org.prs[2]}, \Sexpr{org.prs[3]}, and
+\Sexpr{org.prs[4]}.
+
+The alternative hypothesis is that treatment is better for one
+(set of) organisms.  
+<<>>=
+gen.obs.sa2 <- function(mu,sd,rho,nn,treatment.group,org) {
+  lt <- t(chol(rbind(c(sd[1]*sd[1],rho*sd[1]*sd[2]),c(rho*sd[1]*sd[2],sd[2]*sd[2]))))
+  ans <- lt %*% rnorm(2) + c(mu[1],mu[2])
+  for (ii in 2:nn) {
+    ans <- cbind(ans,lt %*% rnorm(2) + c(mu[1],mu[2]))
+  }
+  out <- t(rbind(ans,rep(treatment.group,nn),rep(org,nn)))
+  dout <- dim(out)
+  if (dout[2]!=4) {
+    cat("error -- wrong dimensions in gen.obs.sa2; ")
+    cat(dout[2])
+    cat(" columns\n")
+    zorg.ans <<- ans
+    zorg.nn <<- nn
+  }
+  out
+}
+# trt.better.org is TRUE if treatment 2 works better (takes the
+#   high value) for a certain organism, FALSE otherwise
+mk.data.sa2 <- function(dif,mubase,mutrt1,mutrt2,sd,rho,nn,org.probs,trace=FALSE) {
+  ao <- list()
+  cur <- 1
+  orgs.trt <- rbind(as.vector(rmultinom(1,floor(nn/2),org.prs)), 
+                    as.vector(rmultinom(1,floor(nn/2),org.prs))) 
+  for (ii in 1:length(org.probs)) {
+    for (jj in 1:2) {  #treatments
+      nn <- orgs.trt[jj,ii]
+      if (nn<=0) {
+        ao[[cur]] <- NA
+      } else { 
+        if (jj==2) {
+          m2 <- mutrt2[ii]
+        } else {
+          m2 <- mutrt1[ii]
+        }
+        ao[[cur]] <- gen.obs.sa2(mu=c(mubase,m2),sd=sd,rho=rho,
+                               nn=nn,treatment.group=jj,org=ii)
+      }
+      cur <- cur+1
+    }
+  }
+  if (trace) {
+    zorg.ao <<- ao
+  }
+  ans <- ao[[1]]
+  for (ii in 2:(cur-1)) {
+    if (!any(is.na(ao[[ii]]))) {
+      ans <- rbind(ans,ao[[ii]])
+    }
+  }
+  colnames(ans) <- c("pre","post","arm","organism")
+  as.data.frame(ans)
+}
+rejections.sa2 <- function(nsubj,trt.better.org=c(TRUE,TRUE,TRUE,TRUE),org.prs=c(0.5,0.3,0.15,0.05),dif=0.15,nsims=1000,mubase=c(mu1.in,mu2.in),sd=c(sd1.in,sd2.in),rho1=rho.in,tcrit=1.96,verbose=FALSE,trace=FALSE) {
+  mufor0 <- c(mubase[1],mubase[2]-dif/2)
+  mufor1 <- c(mubase[1],mubase[2]+dif/2)
+  mus2 <- ifelse(trt.better.org,mufor1[2],mufor0[2])
+  mus1 <- rep(mufor0[2],length(trt.better.org))
+  ps <- c()
+  for (ii in 1:nsims) {
+    if (verbose) {cat(ii);cat("\n");}
+    u <- mk.data.sa2(dif,mufor0,mus1,mus2,sd,rho1,nsubj,org.prs,trace=trace)
+    zorg.u <<- u
+    ps[ii] <- summary(lm(post ~ pre + arm, data=u))$coefficients["arm","Pr(>|t|)"]
+  } 
+  sum(ps<0.05)/nsims
+} 
+@
+
+\vfill
+
+\end{document}

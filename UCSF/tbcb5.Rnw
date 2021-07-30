@@ -1,0 +1,956 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Some Practical Analytic Tools in TB Surveillance, Part 5}
+
+\subsection*{Goals}
+The specific goals for this segment are:
+\begin{enumerate}
+\item Review conditional expectation
+\item Review conditional independence
+\item Examine simple decision trees
+\end{enumerate}
+
+\section*{Conditional expectation}
+\subsection*{Definitions}
+Computations involving conditional probabilities
+occur very commonly in health related applications.
+To make it easier to keep track of the probabilities, a diagram
+called a {\it decision tree} is often used (together with specialized
+software to draw and compute using them).  
+
+Let's look at a simple example to motivate conditional 
+expectation.  Using California tuberculosis reports from 1994 to
+2005, we find that the average age of a reported case was 44.99
+years.  But if we restrict to individuals known to be HIV-positive,
+the average age is 39.0 years, and to individuals not known to be
+HIV-positive, the average age is 45.39.  One way to think about this
+is to imagine two random variables for each individual $i$, their
+age $X_i$ and their HIV status $Y_i$.  Now, the average age 
+of the $N$ cases is simply $\frac{1}{N}\sum_x X_i$, and the
+average age of known HIV-positives 
+is just the sum of ages of individuals who are known HIV-positives
+over the total number of known HIV-positives.
+We could just say that it is the relative frequency of a given age
+among known HIV-positives, times that age, and added up over all
+ages.  Using the conditional probability of a given age given
+$Y_i=1$ instead gives us the {\it conditional expectation} of
+age given known HIV-positivity to be $\sum_x P(X=x|Y=1)$.
+
+Previously we saw that the conditional probability of event $A$
+given event $B$ was defined to be
+\[
+P(A|B) = \frac{P(A \cap B)}{P(B)}
+\]
+when $P(B)>0$.  And if $X$ and $Y$ are random variables with a
+joint distribution $P(X=x,Y=y)$, we can write the conditional
+probability that $X=x$ given $Y=y$ as
+\[
+P(X=x|Y=y) = \frac{P(X=x,Y=y)}{P(Y=y)} .
+\]
+
+The {\it conditional expectation} of $X$ given $Y=y$ is defined to be
+\[
+E[X|Y=y] = \sum_x x P(X=x|Y=y)
+\]
+There is nothing really unusual about this.  It is just the usual
+definition of expected value, just with conditional probabilities
+given $Y=y$.
+
+But there is more.  Here, we are conditioning on a random event,
+namely $Y=y$.  For every value of $Y$, such as $y$, we have a 
+particular value of $E[X|Y=y]$.  If $Y=y$ has a certain probability,
+then $E[X|Y=y]$ takes its value with that same probability.  (Of
+course, different values of $y$ can have the same conditional
+expectation, but this does not really matter.)  Since $Y$ is random,
+taking values with a certain probability, we can think of 
+the conditional expectation of $X$ given $Y$, $E[X|Y]$,
+as a random variable also.
+
+Let's consider a simple example first.  Suppose that we are going
+to sample patients from a small clinic.  We know that there are
+five men, ages 30, 30, 30, 30, and 50 at the clinic, and three 
+women, ages 30, 30, and 50 at the clinic.  Now suppose that we draw
+a single patient, with each patient being equally likely.
+We will look at
+two random variables: $Y$, which will be zero if the patient is male,
+and one if the patient is female, and $X$, the age of the patient.
+We will also be interested in two other random variables: $(Y-EY)^2$,
+and $E[X|Y]$.  Now $EY=0 \times P(Y=0) + 1 \times P(Y=1)=3/8$, so for
+every value of $Y$, we can determine what $(Y-EY)^2$ is (Table~\ref{tbl:clinic1}).  The variable $(Y-EY)^2$ is a transformation of $Y$; whenever
+$Y=0$, $(Y-EY)^2=9/64$, and whenever $Y=1$, $(Y-EY)^2=25/64$.
+\begin{table}
+\caption{\label{tbl:clinic1}Sampling example.}
+\begin{tabular}{ccccc}
+$x$ & $y$ & $P(X=x,Y=y)$ & $(y-EY)^2$ & $E[X|Y=y]$ \\
+30 & 0 & 0.5 &  9/64 & 34 \\
+30 & 1 & 0.25 & 25/64 & 110/3 \\
+50 & 0 & 0.125 & 9/64 & 34 \\
+50 & 1 & 0.125 & 25/64 & 110/3 \\
+\end{tabular}
+\end{table}
+The expected value of $(Y-EY)^2$ is computed like any other
+function $g(Y)$ of $Y$, as we have already seen: 
+\[
+E[g(Y)] = \sum_y g(y) P(Y=y) 
+\]
+Here, $E[(Y-EY)^2] = \sum_y (y-EY)^2 P(Y=y)$ .
+The result is 
+simply $9/64 \times P(Y=0) + 25/64 \times P(Y=1)=15/64$ (as it
+should be for a Bernoulli trial with success probability 3/8).
+
+Let's now of all compute the conditional expectation of $X$ (the
+age) given that the person is male ($Y=0$).  By definition,
+\[
+E[X|Y=0] = 30 \times P(X=30|Y=0) + 50 \times P(X=50|Y=0) .
+\]
+Using the definition of conditional probability,
+\[
+E[X|Y=0] = 30 \times \frac{P(X=30,Y=0)}{P(Y=0)} + 50 \times \frac{P(X=50,Y=0)}{P(Y=0)} .
+\]
+Thus,
+\[
+E[X|Y=0] = 30 \times \frac{4/8}{5/8} + 50 \times \frac{1/8}{5/8} = 34.
+\]
+Similarly, $E[X|Y=1] = 110/3 \approx 36.6$ (Table~\ref{tbl:clinic1}).
+From the table, it is clear that although $X$ and $Y$ are jointly
+distributed, $E[X|Y]$ is a transformation of $Y$; $X$ has already
+been averaged over, at each level of $Y$.  We can compute the
+expected value the same way as for any other function of $Y$.  Since
+in general $E[g(Y)] = \sum_y g(y) P(Y=y)$, 
+\[
+E[ E[X|Y] ] = \sum_y E[X|Y=y] P(Y=y) .
+\]
+In our example, we have
+\[
+E[E[X|Y]] = E[X|Y=0] P(Y=0) + E[X|Y=1] P(Y=1) = 34 \times 5/8 + 110/3 \times 3/8 = 35 .
+\]
+
+On the other hand, we could just compute expected age of a person
+selected at random from the clinic, and find that
+\[
+E[X] = 30 \times P(X=30) + 50 \times P(X=50) = 30 \times 6/8 + 50 \times 2/8 = 35 .
+\]
+
+\subsection*{The Law of Iterated Expectation}
+It turns out to be true in general that $EX=E[E[X|Y]]$, a result
+called the {\it Law of Iterated Expectation}.
+Since in general
+\[
+E[g(Y)] = \sum_y g(y) P(Y=y) ,
+\]
+writing $g(Y)=E[X|Y]$ gives us
+\[
+E[ E[X|Y] ] = \sum_y E[X|Y=y] P(Y=y) .
+\]
+But $E[X|Y=y]=\sum_x xP(X=x|Y=y)$ by definition.  So
+\[
+E[E[X|Y]] = \sum_y \sum_x x P(X=x|Y=y)P(Y=y) .
+\]
+Now the conditional probability $P(X=x|Y=y)=P(X=x,Y=y)/P(Y=y)$, so
+we have
+\[
+E[E[X|Y]] = \sum_y \sum_x x P(X=x,Y=y) = \sum_x x \sum_y P(X=x,Y=y) = \sum_x x P(X=x)= E[X] .
+\]
+To reiterate, $E[X|Y=y]$ is a {\it number}, and $E[X|Y]$ is a
+random variable, and a function of $Y$ at that.
+
+Of course, we can also ask what the variance of $E[X|Y]$ itself is;
+we have
+\[
+\mbox{\rm var}(E[X|Y]) = E[ (E[X|Y])^2 ] - (E[E[X|Y]])^2 ,
+\]
+just the second moment minus the square of the mean, same as for
+any random variable.
+
+The {\it conditional variance} of $X$ given $Y$ is defined as
+\[
+\mbox{\rm var}(X|Y) = E[X^2|Y] - (E[X|Y])^2 .
+\]
+This is just a conditional second moment minus the square of the
+conditional expectation.
+
+Note that
+\[
+\mbox{\rm var}(X) = E[X^2] - (EX)^2 .
+\]
+Since $E[E[X^2|Y]] = E[X^2]$ (using $E[E[X|Y]]=E[X]$ with $X^2$
+in place of $X$), and $E[E[X|Y]]=E[X]$ itself,
+\[
+\mbox{\rm var}(X) = E[ E[X^2|Y] ] - (E[E[X|Y]])^2
+\]
+Now $E[X^2|Y] = \mbox{\rm var}(X|Y) + (E[X|Y])^2$, so
+\begin{eqnarray*}
+\mbox{\rm var}(X) & = & E[ \mbox{\rm var}(X|Y) + (E[X|Y])^2 ] - (E[E[X|Y]])^2 \\
+ & = & E[\mbox{\rm var}(X|Y)] + E[(E[X|Y])^2 ] - (E[E[X|Y]])^2 \\
+\end{eqnarray*}
+But the last two terms are just the second moment of $E[X|Y]$ minus
+the square of its mean:
+\[
+\mbox{\rm var}(X) = E[\mbox{\rm var}(X|Y)] + \mbox{\rm var}(E[X|Y]) .
+\]
+This breaks the total variance of $X$ up into the variance of the
+conditional expectation of $X$ given $Y$ (an ``explained'' part), and
+an expected remaining amount of variance, the expectation of the
+conditional variance of $X$ given $Y$.  
+
+\subsection*{Decision Trees}
+Many of the conditional probability computations that arise in
+decision analyses in public health are expressed in terms of 
+decision trees.  
+
+Let's consider a simple example.  Suppose that a person
+begins daily isoniazid therapy for latent tuberculosis infection.  We will
+assume that a fraction $c$ complete therapy for nine months, a
+fraction $c'$ partially complete therapy (say for four months), and
+the remaining fraction $1-c-c'$ quit after one month.  Assuming that
+the efficacy of nine months of therapy is $0.7$, of
+four months of therapy is $0.2$, and of one month is zero,
+what are the costs and expected number of future cases?  By
+efficacy, we mean the fractional drop in the number of cases; if the
+efficacy is 70\%, we expect only 30\% as many cases (denote one minus
+the efficacy of 9 months of therapy by $\epsilon$ and of 4 months by
+$\epsilon'$.)  Here, we have
+two outcomes of interest: cost, and number of cases.  We will consider
+only the cost of isoniazid, which in 2004 dollars was \$8.90 per 100
+pills (300 mg), or \$0.089 per day.  We'll just call the cost per
+month $C_M$, and this is just \$2.71, and the expected number of
+future cases $T$.
+
+For each person, there are 
+three possible chance outcomes, and these are represented by a
+{\it chance node} on a decision tree.  A chance node is represented
+by an open circle.  Individuals conceptually enter from the left, and
+will take one of the paths out of the node to the right, with
+probabilities as indicated.  At a {\it terminal node}, indicated by
+a triangle, the outcomes of interest are tallied up.  A decision
+tree for this problem is shown in Figure~\ref{fig:tree1}.
+\begin{figure}
+\caption{\label{fig:tree1}Decision tree for completion of INH
+therapy.}
+\centerline{
+  \psfig{figure=tree1.ps,height=3.39in,width=6in}
+}
+\end{figure}
+In this tree, we have one chance node and three terminal nodes
+leading from it.  For a chance node that has only terminal nodes
+leading out from it (as the one in Figure~\ref{fig:tree1} does),
+we can compute the expected number of cases by looking at each
+terminal node, multiplying by the probability associated with that 
+terminal node, and adding it all up (and similarly with any other
+values of interest associated with that node).  So the expected
+number of cases is $c \epsilon T + c' \epsilon' T + (1-c-c') T$.
+If the rate of full completion (9 months) is 60\%, and the rate of
+partial completion is 10\%, with the remainder only finishing one
+month, then the expected number of cases is 
+$T \times (0.6 \times 0.3 + 0.1 \times 0.8 + 0.3)$, or $0.56 T$.  
+\newline
+{\bf Exercise.~~}Compute the expected cost.
+
+We usually, however, have more complex decision trees.  Suppose that
+we decide to consider the fact that only a fraction of patients $r$
+offered INH therapy actually decide to start it.  Assuming that
+they start the therapy, we will assume that the completion rates are
+the same as above.  Now we have Figure~\ref{fig:tree2}.
+\begin{figure}
+\caption{\label{fig:tree2}Decision tree for completion of INH
+therapy, including starting probability.}
+\centerline{
+  \psfig{figure=tree2.ps,height=3.39in,width=6in}
+}
+\end{figure}
+Intuitively, we think of the expected number of cases as being
+the probability of starting times the number of cases you expect
+then, plus the probability of not starting times the number of cases
+you expect if you don't start (which for us is just $T$).  So the
+expected value is $r(c \epsilon T + c' \epsilon' T + (1-c-c') T) + (1-r)T$.  This intuitive answer turns out to be right.  All we need to do to
+compute the expected value of some tree is to start with a node, 
+multiply the probability of each path out times the expected value
+at the end of that path.  If a node is a terminal node, the
+expected value is just the value associated with the outcome at that
+node; if a node is a chance node, then the procedure needs to be
+repeated at that node (this is an example of a {\it recursive}
+operation on a tree).  This simple process is called {\it folding
+back} a tree, and is done in practice using specialized software.
+
+Why does folding back work?  The answer is the law of iterated
+expectation.  We'll show this using the notation in Figure~\ref{fig:tree2}, but the same proof can be generalized to any tree.  Let $Y$ be the cost
+incurred by a patient; let $S$ be 1 if the patient starts therapy
+and 0 otherwise.  The value at the lower chance node represents
+$E[Y|S=1]$, the expected cost given that the patient starts therapy.
+The value at the top terminal node is $E[Y|S=0]$, which happens to be
+zero in this particular case (though in general we could have
+had some other value here).  At the first (upper left) chance node,
+the value is supposed to be $E[Y]$, 
+and the operation of folding back is the
+same as computing $P(S=0)E[Y|S=0] + P(S=1)E[Y|S=1]$, which is
+$E[E[Y|S]]$.  But we know this is in fact $E[Y]$ thanks to the 
+law of iterated expectation.\newline
+{\bf Exercise.~~}(a) Show that the decision tree of Figure~\ref{fig:tree3} is equivalent to Figure~\ref{fig:tree2}.  (b) Verify by direct computation
+that the expected cost and number of cases in Figure~\ref{fig:tree3}
+are the same as in Figure~\ref{fig:tree2}.
+\begin{figure}
+\caption{\label{fig:tree3}Decision tree for Exercise.}
+\centerline{
+  \psfig{figure=tree3.ps,height=3.39in,width=6in}
+}
+\end{figure}
+
+{\bf Exercise.~~}Consider individuals beginning INH chemotherapy
+once again.  Now assume that individuals either receive the full
+9 months with probability $c$ (which you can take to be 60\%), 
+develop hepatitis and discontinue therapy after one month, or
+receive two months and discontinue.  Assume that nine months of
+therapy has an efficacy of 70\%, but one or two months has no 
+efficacy against LTBI.  Assume the cost of INH per month is \$2.71.
+Assume that the probability of hepatitis given
+INH chemotherapy is 0.0056, that each person who develops hepatitis
+receives three liver function tests at a cost of \$8.20 each, plus
+one follow-up medical visit at a cost of \$77.48 (cf. Lecture 3).  
+In addition to this, however, assume that each person who develops
+hepatitis also has a 10\% chance of hospitalization, at a cost of
+\$10,000.  Draw a decision tree and compute the expected cost per
+patient starting LTBI therapy.
+
+{\it Exercise.~~}Consider the model for LTBI screening shown in
+Figure~\ref{fig:tree4}.  Here, a chance node indicates whether 
+or not individuals have LTBI; we assume every individual has a
+tuberculin skin test planted at a cost of $C_S$.  Individuals have
+a probability of $d$ of having the test read; in practice this is
+often around 70\% or 80\%.  If the individual has the test read,
+we assume the cost is $C_R$ (staff time for reading the test).  Here,
+we assume the sensitivity and specificity of the test are 1, that
+everyone starts therapy, and that everyone completes 9 months of the
+therapy at a cost of $C_I$.  Untreated LTBI cases give rise to 
+$T$ expected future cases of TB, at a cost of $C_T$ each; fully treated
+individuals give rise to $\epsilon T$ future cases, where $\epsilon$
+is one minus the efficacy.  (a) Show that the expected cost
+is $C_T + dC_R + \pi d C_I + \pi T C_S(1-d+\epsilon d)$.  (b) Show
+that the expected number of cases is $\pi ((1-d)T + d \epsilon T)$.
+(c) Show that the expected cost in the absence of a screening
+program is $\pi T C_T$.
+(d) Show that the number of cases in the absence of any screening
+program at all is $\pi T$.  (e) Calculate the net cost of the
+program by subtracting the expected cost in the presence of the
+program from the expected cost in the absence of the program.  
+({\it Ans.~} $C_S + dC_R + \pi d C_I - \pi T C_T d (1-\epsilon)$)
+(f) How large does the product $T C_T$ have to be for this to be
+negative, i.e. the program is cost-saving? 
+(f)
+Calculate the net number of cases averted by the program by
+subtracting the expected number of cases assuming the program from
+the number of cases in the absence of the program.
+(g) When the net cost is positive and the net number of cases averted
+is positive, the quotient of these is the {\it cost-effectiveness
+ratio}.  Compute the cost-effectiveness ratio, and show that if
+$C_S$ (the TST cost) is zero, the cost-effectiveness ratio does not
+depend on the probability of reading the TST.  Show that if both
+$C_S$ (the TST cost) and $C_R$ (the cost of reading the TST) are
+zero, the cost-effectiveness ratio does not depend on either the
+probability of reading the TST nor on the prevalence.  Why?
+(h) Assume that $C_S$ is \$9.79 (based on 2003 BESS data, source Center
+for Medicare Studies), $C_R$ is \$3.00, $C_I$ is \$24.38, 
+$\pi$ is 0.05, $\epsilon$ is 0.3, $d$ is 0.75, and $C_T$ is \$20,000.
+Plot the cost-effectiveness ratio as a function of $T$, the number
+of future cases expected from one case.  How high does $T$ have to be
+for the program to be cost-saving? For the cost-effectiveness ratio to
+be smaller than \$50,000 per case averted?
+
+\begin{figure}
+\caption{\label{fig:tree4}Decision tree for Exercise.}
+\centerline{
+  \psfig{figure=tree4.ps,height=3.39in,width=6in}
+}
+\end{figure}
+
+{\bf Exercise.~~}Consider the model of LTBI treatment in Figure~\ref{fig:tree5}.  Here, we begin with individuals who have started INH therapy for
+latent TB infection.  Individuals develop hepatitis with probability $h$; for simplicity
+we assume that all individuals who do not develop hepatitis will
+complete therapy and receive the full efficacy (70\%).  Individuals
+who develop hepatitis will be hospitalized with probability $k$
+at a cost of $C_H$, and of individuals hospitalized, assume that the
+fraction who die is $m$.  Assume that $h=0.002$, $k=0.1$, and $m=0.1$,
+for a total probability of death of 0.00002.  Here, $T$ is the 
+expected total number of TB cases among individuals who are not treated
+for LTBI; $\epsilon$ is one minus the efficacy, or 0.3.  The cost of
+liver function tests and additional doctor visits is denoted $C_L$,
+and the cost of tuberculosis is $C_T$.  For simplicity, assume 
+$C_T=$ \$20,000, $C_L=$ \$100, and $C_H$ = \$10,000, and the cost
+of one month of INH is \$5.  Assume that a fraction $\mu$ of tuberculosis
+patients dies.  (a) Show that the cost-effectiveness ratio for the
+cost per death prevented is 
+\[
+R = \frac{9C_M - TC_T(1-\epsilon) + h(C_L + kC_H - 8 C_M + TC_T (1-\epsilon - km))}{\mu T (1-\epsilon) - h(km + \mu T (1 - \epsilon - km)} .
+\]
+(b) Assume that $h$ is zero.  How large does $T$ need to be for the
+cost-effectiveness ratio to be \$100,000 per death prevented?
+(c) Assume that $T$ is 0.03; how large does $h$ have to be for the
+denominator to vanish, i.e. for the deaths caused by hepatitis to
+outweigh the deaths due to tuberculosis?  Graph the cost-effectiveness
+ratio as a function of $h$.  What happens as you approach this 
+threshold value?  For what value of $h$ does the cost-effectiveness
+ratio begin to exceed \$100,000 per death prevented?
+\begin{figure}
+\caption{\label{fig:tree5}Decision tree for exercise.}
+\centerline{
+  \psfig{figure=tree5.ps,height=3.39in,width=6in}
+}
+\end{figure}
+
+\subsection*{Geometry of simple cost-effectiveness ratio functions}
+Very frequently, we are interested in how the cost-effectiveness ratio
+depends on some quantity, such as the probability of hepatitis (which
+is restricted to the range between 0 and 1 inclusive), or the cost
+of tuberculosis (which only needs to be positive).  When the
+elements in the decision tree are constant, such cost-effectiveness
+ratios have the form
+\begin{equation}
+\label{eq:hyper1}
+R = \frac{ax+b}{cx+d} ,
+\end{equation}
+where $x$ is the quantity of interest.  
+
+Here, $b$ is the cost when
+$x$ is zero; for instance, if $x$ were the hepatitis rate, then 
+$b$ would be the net cost of the TB control program if there were
+no chance of developing hepatitis.  For instance, if the program
+were cost-saving in the absence of hepatitis, then $b$ would be
+negative; if there were still a net cost even without hepatitis,
+then $b$ would be positive.  And $a$ is the amount by which
+the net cost increases for each unit of $x$; since increasing
+hepatitis rates yield increased net costs, $a$ would be positive.  On the
+other hand, suppose that $x$ were the cost of active tuberculosis; in
+that case, one could imagine that if tuberculosis were free, there might
+be a considerable net cost to a program ($b$ would be positive when
+$x$, now the cost of tuberculosis, were zero), but as this cost $x$
+increased, there is more and more opportunity for cost savings
+from averted TB, so $a$ would be negative.
+
+Similarly, $d$ is the health benefits when the quantity of interest
+is zero.  If $x$ is the fraction of individuals developing hepatitis,
+then $d$ is the health benefits (deaths averted, for instance) when
+there is no hepatitis.  In this case $c$ would be the amount by which
+the net deaths change as $x$ increases; since hepatitis causes
+death, $c$ would be negative, indicating fewer net benefits as the
+hepatitis rate increases.  If instead, $x$ were the cost of active
+tuberculosis, then it would have no effect at all on the benefits, 
+and $c$ would actually be zero.
+
+We will focus entirely on the case where $c$ is not zero, so that
+the graph of $R$ is not simply a straight line.  In general, the
+graph of $R$ in Equation~\ref{eq:hyper1} is a {\it rectangular
+hyperbola}.  The canonical rectangular hyperbola is the graph of
+$y=\frac{1}{x}$, shown in the Figure.
+\begin{figure}
+<<fig=true,results=hide,echo=false>>=
+  xs <- seq(-3,3,by=0.01)
+  ys <- 1/xs
+  plot(xs,ys,type="l",ylim=c(-3,3),xlab="x",ylab="1/x")
+  abline(h=0,lty=2)
+  abline(v=0,lty=2)
+@
+\end{figure}
+This rectangular hyperbola has a vertical asymptote (singularity) at
+the origin, and a horizontal asymptote along $y=0$.  Notice also that
+if you pick a point on the graph and look at the curve, the slope
+is always down; this happens if you are on the left portion or the
+right portion of the hyperbola.
+
+Let's see what happens if we add something to $x$ before we apply
+the reciprocal function.  If we are adding something, then it reaches
+the same values earlier; this is equivalent to shifting the graph
+{\it to the left}:
+\begin{figure}
+<<fig=true>>=
+  xs <- seq(-3,3,by=0.0625)
+  ys <- 1/(xs+0.875)
+  plot(xs,ys,type="l",ylim=c(-3,3),xlab="x",ylab="1/(x+0.875)")
+  abline(h=0,lty=2)
+  abline(v=0,lty=2)
+  abline(v=-0.875,lty=3)
+@
+\end{figure}
+Similarly, if we subtract something from $x$ before taking the
+reciprocal, we shift the graph to the right, since you have to get
+to larger values of $x$ than you did before subtracting, in order to
+get the same reciprocal.
+
+If you add something after taking the reciprocal, you increase the
+value; this shifts the graph {\it up}:
+\begin{figure}
+<<fig=true,echo=false,results=hide>>=
+  xs <- seq(-3,3,by=0.0625)
+  ys <- 1/xs + 0.5
+  plot(xs,ys,type="l",ylim=c(-3,3),xlab="x",ylab="(1/x)+0.5")
+  abline(h=0,lty=2)
+  abline(v=0,lty=2)
+  abline(h=0.5,lty=3)
+@
+\end{figure}
+
+To summarize, adding to the {\it argument} ``gets you there'' earlier,
+moving the graph to the left; adding to the {\it value} gets you
+higher, moving the graph up.
+
+Now, let's see what happens if we multiply $x$ by something before
+taking the reciprocal.  Say we multiply by $k$.  Then we would have
+$y=\frac{1}{kx}$.  Let's multiply by 10; $k=10$.  Here is the 
+graph:
+\begin{figure}
+<<fig=true,echo=false,results=hide>>=
+  xs <- seq(-3,3,by=1/512)
+  ys <- 1/(10*xs) 
+  plot(xs,ys,type="l",ylim=c(-3,3),xlab="x",ylab="1/(10x)")
+  abline(h=0,lty=2)
+  abline(v=0,lty=2)
+@
+\end{figure}
+There is still a vertical asymptote at zero; you can't find a value
+for $1/(10 \times 0)$, and as you get closer and closer to zero,
+the values get bigger and bigger.  And there is still the horizontal
+asymptote at zero; as $x$ gets bigger and bigger, $1/(10x)$ gets closer
+and closer to zero.  The scale has changed, though, but strangely
+the basic shape has not changed.  \newline
+{\bf Exercise.~~}Show that the graph is still symmetric about the
+forty-five degree line.\newline
+{\bf Exercise.~~}Show that the point 
+$(\frac{1}{\sqrt{k}},\frac{1}{\sqrt{k}})$ is closest to the origin
+when $x>0$.
+
+What if we multiply by a negative number?  We'll just try $k=-1$,
+so that now we will plot $y=-1/x$.
+\begin{figure}
+<<fig=true,echo=false,results=hide>>=
+  xs <- seq(-3,3,by=1/512)
+  ys <- -1/xs 
+  plot(xs,ys,type="l",ylim=c(-3,3),xlab="x",ylab="-1/x")
+  abline(h=0,lty=2)
+  abline(v=0,lty=2)
+@
+\end{figure}
+We have flipped the hyperbola around now; we have the same asymptotes,
+but the graph is in opposite quadrants so to speak.  Also, the
+graph is always rising whereever you look at it.  Of course, the
+whole right hand side is below the whole left hand side, because of
+the nature of the singularity at zero, but the slope is actually
+positive anyway whereever you can compute it.
+
+Let's substitute in to the formula $y'=1/x'$ the values
+\[
+y'=\frac{c^2}{bc-ad} \left( y-\frac{a}{c} \right)
+\]
+and
+\[
+x' = x+\frac{d}{c} .
+\]
+After some rearranging and cancelling, you get $y=\frac{ax+b}{cx+d}$,
+the formula we are interested in.  Thus, Equation~\ref{eq:hyper1} is
+just a shifted and scaled rectangular hyperbola!  We shifted it by
+the amount $d/c$ (that is what we added to $x$), so this shifts it
+to the left by the amount $-d/c$.  So the singularity is at $x=-d/c$,
+as you can see by just noticing that the denominator becomes zero
+at this value.  It is also easy to see that if $x$ is very big,
+then the numerator is about $ax$, and the denominator about $cx$,
+so the quotient is about $a/c$, so the horizontal asymptote is
+at $a/c$.  Also, when $x$ is zero, the function's value is $b/d$
+(this is the $y$-intercept).  Finally, the function has a zero
+(crosses the $x$-axis) at $ax+b=0$, or $x=-b/a$.  Whenever $bc-ad<0$,
+we are scaling by a negative number, and we wind up with an increasing
+hyperbola instead of a decreasing one as we have seen.
+To summarize,
+Equation~\ref{eq:hyper1} is a rectangular hyperbola with
+\begin{itemize}
+\item a singularity (vertical asymptote) at $x=-d/c$ ,
+\item a zero at $x=-b/a$,
+\item a horizontal asymptote at $a/c$, 
+\item a $y$-intercept at $b/d$, and
+\item is decreasing when $bc-ad>0$, and increasing when $bc-ad<0$.
+\end{itemize}
+{\bf Exercise.~~}Show that if $bc-ad>0$, and either $a>0$ and $c>0$
+or $a<0$ and $c<0$, that $-b/a < -d/c$, i.e. the zero is to the left
+of the singularity.
+
+\subsection*{Simple applications of decision trees in transmission}
+Consider the following very simple model.  Suppose that we have
+an intervention program among contacts, which may or may not treat latent 
+tuberculosis infection.  Suppose that with probability $g$ 
+individuals are evaluated, tested, and complete treatment, and that
+the efficacy of the treatment is $1-\epsilon$.  We denote the 
+probability of developing tuberculosis in the future by $\theta$.
+{\it Neglecting transmission,}
+we might suppose that the expected number of cases would be 
+$g \epsilon \theta + (1-g) \theta$.  We will call this $U$, the
+number of cases in the absence of transmission.
+
+Now, let's assume that each case has $N$ contacts.  Each contact
+must give rise to a certain number of expected cases, and this
+must be placed in the terminal nodes of the tree.  On the
+other hand, we can use the tree itself to calculate the number
+of expected cases.  How can we use the tree to compute a value
+that is itself used in the tree?  Let's let $E$ be the number of
+expected cases.  We can just solve for it:
+\[
+E = g \epsilon \theta (1+N E) + (1-g) \theta (1+N E) = (g \epsilon \theta + (1-g) \theta) (1+NE) = U (1+N E) .
+\]
+We find that
+\[
+E = \frac{U}{1-NU} .
+\]
+What does this mean?  Does it even make sense?  First of all, if
+$NU \geq 1$, the denominator is either zero or negative, and we
+can't expect this to correspond to anything actual.  But if $NU < 1$,
+$E>0$.  What is $NU$?  It is the number of contacts times the
+expected number of cases per contact; it is the expected number of
+new cases per case.  In this simple model, this is the {\it reproduction
+number} of tuberculosis in our population.  If the reproduction number
+is greater than or equal to one, then we expect the transmission 
+chains to go on forever, and we can't expect a finite number for $E$.
+
+On the other hand, if $NU<1$, we actually have a finite answer.
+We are multiplying $U$, the number of cases we would expect without
+transmission, by the value $1/(1-NU)$.  Since $0<NU<1$, $1-NU<1$,
+and so $1/(1-NU)>1$.  This is at least reassuring, since we now
+know that there would be more cases than without transmission; $E>U$.
+
+A little detour will help make some sense of this.  It turns out
+that 
+\[
+\sum_{i=0}^{\infty} \alpha^i = \frac{1}{1-\alpha} ,
+\]
+whenever $\alpha<1$.
+The left hand side of the equation is called the {\it geometric
+series}, and the formula gives the sum of the series.  One way to
+see why it's true is to assume that there is a sum, and call it
+$S$:
+\[
+1+\alpha + \alpha^2 + \alpha^3 + \cdots = S .
+\]
+Multiplying both sides by $\alpha$:
+\[
+\alpha + \alpha^2 + \alpha^3 + \alpha^4 + \cdots = S\alpha
+\]
+Now add one to both sides:
+\[
+1+\alpha + \alpha^2 + \alpha^3 + \alpha^4 + \cdots = 1+S\alpha .
+\]
+But
+this is just saying $S=1+S\alpha$, and you can just solve this for
+$S$.  (Technically, you still need to show that the series
+{\it converges}, so that $S$ actually exists.)
+
+Let's use this now.  If we let $\alpha=NU$, we now know
+\[
+\frac{1}{1-NU} = 1 + NU + (NU)^2 + (NU)^3 + \cdots .
+\]
+So 
+\[
+E = \frac{U}{1-NU} = U \left( 1 + NU + (NU)^2 + (NU)^3 + \cdots \right) .
+\]
+What this is telling us is that the number of expected cases is
+the number you would expect without transmission ($U$), times a
+multiplier.  This multiplier gives the contribution from 
+transmission at each generation; the first term is one, indicating
+that first case itself.  The second term gives the number of 
+contacts, times the number of cases each of them should generate,
+and so on.
+
+Practically speaking, what do these numbers mean?  Suppose that
+$\theta=0.03$, a three percent chance of developing tuberculosis in
+the future.  (Note that we are not even considering discounting yet,
+which would diminish this further.)  If $g=0.4$ and $\epsilon=0.3$,
+then $U=g\epsilon\theta + (1-g)\theta = 0.4 \times 0.3 \times 0.03
++ 0.6 \times 0.03 = 0.0216$.  If the number of contacts is on 
+average, say, eight, then we have $E=U/(1-NU)=0.02611$.  It is
+not much bigger than $U$ itself, because we have assumed little
+actual transmission.  Term by term, we can see that the first
+round of transmission contributes almost all the difference; 
+$NU = 0.1728$, but $(NU)^2 = 0.0299$, and $(NU)^3 = 0.0052$.  
+The value $1/(1-NU)=1.2089$.  Bear in mind that the quantities
+$\theta$, $N$, etc. are not well characterized, and would in any
+event differ from population to population.  This shows that for
+tuberculosis, a simplified model looking at at most one round of
+transmission might be a reasonable approximation.
+
+Let's look at a more complicated example.  Let's consider the
+fate of contacts of actively detected cases, and of passively
+detected cases.  Let's let $E_A$ be the expected number of tuberculosis
+cases per screened contact of an actively detected case, and
+$E_P$ be the expected number of tuberculosis cases per screened
+contact of a passively detected case.  Let $\beta_A$ be the
+probability that a contact of an actively detected active case is 
+an(other) active case; let $\pi_A$ be the probability that a 
+contact of an actively detected active case is latently infected.
+Similarly, let $\beta_P$ be the probability that a contact of an 
+{\it passively} detected active case is an(other) active case; 
+let $\pi_P$ be the probability that a contact of an passively 
+detected active case is latently infected.  Finally, let $N_A$ be
+the number of contacts of an actively detected case and let 
+$N_P$ be the number of contacts of a passively detected case.
+
+If a contact is themselves an active case of tuberculosis, how many
+cases resulted?  Say the original case was actively detected; we count 
+the case themselves, plus the number of contacts $N_A$ times the number
+of cases expected in those contacts, $E_A$.  Here, though, we have
+to be careful; if a case is detected among the contacts of a case, then
+the new case and the original case may actually have shared many
+contacts.  We can't in general expect to find as many cases in the
+new investigation.  Still, time may have elapsed between the first
+and second cases, so that this may not be as important as it may
+seem.  In any event, we will completely neglect this issue of
+overlapping contacts (for now).  On the other hand, for latently
+infected contacts, we assume that a fraction $p$ fail to be
+cured by LTBI therapy (for any of a number of reasons), and that the
+case of TB that develops in the future will be passively, not actively,
+detected. 
+So we have
+\begin{equation}
+\label{eq:ea1}
+E_A = \beta_A (1+N_A E_A) + \pi_A p \theta (1+N_P E_P) .
+\end{equation}
+Similarly,
+\begin{equation}
+\label{eq:ep1}
+E_P = \beta_P (1+N_A E_A) + \pi_P p \theta (1+N_P E_P) .
+\end{equation}
+Remember that cases of tuberculosis among the contacts of a passively
+detected case are themselves actively detected.
+
+So we have two equations to solve for $E_A$ and $E_P$.  This can be
+done by just plain elimination and substitution.  This yields
+\[
+E_A = \frac{\beta_A + p\pi_A \theta + \beta_P N_P p \pi_A \theta - \beta_A N_P p \pi_P \theta}{1 - \beta_AN_A - \beta_P N_A N_P p \pi_A \theta - N_P p \pi_P \theta + \beta_A N_A N_P p \pi_P \theta} 
+\]
+and
+\[
+E_P = \frac{\beta_P + p \pi_P \theta + \beta_P N_A p \pi_A \theta - \beta_A N_A p \pi_P \theta}{1 - \beta_AN_A - \beta_P N_A N_P p \pi_A \theta - N_P p \pi_P \theta + \beta_A N_A N_P p \pi_P \theta} .
+\]
+It turns out for realistic values of the parameters, these are never
+negative.
+
+\renewcommand{\baselinestretch}{1.2} \small
+For those who want to learn more about this, consider the following
+discussion (which will involve matrix theory momentarily).
+Suppose we have an actively detected case; such a case has $N_A$
+contacts (we expect), and each contact has a probability $\beta_A$
+of being a case of tuberculosis---and one that we will detect
+actively at that.  This says that every actively detected case
+leads to $\beta_A N_A$ actively detected cases at the next ``round''.
+
+Similarly, if we examine contacts of passively detected cases, we 
+expect to find a fraction $\beta_P$ to be new cases of tuberculosis,
+and for each to have $N_P$ contacts, for a total of $\beta_P N_A$
+new contacts of active cases.  
+
+On the other hand, every time we examine a contact of an actively
+detected case, sooner or later there will be $\pi_A p \theta$ new
+cases of TB that will be passively detected, and each will have
+$N_P$ contacts.  So the number of passively detected contacts 
+involved for every contact of an actively detected case is 
+$N_P p \pi_A \theta$.  Similarly, every contact of a passively detected 
+case yields $\pi_P p \theta N_P$ new contacts among passively detected 
+cases.
+
+There are two ways to look at this.  Each actively detected case has
+$N_A$ contacts, and each passively detected case has $N_P$ contacts.
+Each contact of an actively detected case gives rise to $\beta_A$
+actively detected cases and $\pi_A p \theta$ passively detected
+cases; each contact of a passively detected case gives rise to 
+$\beta_P$ passively detected cases and $\pi_P p \theta$ passively
+detected cases.  The first way to model this is to focus on cases;
+let $Y_A(\tau)$ and $Y_P(\tau)$ be the number of actively and passively detected
+cases at ``round'' $\tau$ of the process.  Then
+\[
+\left[ \begin{array}{c}
+       Y_A(\tau+1) \\
+       Y_P(\tau+1) \\
+       \end{array} \right] = 
+ \left[ \begin{array}{cc}
+        \beta_A N_A & \beta_P N_P \\
+        N_A \pi_A p \theta & N_P \pi_P p \theta \\
+        \end{array} \right] 
+\left[ \begin{array}{c}
+       Y_A(\tau) \\
+       Y_P(\tau) \\
+       \end{array} \right]  
+\]
+The matrix
+\[
+ \left[ \begin{array}{cc}
+        \beta_A N_A & \beta_P N_P \\
+        N_A \pi_A p \theta & N_P \pi_P p \theta \\
+        \end{array} \right] 
+\]
+is the {\it next generation matrix} and takes the place of the
+scalar reproduction number we saw in the previous problem.  
+Mathematicians have shown that the reproduction number in a 
+multivariate epidemic problem is the largest {\it eigenvalue} of
+the next generation matrix.
+
+On the other hand, we could have actually looked at the number of 
+contacts at each round of the process.  If we let $W_A$ be the
+number of contacts of actively detected cases and $W_P$ the number
+of contacts of passively detected cases, then
+\begin{equation}
+\label{eq:projc}
+\left[ \begin{array}{c}
+       W_A(\tau+1) \\
+       W_P(\tau+1) \\
+       \end{array} \right] = 
+ \left[ \begin{array}{cc}
+        \beta_A N_A & \beta_P N_A \\
+        N_P \pi_A p \theta & N_P \pi_P p \theta \\
+        \end{array} \right] 
+\left[ \begin{array}{c}
+       W_A(\tau) \\
+       W_P(\tau) \\
+       \end{array} \right]  
+\end{equation}
+We'll call the matrix appearing in this equation $\mbox{\rm \bf S}$; so
+\[
+\mbox{\rm \bf S} = \left[ \begin{array}{cc}
+        \beta_A N_A & \beta_P N_A \\
+        N_P \pi_A p \theta & N_P \pi_P p \theta \\
+        \end{array} \right] 
+\]
+This is not quite the same as the next generation matrix (for the
+number of cases).  Still, the two matrices have the same 
+eigenvalues.  They represent the same transmission process, just
+in two different ways.
+
+Equations~\ref{eq:ea1} and~\ref{eq:ep1} can be written in matrix
+form as
+\[
+\left[ \begin{array}{c}
+       E_A \\
+       E_P \\
+       \end{array} \right] = 
+ \left[ \begin{array}{cc}
+        \beta_A N_A & \pi_A p \theta N_P \\
+        \beta_P N_A & N_P \pi_P p \theta \\
+        \end{array} \right] 
+\left[ \begin{array}{c}
+       E_A \\
+       E_P \\
+       \end{array} \right]  
++
+\left[ \begin{array}{c}
+       \beta_A + \pi_A p \theta \\
+       \beta_P + \pi_P p \theta \\
+       \end{array} \right]  
+\]
+We could rearrange this to yield
+\[
+ \left[ \begin{array}{cc}
+        1 - \beta_A N_A & - \pi_A p \theta N_P \\
+        - \beta_P N_A & 1 - N_P \pi_P p \theta \\
+        \end{array} \right] 
+\left[ \begin{array}{c}
+       E_A \\
+       E_P \\
+       \end{array} \right]  
+=
+\left[ \begin{array}{c}
+       \beta_A + \pi_A p \theta \\
+       \beta_P + \pi_P p \theta \\
+       \end{array} \right]  
+\]
+Letting $U_A=\beta_A + \pi_A p \theta$ and
+$U_P=\beta_P + \pi_P p \theta$, we could write this
+\[
+(1-\mbox{\rm \bf S}^T) \left( E_A \atop E_P \right) = \left( U_A \atop U_P \right) .
+\]
+Solving,
+\begin{equation}
+\label{eq:eaep}
+\left( E_A \atop E_P \right) =  (1-\mbox{\rm \bf S}^T)^{-1} \left( U_A \atop U_P \right) .
+\end{equation}
+If the largest eigenvalue of $S$ is less than one, this is guaranteed
+to yield a nonnegative solution.
+
+On the other hand, we could just use Equation~\ref{eq:projc} to 
+directly compute the number of cases arising from a contact.
+The basic idea is to add up 
+\[
+\left[ \begin{array}{c}
+       W_A(0) \\
+       W_P(0) \\
+       \end{array} \right] + 
+\left[ \begin{array}{c}
+       W_A(1) \\
+       W_P(1) \\
+       \end{array} \right] + 
+\left[ \begin{array}{c}
+       W_A(2) \\
+       W_P(2) \\
+       \end{array} \right] + \cdots
+\]
+This gives us 
+\[
+\left[ \begin{array}{c}
+       W_A(0) \\
+       W_P(0) \\
+       \end{array} \right] + 
+\mbox{\rm \bf S} \left[ \begin{array}{c}
+       W_A(0) \\
+       W_P(0) \\
+       \end{array} \right] + 
+\mbox{\rm \bf S}^2 \left[ \begin{array}{c}
+       W_A(0) \\
+       W_P(0) \\
+       \end{array} \right] + \cdots ,
+\]
+or just $(\mbox{\rm \bf I} + \mbox{\rm \bf S} + \mbox{\rm \bf S}^2 + \cdots)$ times the matrix $(W_A(0),W_P(0)$.  It turns out that the geometric
+series formula works for matrices too, so that 
+$(\mbox{\rm \bf I} + \mbox{\rm \bf S} + \mbox{\rm \bf S}^2 + \cdots) = (\mbox{\rm \bf I} - \mbox{\rm \bf S})^{-1}$.  Since we want to start with one
+contact of an actively detected case, we can put $W_A(0)=1$ and
+$W_P(0)=0$.  Then we will have the total number of contacts of
+actively and passively detected cases.  But this doesn't give us the
+number of cases yet; we still have to multiply the number of
+contacts of actively detected cases by $U_A$ and the number of contacts
+of passively detected cases by $U_P$.  We can do this (and handle the
+number of cases arising from passively detected cases too) all in
+one matrix equation:
+\[
+\left[ \begin{array}{cc}
+       U_A & U_P \\
+       \end{array} \right]  
+(\mbox{\rm \bf I} - \mbox{\rm \bf S})^{-1} 
+=
+\left[ \begin{array}{cc}
+       E_A & E_P \\
+       \end{array} \right]  
+\]
+This is just the transpose of Equation~\ref{eq:eaep}!  So the 
+simple procedure on the decision tree is actually equivalent to adding
+up the number of cases ``all the way out''.
+
+Finally, we note that we are guaranteed that the largest eigenvalue
+of $\mbox{\rm \bf S}$ is less than one whenever $1-\beta_A N_A<1$,
+$1-\pi_P p \theta N_P<1$, and
+\[
+(1-\beta_A N_A)(1-\pi_P p \theta N_P) - \pi_A p \theta N_P \beta_P N_A > 0 .
+\]
+This last expression is the expression appearing in the denominator
+of the solution in the main text.
+
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+
+\vfill
+\end{document}

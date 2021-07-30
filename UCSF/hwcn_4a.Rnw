@@ -1,0 +1,1727 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{mathtools}
+\usepackage{amsmath}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand*{\cmss}{\fontfamily{\sfdefault}\selectfont}
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+\def\omit#1{}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+<<>>=
+library(tolerance)
+library(Matrix)
+library(gtools)
+library(Deriv)
+library(hypergeo)
+@
+
+\section{Lecture 4A}
+I'd like to consider an additional interesting class of processes, that generate autocorrelated count
+sequences.
+
+\subsection{The negative binomial distribution}
+\subsubsection{Definition}
+Recall that the negative binomial distribution has parameters $p$ and $k$.  The generating function
+is
+\[
+g(u) = \left( \frac{p}{1-u(1-p)} \right)^k .
+\]
+Let's do a quick reality check by way of review:
+\[
+g'(u) = k \left( \frac{p}{1-u(1-p)} \right)^{k-1} p (-1) (1-u(1-p))^{-2} (-(1-p))
+\]
+Let's just set $u=1$ without simplifying:
+\[
+g'(1) = k (1-p)/p .
+\]
+The mean is the aggregation parameter over the odds.
+<<>>=
+nb.mean <- function(k,p) {
+  k*(1-p)/p
+}
+@
+
+We need this too:
+\[
+g''(u) = \frac{k(k+1)(1-p)^2}{(1-u(1-p))^2}\left(\frac{p}{1-(1-p)u}\right)^k
+\]
+\[
+E[X(X-1)] = g''(1) = \frac{k(k+1)(1-p)^2}{p^2}
+\]
+So, the variance is $EX^2 - (EX)^2 = E[X(X-1)] + EX - (EX)^2$:
+\[
+\mbox{\rm var}(X) = \frac{k(k+1)(1-p)^2}{p^2} + \frac{k(1-p)}{p} - \frac{k^2(1-p)^2}{p^2}
+\] 
+which is
+\[
+\mbox{\rm var}(X) = \frac{k(1-p)}{p^2} .
+\]
+The actual second moment of a negative binomial with aggregation $k$ and probability $p$ is
+\begin{equation}
+\label{eq:nbsm}
+EX^2 = \frac{k(k+1)(1-p)^2}{p^2} + \frac{kp(1-p)}{p^2} = \frac{k}{p^2}(1-p)(1+k(1-p))
+\end{equation}
+ 
+\subsubsection{Addition}
+Adding two independent negative binomials together with the same $p$ gives you a new negative binomial.
+Let $Z=X+Y$,
+with $X$ and $Y$ independently negative binomial with $p$ and with aggregation parameters $a$ and $c$; $a+c=k$, so that $Z$ is negative
+binomial with $p$ and $k$.
+\[
+g_Z(u) = g_X(u) g_Y(u)
+\]
+\[
+g_Z(u) = \left( \frac{p}{1-u(1-p)} \right)^a \left( \frac{p}{1-u(1-p)} \right)^c 
+\]
+
+\subsubsection{Probability function}
+We have
+the generating function; let's go backwards and get the probabilities using Taylor series.
+
+Now, we need   %check!
+\[
+g'(u) = \frac{k(1-p)}{p} \left( \frac{p}{1-u(1-p)} \right)^{k+1}
+\]
+So 
+\[
+g'(0) = \frac{k(1-p)}{p} p^{k+1} = k(1-p)p^k .
+\]
+
+The negative binomial generating function has nice properties that permit us to
+get a recurrence for the derivatives, all the way out.
+In general, if 
+\[
+h(u) = A \left( \frac{p}{1-u(1-p)}\right)^m ,
+\]
+then
+\[
+h'(u) = Am \left( \frac{p}{1-u(1-p)}\right)^{m-1} (1-p)/p .
+\]
+Thus, if
+\[
+g^{i}(u) = A_i \left(\frac{p}{1-u(1-p)}\right)^{k+i}
+\]
+then
+\[
+g^{i+1}(u) = A_i (k+i)(1-p)/p \left(\frac{p}{1-u(1-p)}\right)^{k+i+1}
+\]
+Since for $i=1$, $g^{i}(u)=g'(u)$ gives us $A_1=k(1-p)/p$, we will
+have in turn $A_2=k(k+1)(1-p)^2/p^2$, and so on.  
+
+The quantity
+\[
+k(k+1)\cdots (k+i-1) = \frac{ (k+i-1)\cdots (k+1)k (k-1)! } {(k-1)!i!} = i! {k+i-1 \choose i} .
+\]
+
+So: we have 
+\[
+g^{i}(u) = i! {k+i-1 \choose k-1} \left(\frac{1-p}{p}\right)^i \left(\frac{p}{1-u(1-p)}\right)^{k+i}
+\]
+Then
+\[
+g^{i}(0) = i! {k+i-1 \choose k-1} \left(1-p\right)^i p^k
+\]
+So that finally, 
+\[
+P(X=i) = {k+i-1 \choose i} (1-p)^i p^k
+\]
+So let's write:
+\[
+P(X=x) = {a+x-1 \choose x} (1-p)^x p^a
+\]
+
+What is the probability that two independent and identically distributed 
+negative binomial variables have the same value?  Let $X$ and $Y$ be independent with shape $k$ and probability $p$.
+\[
+P(X=Y) = P(X=0)P(Y=0) + P(X=1)P(Y=1) + \cdots
+\]
+\[
+P(X=Y) = \sum_{i=0}^{\infty}\left( {k+i-1 \choose i} (1-p)^i p^k \right)^2 .
+\]
+Incredibly, this sum turns out to be
+\[
+P(X=Y) = p^{2k} {}_2F_1(k,k,1,(1-p)^2) .    % make sure the notation is the same as below; this is Mathematica's parameter order.
+\]
+ %mark
+
+\subsubsection{Binomial thinning}
+Let's look at binomial thinning of a negative binomial.  Let $X$ be negative binomial with $k$ and $p$.  Now,
+consider taking a binomial with size $X$ and success probability $s$, creating new variable $Z$.
+\[
+g_Z(u) = E[u^Z] = E[E[u^Z|X]] = \sum_{n=0}^{\infty} E[u^Z|X=n] P(X=n) = \sum_{n=0}^{\infty} (1-s+su)^n P(X=n)
+\]
+This will be just $g_X(1-s+su)$:
+\[
+g_Z(u) = \left( \frac{p}{1-(1-p)(1-s+su)} \right)^k .
+\]
+The denominator is $1-(1-p)(1-s+su)=s-su+p-sp+sup=s+p-sp + u(ps-s)=s+p-sp-us(1-p)$.  So
+\[
+g_Z(u) = \left( \frac{\frac{p}{s+p-sp}}{1-\frac{s(1-p)}{s+p-sp}u} \right)^k .
+\]
+Let $p'=p/(s+p-sp)$.  Necessarily, $s+p-sp=s+p(1-s)<1$, so $p'>p$.  Since $1-p'=(s-sp)/(s+p-sp)$, we can rewrite this as
+\[
+g_Z(u) = \left( \frac{p'}{1-(1-p')u} \right)^k .
+\]
+So we have a negative binomial with the same $k$, and a larger $p$, corresponding to getting fewer failures and thus to smaller
+values.
+
+What actually happened?  Binomial thinning is like making each negative binomial trial easier, so
+that typically you don't have to wait as long.  This executes a change of $p$ at constant $k$.
+
+Note that the conditional expectation of the thinned variable given the original variable $X$ is $sX$.
+
+\subsection{The $k$-process}
+\subsubsection{Negative hypergeometric thinning}
+Consider again adding independent negative binomial $X$ and $Y$, where $X$ has aggregation parameter $a$ and $Y$ has
+aggregation parameter $c$; both have probability $p$.
+The question here is: conditional on the value of the total, $Z=z$ what is the distribution of $X$?  
+
+Let's do an experiment.  We will simulate adding two independent negative binomials together, with the
+same $p$.  Then we'll condition on the total being some value, and look at the distribution of $X$.
+<<>>=
+aa <- 1.8
+cc <- 4.3
+pp <- 0.28
+ntot <- 1048576
+xz <- rnbinom(ntot,prob=pp,size=aa)
+yz <- rnbinom(ntot,prob=pp,size=cc)
+wz <- xz+yz
+mbar <- function(vz) {
+  iz <- 0:max(vz)
+  ans <- rep(NA,length(iz))
+  for (ii in 1:length(iz)) {
+    ans[ii] <- sum(vz==iz[ii])
+  }
+  ans/sum(ans)
+} 
+barplot(mbar(xz[wz==4]))
+@
+
+What is this distribution?  Let's compute it.
+We know
+\[
+P(X=x|Z=z) = \frac{P(X=x, Z=z)}{P(Z=z)}
+\]
+\[
+P(X=x|Z=z) = \frac{P(X=x, Y=z-x)}{P(Z=z)}
+\]
+Now we have independence:
+\[
+P(X=x|Z=z) = \frac{P(X=x)P(Y=z-x)}{P(Z=z)}
+\]
+
+Using the probability function for the negative binomial:
+\[
+P(X=x|Z=z) = \frac{P(X=x)P(Y=z-x)}{P(Z=z)} = \frac{ {a+x-1 \choose x} (1-p)^x p^a {c+z-x-1 \choose z-x} (1-p)^{z-x} p^c}{{k+z-1 \choose z} (1-p)^z p^k}
+\]
+Then:
+\[
+P(X=x|Z=z) = \frac{ {a+x-1 \choose x} {c+z-x-1 \choose z-x}}{{k+z-1 \choose z}} =
+\frac{ {a+x-1 \choose a-1} {c+z-x-1 \choose c-1}}{{k+z-1 \choose z}} 
+\]
+We're just cheerfully using ! when we should really be thinking $\Gamma$.
+% change this notation to P(Y=y|X=x).
+
+Since $a+c=k$:
+\[
+P(X=x|Z=z) = \frac{ {a+x-1 \choose x} {k-a+z-x-1 \choose z-x}}{{k+z-1 \choose z}} =
+\frac{ {a+x-1 \choose a-1} {k-a+z-x-1 \choose k-a-1}}{{k+z-1 \choose z}} 
+\]
+
+<<>>=
+aa <- 1.8
+cc <- 4.3
+kk <- aa+cc
+pp <- 0.28
+ww <- 4
+@
+
+<<>>=
+cmpc <- function(ww,aa,cc) {
+  ans <- rep(NA,ww+1)
+  for (xx in 0:ww) {
+    ans[xx+1] <- exp(lchoose(aa+xx-1,xx)+lchoose(cc+ww-xx-1,ww-xx)-lchoose(kk+ww-1,ww))
+  }
+  ans
+}
+cmpc(4,aa,cc)
+@
+
+A person could almost be forgiven for mistaking this for the hypergeometric, which it of course is {\it not}.  In fact, this
+is the {\it negative hypergeometric} distribution.  Let's use the notation of Wikipedia.  First, put $c=k-a$:
+\[
+\frac{ {a+x-1 \choose x} {k-a+z-x-1 \choose z-x}}{{k+z-1 \choose z}} 
+\]
+Now put $N=k+z-1$, $a=r$, $z=K$:
+\[
+\frac{ {x+r-1 \choose x} {N-r-x \choose K-x}}{{N \choose K}} 
+\]
+And finally use $k$ for our $x$:
+\[
+\frac{ {k+r-1 \choose k} {N-r-k \choose K-k}}{{N \choose K}} 
+\]
+which is unmistakably the negative hypergeometric according to Wikipedia.
+Using the formula for the mean $rK/(N-K+1)$, we find that given $x$, the 
+expected value of $Y$ is $ax/k$.
+
+We need to produce negative hypergeometric random variables in R.  Functions
+for this seem to be in the {\tt tolerance} package, but they are parameterized
+annoyingly.  So let's hand roll our own:
+<<>>=
+dnhyperg <- function(xx,rr,bign,bigk) {
+  nl <- length(xx)
+  ans <- rep(NA,nl)
+  for (ii in 1:nl) {
+    ans[ii] <- exp(lchoose(rr+xx[ii]-1,xx[ii])+lchoose(bign-rr-xx[ii],bigk-xx[ii])-lchoose(bign,bigk))
+  } 
+  ans
+}
+dnhyperg(0:4,rr=aa,bign=kk+4-1,bigk=4)
+@
+These are the familiar probabilities from our simulation above.  This function evaluates
+\[
+P(X=x) = \frac{ {r+x-1 \choose x}{N-r-x \choose K-x} }{{N \choose K}} .
+\]
+
+<<>>=
+rnhyperg <- function(nsamp,rr,bign,bigk) {
+  ptbl <- dnhyperg(0:bigk,rr,bign,bigk)
+  cml <- cumsum(ptbl)
+  uu <- runif(nsamp)
+  ans <- rep(NA,nsamp)
+  for (ii in 1:nsamp) {
+    ans[ii] <- sum(cml<uu[ii]) 
+  }
+  ans
+}
+rnhyperg(8,aa,kk+4-1,4)
+@
+
+We generated a new negative binomial with aggregation parameter $a$, so we know the
+variance is $a(1-p)/p^2$.
+
+\subsubsection{Simulating the process}
+What we're calling the $k$-process is going to produce a correlated negative binomial sequence.  We will first
+use negative hypergeometric thinning to reduce the $k$.  Then, we add in independent negative binomial innovations.
+<<>>=
+k.nbser <- function(len,kk,pp,aa) {
+  if (len<=1) {
+    stop("bad len")
+  }
+  ans <- rep(NA,len)
+  ans[1] <- rnbinom(1,prob=pp,size=kk)
+  for (ii in 2:len) {
+    w <- ans[ii-1]
+    tmp <- rnhyperg(1,rr=aa,bign=kk+w-1,bigk=w)
+    ans[ii] <- tmp + rnbinom(1,prob=pp,size=kk-aa)
+  } 
+  ans
+}
+uq <- k.nbser(65536,kk=6.8,aa=5.1,pp=0.28)
+acf(uq)
+plot(uq[1:1024],type="l")
+barplot(mbar(uq),main="k-process simulation")
+barplot(dnbinom(0:59,prob=0.28,size=6.8),main="theoretical neg bin")
+@
+
+For clarity, suppose we had a negative binomial $Y$, from a distribution with $p$ and $k$.  Suppose we wanted
+to use negative hypergeometric thinning to yield a new $Y'$ with $p$ and $k'<k$.
+<<>>=
+nbthin <- function(yy.vec,pp,kk,kprime) {
+  ans <- rep(NA,nn <- length(yy.vec))
+  for (ii in 1:nn) {
+    ans[ii] <- rnhyperg(1,rr=kprime,bign=kk+yy.vec[ii]-1,bigk=yy.vec[ii])
+  }
+  ans
+}
+yz1 <- rnbinom(16384,prob=0.28,size=6.8)
+yz2 <- nbthin(yz1,pp=0.28,kk=6.8,kprime=5.1)
+hist(yz2)
+@
+
+\subsubsection{Autocorrelation}
+We want to compute
+\[
+\mbox{\rm cov}(X_i,X_{i+1}),
+\]
+under stationarity.
+
+We are assuming that $X_i$ is negative binomial with aggregation $k$ and probability $p$, so 
+\[
+P(X_i=x) = {k+x-1 \choose x} (1-p)^x p^k
+\]
+whose variance is, as noted above, $k(1-p)/p^2$.
+
+Now:
+\[
+\mbox{\rm cov}(X_i,X_{i+1}) = \mbox{\rm cov}(X_i,X'_i+A_{i+1}) 
+\]
+where $A_i$ is the independent innovation at time $i+1$, already agreed to be negative binomial.
+\[
+\mbox{\rm cov}(X_i,X_{i+1}) = \mbox{\rm cov}(X_i,X'_i) + \mbox{\rm cov}(X_i,A_{i+1})  = \mbox{\rm cov}(X_i,X'_i) .
+\]
+
+I would like to get the joint generating function of $X_i$ and $X'_i$.
+\[
+h(u,v) = E[u^{X_i}v^{X'_{i}}] 
+\]
+To improve the notation let's just write $X$ for $X_i$ and $Y$ for $X'_i$.
+\[
+h(u,v) = E[u^X v^Y] = \sum_{x=0}^{\infty} \sum_{y=0}^{\infty} P(X=x,Y=y) u^x v^y
+\]
+\[
+h(u,v) = \sum_{x=0}^{\infty} \sum_{y=0}^{\infty} P(X=x) P(Y=y|X=x) u^x v^y
+\]
+\[
+h(u,v) = \sum_{x=0}^{\infty} P(X=x)u^x \sum_{y=0}^{\infty} P(Y=y|X=x) v^y
+\]
+
+We use negative hypergeometric thinning
+to yield the hidden variable $X'_i\equiv Y$:
+\[
+P(Y=y|X=x) = \frac{ {a+y-1 \choose y} {c+x-y-1 \choose x-y}}{{k+x-1 \choose x}} =
+\frac{ {a+y-1 \choose a-1} {c+x-y-1 \choose c-1}}{{k+x-1 \choose x}} 
+\]
+
+Wikipedia writes the negative hypergeometric in this form:
+\[
+P(T=i) = \frac{ {i+r-1 \choose i} {N-r-i \choose K-i}}{{N \choose K}}
+\]
+The probability generating function [1] seems to be:
+\[
+g(u) = \frac{\Gamma(N-K+1) \Gamma(N-r+1)}{\Gamma(N+1)  \Gamma(N-r-K+1)} {}_2F_1(r,-K,-(N-r);u) .
+\]
+The parameters are thus:
+\begin{enumerate}
+\item $K$ becomes $x$
+\item $N$ becomes $k+x-1$
+\item $r$ becomes $a$
+\end{enumerate}
+
+For us, we have the conditional generating function of $Y$ given $X=x$ as
+\[
+g_{Y|X=x}(u) = \frac{\Gamma(k) \Gamma(c+x)}{\Gamma(k+x)  \Gamma(k-a)} {}_2F_1(a,-x,-(k+x-1-a);u) .
+\]
+
+The normalization condition requires
+\[
+{}_2F_1(a,b,c;1) = \frac{\Gamma(a-c+1)\Gamma(b-c+1)}{\Gamma(a+b-c+1)\Gamma(1-c)}
+\]
+for the terminating hypergeometric series we are looking at.  (This is called the Chu-Vandermonde equation.) %@@@
+
+For our reference:
+\[
+{}_2F_1(a,b,c;u) = \sum_{i=0}^{\infty} \frac{(a)_{i} (b)_{i}}{(c)_{i}}\frac{u^i}{i!} .
+\]
+is the hypergeometric function, which gave this distribution its name (as well as the
+ordinary hypergeometric function.  We also get a look at some {\it rising Pochhammer symbols}:
+\[
+(A)_{n} = 1
+\]
+for $n=0$ and
+\[
+(A)_{n} = A(A+1)\cdots(A+n-1)
+\]
+for $n>0$.
+The function ${}_2F_1$ is the hypergeometric function.
+Forevermore, higher terms are zero.  So if either $a$ or $b$ are negative, the
+hypergeometric series terminates and is a finite polynomial.  If $c$ is negative,
+this will happen in the denominator however, but as long as the numerator goes
+zero first, it's OK.
+
+Maybe we should do a few numerical examples.  Let's do a negative hypergeometric with
+$N=7$, $K=3$, and $r=2$.  Let's work out the probabilities by hand first:
+\[
+P(Y=0) = \frac{ {0+2-1 \choose 0} {7-2-0 \choose 3-0} }{{7 \choose 3}} =
+ 1 \times {5 \choose 3} / {7 \choose 3} = 10/35.
+\]
+\[
+P(Y=1) = \frac{ {1+2-1 \choose 1} {7-2-1 \choose 3-1} }{{7 \choose 3}} =
+ 2 \times {4 \choose 2} / {7 \choose 3} = 12/35
+\]
+\[
+P(Y=2) = \frac{ {2+2-1 \choose 2} {7-2-2 \choose 3-2} }{{7 \choose 3}} =
+ 3 \times {3 \choose 1} / {7 \choose 3} = 9/35
+\]
+\[
+P(Y=3) = \frac{ {3+2-1 \choose 3} {7-2-3 \choose 3-3} }{{7 \choose 3}} =
+ 4 \times {2 \choose 0} / {7 \choose 3} = 4/35
+\]
+The generating function should actually just be a cubic:
+<<>>=
+plot( function(u){10/35 + 12/35*u + 9/35*u^2 + 4/35*u^3} )
+@
+
+Now, let's try the hypergeometric formula:
+<<>>=
+fc <- function(n){exp(lgamma(n+1))}
+nhg.maker <- function(bign,bigk,rr) {
+  function(u) {((fc(bign-bigk)*fc(bign-rr))/(fc(bign)*fc(bign-rr-bigk)))*Re(hypergeo(rr,-bigk,-(bign-rr),u))}
+}
+@
+<<>>=
+plot( function(u){10/35 + 12/35*u + 9/35*u^2 + 4/35*u^3} )
+xz <- seq(0,1,by=1/128)
+points(xz, nhg.maker(7,3,2)(xz),type="l", col="blue")
+@
+
+So back to our hypergeometric:
+\[
+h(u,v) = p^k \frac{\Gamma(k)}{\Gamma(k-a)} \sum_{x=0}^{\infty} {k+x-1 \choose x} (1-p)^x 
+u^x \frac{\Gamma(c+x)}{\Gamma(k+x)} {}_2F_1(a,-x,-(k+x-1-a);v) .
+\]
+That summation does not look like a lot of fun.  But it is worth remembering that the hypergeometric
+function in this case is just a finite polynomial.
+
+Let's see if we can numerically make sense of this.
+\[
+h(1,1) = p^k \frac{\Gamma(k)}{\Gamma(k-a)} \sum_{x=0}^{\infty} {k+x-1 \choose x} (1-p)^x 
+\frac{\Gamma(c+x)}{\Gamma(k+x)} {}_2F_1(a,-x,-(k+x-1-a);1) .
+\]
+Substitute in the normalization condition and cancel a bunch of stuff out:
+\[
+h(1,1) = p^k  \sum_{x=0}^{\infty} {k+x-1 \choose x} (1-p)^x 
+\]
+This is just the negative binomial probability function, and this just adds up to 1.  
+
+We're going to need the derivative of the hypergeometric function in a moment.
+\[
+{}_2F_1(a,b,c;u) = 1 + \frac{ab}{c}u + \frac{a(a+1)b(b+1)}{2!c(c+1)}u^2 + \frac{a(a+1)(a+2)b(b+1)(b+2)}{3!c(c+1)(c+2)}u^3 + \cdots
+\]
+\[
+\frac{d}{du}{}_2F_1(a,b,c;u) = \frac{ab}{c} + \frac{a(a+1)b(b+1)}{c(c+1)}u + \frac{a(a+1)(a+2)b(b+1)(b+2)}{2!c(c+1)(c+2)}u^2 + \cdots
+\]
+\[
+\frac{d}{du}{}_2F_1(a,b,c;u) = \frac{ab}{c}\left(1 + \frac{(a+1)(b+1)}{(c+1)}u + \frac{(a+1)(a+2)(b+1)(b+2)}{2!(c+1)(c+2)}u^2 \right)
+\]
+\[
+\frac{d}{du}{}_2F_1(a,b,c;u) = \frac{ab}{c}{}_2F_1(a+1,b+1,c+1;u) .
+\]
+
+Let's differentiate by $u$:
+\[
+\frac{\partial}{\partial u} h(u,v) = p^k \frac{\Gamma(k)}{\Gamma(k-a)} \sum_{x=1}^{\infty} {k+x-1 \choose x} (1-p)^x 
+x u^{x-1} \frac{\Gamma(c+x)}{\Gamma(k+x)} {}_2F_1(a,-x,-(k+x-1-a);v) .
+\]
+
+And by $v$:
+\[
+\frac{\partial^2}{\partial u\/ \partial v} h(u,v) = p^k \frac{\Gamma(k)}{\Gamma(k-a)} \sum_{x=1}^{\infty} {k+x-1 \choose x} (1-p)^x x u^{x-1} \frac{\Gamma(c+x)}{\Gamma(k+x)} \frac{\partial}{\partial v}{}_2F_1(a,-x,-(k+x-1-a);v) .
+\]
+
+\[
+\quad = a p^k \frac{\Gamma(k)}{\Gamma(k-a)} \sum_{x=1}^{\infty} \frac{\Gamma(k+x)}{\Gamma(x+1)\Gamma(k)} (1-p)^x u^{x-1} \frac{\Gamma(k-a+x-1)}{\Gamma(k+x)} x^2 {}_2F_1(a+1,-x+1,-(k+x-1-a)+1;v) .
+\]
+
+\[
+\quad = a p^k \frac{1}{\Gamma(k-a)} \sum_{x=1}^{\infty} \frac{\Gamma(k-a+x-1)}{\Gamma(x+1)} (1-p)^x u^{x-1} x^2 {}_2F_1(a+1,-x+1,-(k+x-1-a)+1;v) .
+\]
+
+Now, let's write $u=v=1$:
+\[
+EXY = a p^k \frac{1}{\Gamma(k-a)} \sum_{x=1}^{\infty} \frac{\Gamma(k-a+x-1)}{\Gamma(x+1)} (1-p)^x x^2 {}_2F_1(a+1,-x+1,-(k+x-1-a)+1;1) .
+\]
+
+Now apply the normalization:
+\[
+EXY = a p^k \frac{1}{\Gamma(k-a)} \sum_{x=1}^{\infty} \frac{\Gamma(k-a+x-1)}{\Gamma(x+1)} (1-p)^x x^2 
+\frac{\Gamma(k+x)\Gamma(k-a)}{\Gamma(k+1)\Gamma(-a + k + x - 1)}
+\]
+
+\[
+EXY = a p^k  \sum_{x=1}^{\infty} \frac{\Gamma(k+x)}{\Gamma(x+1)\Gamma(k+1)} (1-p)^x x^2
+\]
+which is
+\[
+EXY = \frac{a p^k}{k}  \sum_{x=1}^{\infty} {k + x -1 \choose x} (1-p)^x x^2 
+\]
+
+The sum is actually the second moment of a negative binomial with aggregation $k$ and probability $p$:
+\[
+EXY = \frac{a}{p^2}(1-p)(1+k(1-p))
+\]
+Finally, we can write $\mbox{\rm cov}(X,Y)=EXY-EX\/EY$ and find
+\[
+\mbox{\rm cov}(X,Y) = \frac{a(1-p)}{p^2}.
+\]
+
+Now, let's unwind the stack a long way.  We want the correlation between two successive terms in the sequence.  And it's assumed
+to be stationary.
+The correlation coefficient is 
+\[
+r = \frac{ \mbox{\rm cov}(X,Y)} {\mbox{\rm var}(X)}
+\]
+From what we already saw,
+\[
+r = \frac{ \frac{a(1-p)}{p^2} } { \frac{k(1-p)}{p^2} }, 
+\]
+so that
+\[
+r = \frac{a}{k} .
+\]
+
+That was the hard way to get the autocorrelation, just by hammering through the joint distribution.  There is a much
+easier way:
+\[
+E[XY] = E[ E[XY|X] ] = E[ X E[Y|X] ]
+\]
+What is the conditional distribution of $Y$ given $X$?  Given $X$, $Y$ is a negative hypergeometrically thinned version of $X$.
+As we saw earler, $E[Y|X]=aX/k$.  So we have
+\[
+EXY = \frac{a}{k}E[X^2] = \frac{a}{k} \frac{k(1-p)}{p^2} (1+k(1-p)) = \frac{a(1-p)}{p^2} (1+k(1-p)) .
+\]
+
+\subsubsection{Conditional distribution}
+What if we assume a stationary time series, with negative binomial marginals with
+$k$ and $p$, with autocorrelation $0 < \rho < 1$.  Let the value at time $i$ be
+$X_i$.  What is the conditional distribution of $X_{i+1}$ given $X_i$?  
+
+Changing the notation, we already have that $X_{i+1} = X'_i + A_i$, where $X'_i$ is
+a negative-hypergeometrically thinned version of $X_i$, and $A_i$ is an independent
+innovation.  Therefore we just need the generating function of each, and we
+multiply.
+
+We know:
+\[
+P(X'_i=y | X_i=x) = \frac{ {a+y-1 \choose y} {c+x-y-1 \choose x-y}}{{k+x-1 \choose x}} =
+\frac{ {a+y-1 \choose a-1} {c+x-y-1 \choose c-1}}{{k+x-1 \choose x}} 
+\]
+with conditional generating function of $X_{i+1}$ given $X_i=x$ as
+\[
+g_{X_{i+1}|X=x}(u) = \frac{\Gamma(k) \Gamma(c+x)}{\Gamma(k+x)  \Gamma(k-a)} {}_2F_1(a,-x,-(k+x-1-a);u) .
+\]
+Then we need the generating function of $A_i$.  If we want autocorrelation $\rho$, then
+the aggregation parameter of the innovation must be $(1-\rho)k$:
+\[
+g_A(u) = \left( \frac{p}{1-u(1-p)} \right)^{(1-\rho)k}.
+\]
+
+Multiplying generating functions (adding random variables), and applying $a=\rho k$, $c=(1-\rho)k$:
+\[
+g(u) = 
+\frac{\Gamma(k) \Gamma((1-\rho)k+x)}{\Gamma(k+x)  \Gamma(k-\rho k)} {}_2F_1(\rho k,-x,-(k+x-1-\rho k);u) 
+\left( \frac{p}{1-u(1-p)} \right)^{(1-\rho)k}.
+\]
+
+
+\subsubsection{Inverse thinning}
+Under construction.
+
+Let $X$ be negative binomial with shape $k$ and probability $p$, and let $Y$ be a negative hypergeometrically
+thinned version.  
+Adding in an independent negative binomial to $Y$ should produce the same distribution as $X$.  Is
+this true?
+
+We had the joint generating function of $X$ and $Y$:
+\[
+h(u,v) = p^k \frac{\Gamma(k)}{\Gamma(k-a)} \sum_{x=0}^{\infty} {k+x-1 \choose x} (1-p)^x 
+u^x \frac{\Gamma(c+x)}{\Gamma(k+x)} {}_2F_1(a,-x,-(k+x-1-a);v) .
+\]
+
+If I have negative binomial $X$, with $p$ and $k$, and thin it to get negative binomial $Y$ with $p$ and $a<k$, is this the
+same as having $Y$ and adding an independent negative binomial with $p$ and $k-a$ to get $X$? 
+
+\subsubsection{Brief review and recapitulation}
+Consider $X_1$ being negative binomial with shape $k$ and probability $p$, and adding $W$ to it, an independent negative
+binomial with shape $a$ and probability $p$, obtaining $Y$.
+We have
+\[
+P(X_1=x_1) = {k+x_1-1 \choose x_1}(1-p)^{x_1}p^k,
+\]
+\[
+P(W=w) = {a+w-1 \choose w}(1-p)^{w}p^a,
+\]
+and
+\[
+P(Y=y) = {a+k+y-1 \choose y}(1-p)^{y}p^{k+a} .
+\]
+Then
+\[
+P(X_1=x_1,Y=y) = {k+x_1-1 \choose x_1}{a+y-x_1-1 \choose y-x_1}(1-p)^yp^{a+k} .
+\]
+Therefore, as we already know,
+\[
+P(X_1=x_1|Y_y) = \frac{ {k+x_1-1 \choose x_1}{a+y-x_1-1 \choose y-x_1}}{{a+k+y-1 \choose y}} .
+\]
+This is a negative hypergeometric
+\[
+P(X=x) = \frac{ {r+x-1 \choose x}{N-r-x \choose K-x} }{{N \choose K}} 
+\]
+with $N=a+k+y-1$, $K=y$, $x=x_1$, and $r=k$.  The mean of the negative hypergeometric parameterized
+like this is
+<<>>=
+nhyperg.mean <- function(rr,bign,bigk) {
+  rr*bigk/(bign-bigk+1)
+}
+@
+
+If we take $a=5.1$ and $k=11.9$, let's calculate some conditional probabilities for different $y$:
+<<>>=
+ctmp <- function(x1z,y,k=11.9,a=5.1) {
+  ans <- rep(NA,length(x1z))
+  for (ii in 1:length(x1z)) {
+    x1 <- x1z[ii] 
+    ans[ii] <- dnhyperg(x1,k,a+k+y-1,y)
+  }
+  ans
+}
+distribz <- lapply(c(5,10,15,50),function(some.y)ctmp(seq(0,100,by=1),some.y))
+plot
+@
+Does this make any sense?  The mean of $Y$ is $(a+k)(1-p)/p$ which is approximately \Sexpr{round(nb.mean(k=17,p=0.28),1)}.  The
+conditional distribution of $X_1$ given $Y=50$ is negative hypergeometric with $N=a+k+y-1=17+50-1=66$, $K=50$, and $r=11.9$, or
+\Sexpr{round(nhyperg.mean(rr=11.9,bign=66,bigk=50),2)}.  The mean of $X_1$ should be $k(1-p)/p$, or 
+\Sexpr{round(nb.mean(k=11.9,p=0.28),1)}.  In general we find $E[X_1|Y=y] = yk/(a+k)$; here we have $11.9/17 \times 50=35$ as we just
+saw.
+
+\subsubsection{Two correlated variables resulting from thinning}
+Let $Y$ be negative binomial with shape $k$ and probability $p$.  Let $k'=ck$, where $0<c<1$, and let $k''=qk$ with again
+$0<q<1$.  Let $X_1$ be a negative hypergeometrically thinned $Y$ with shape $k'$, and similarly for $X_2$.  
+
+We earlier showed that 
+\begin{equation}
+\mbox{\rm cov}(Y,X_1) = \frac{k'(1-p)}{p^2}.
+\end{equation}
+Is this accurate?  Let's check with simulation:
+<<>>=
+example.nbs <- rnbinom(66536,prob=0.28,size=6.8)
+mean(example.nbs)
+nb.mean(k=6.8,p=0.28)
+@
+Now, thin:
+<<>>=
+xprimez <- nbthin(example.nbs,pp=0.28,kk=6.8,kprime=5.1) 
+cov(example.nbs,xprimez)
+@
+
+Can we get 
+\[
+\mbox{\rm cov}(X_1,X_2) = E[X_1X_2] - E[X_1]E[X_2]
+\]
+First
+\[
+E[X_1X_2] = E[ E[X_1X_2|X] ] 
+\]
+Now, $X_1$ and $X_2$ are conditionally independent given $Y$:
+\[
+E[X_1X_2] = E[ E[X_1|Y] E[X_2|Y] ] = E[ cY qY ] = cqE[Y^2] 
+\]
+\[
+E[X_1X_2] = cq \frac{k(1-p)}{p^2} (1+k(1-p))
+\]
+So
+\[
+\mbox{\rm cov}(X_1,X_2) = cq \frac{k(1-p)}{p^2} (1+k(1-p)) - ck\frac{1-p}{p} qk\frac{1-p}{p} = cqk\frac{1-p}{p^2} .
+\]
+
+Now, suppose we have a single $X^*$ with probability $p$ and shape $k^*$.  Let $a=k/k^*$.  Denote 
+negative hypergeometric thinning of $X^*$ by $a \circ X^*$.  Then write $X_i = a \circ X^*$ for $i=1,2,3$, and
+let these be conditionally independent given $X^*$.  We are going to find that 
+\[
+\mbox{\rm cov}(X_1,X_2) = a^2\mbox{\rm var}(X^*) .
+\] 
+Then
+\[
+\mbox{\rm cor}(X_1,X_2) = \frac{a^2\mbox{\rm var}(X^*)}{\mbox{\rm var}(X_1)}
+\]
+since $X_1$ and $X_2$ have the same variance.
+\[
+\mbox{\rm cor}(X_1,X_2) = \frac{a^2   k^* \frac{1-p}{p^2} }{k \frac{1-p}{p^2} }  = a .
+\]
+
+\subsubsection*{Joint distribution of two thinned variables}
+Let $Y$ be negative binomial with probability $p$ and shape $a+k$, and let $a$ be the shape parameter of $X_1$ and
+$X_2$ produced by negative hypergeometric thinning of $Y$.  As stated above, this means that the conditional
+distribution of $X_1$ given $Y=y$ is negative hypergeometric with 
+$N=a+k+y-1$, $K=y$, and $r=k$.   Assume that $X_1$ and $X_2$ are conditionally independent given $Y$.
+
+Let us work out the joint distribution of $X_1$ and $X_2$ and the conditional distribution of $X_2$ given $X_1$.  
+\[
+P(Y=y,X_1=x_1,X_2=x_2) = P(Y=y)P(X_1=x_1|Y=y)P(X_2=x_2|Y=y)
+\]
+\[
+\quad = {a+k+y-1 \choose y} (1-p)^y p^{a+k}
+\frac{ {k+x_1-1 \choose x_1}{a+y-1-x_1 \choose y-x_1} }{{a+k+y-1 \choose y}} 
+\frac{ {k+x_2-1 \choose x_2}{a+y-1-x_2 \choose y-x_2} }{{a+k+y-1 \choose y}} 
+\]
+\[
+\quad = (1-p)^y p^{a+k}
+\frac{ {k+x_1-1 \choose x_1}{a+y-1-x_1 \choose y-x_1} }{{a+k+y-1 \choose y}} 
+{k+x_2-1 \choose x_2}{a+y-1-x_2 \choose y-x_2} 
+\]
+We will then sum over $Y=y$ to obtain the joint distribution of $X_1$ and $X_2$.
+
+%Binomial[k+y-1 ,y] (1-p)^y p^k ( Binomial[k+x_1-1 , x_1]Binomial[a+y-1-x_1 ,y-x_1] )/(Binomial[a+k+y-1 , y]) ( Binomial[k+x_2-1 , x_2]Binomial[a+y-1-x_2 , y-x_2] )/(Binomial[a+k+y-1 ,y]) 
+
+Without loss of generality, let $x_2 \geq x_1$.  It turns out that when we sum over $Y=y$ we get 
+\[
+\begin{split}
+P(X_1 & =x_1,X_2=x_2) = \\
+ & \frac{
+  (1-p)^{x_2} p^{a+k} {x_2-x_1+a-1 \choose x_2-x_1} {x_1+k-1 \choose x_1} {x_2 + k -1 \choose x_2}
+    {}_3F_2(x_2+1,a,x_2-x_1+a; x_2-x_1+1, x_2+a+k; 1-p)
+}{
+  {x_2 + a + k -1 \choose x_2}
+}\\
+\end{split}
+\]
+Despite appearances, this is exchangeable.
+
+We can write this
+\begin{equation}
+\begin{split}
+P(X_1 & =x_1,X_2=x_2) = \\
+ & \frac{
+  (1-p)^{\mbox{\rm max}(x_1,x_2)} p^{a+k} {|x_2-x_1|+a-1 \choose |x_2-x_1|} {\mbox{\rm min}(x_1,x_2)+k-1 \choose \mbox{\rm min}(x_1,x_2)} {\mbox{\rm max}(x_1,x_2) + k -1 \choose \mbox{\rm max}(x_1,x_2)}
+    {}_3F_2(\mbox{\rm max}(x_1,x_2)+1,a,|x_2-x_1|+a; |x_2-x_1|+1, \mbox{\rm max}(x_1,x_2)+a+k; 1-p)
+}{
+  {\mbox{\rm max}(x_1,x_2) + a + k -1 \choose \mbox{\rm max}(x_1,x_2)}
+}\\
+\end{split}
+\end{equation}
+
+In R,
+<<>>=
+d.bivar.nbinom <- function(x.vec,common.k,common.p,rho) {
+  a <- common.k
+  k <- a/rho
+  p <- common.p
+  x1 <- x.vec[1]
+  x2 <- x.vec[2]
+  if (x1>x2) {
+    xtmp <- x1
+    x1 <- x2
+    x2 <- xtmp
+  }
+  t1 <- x2*log(1-p)
+  t2 <- (a+k)*log(p)
+  t3 <- lchoose(x2-x1+a-1,x2-x1)
+  t4 <- lchoose(x1+k-1,x1)
+  t5 <- lchoose(x2+k-1,x2)
+  t6 <- -lchoose(x2+a+k-1,x2)
+  f1 <- exp(t1+t2+t3+t4+t5+t6)
+  f2 <- genhypergeo(U=c(x2+1,a,x2-x1+a),L=c(x2-x1+1,x2+a+k),z=1-p)
+  f1*f2
+}
+d.bivar.nbinom(c(5,21),5.1,0.28,0.3)
+@
+%cross checked against Mathematica
+% we checked the normalization using the following function (suppressed now for speed)
+<<echo=FALSE,results='hide'>>=
+chn.nb <- function() {
+  tmp <- 0
+  for (ii in 0:256) {
+    for (jj in 0:256) { 
+      tmp <- tmp+d.bivar.nbinom(c(ii,jj),5.1,0.28,0.3)
+    }
+  }
+  tmp
+}
+@
+
+Then the conditional distribution of $X_1$ given $X_2$ is
+\[
+P(X_1 =x_1|X_2=x_2) = 
+  \frac{
+  (1-p)^{\mbox{\rm max}(x_1,x_2)} p^{k} {|x_2-x_1|+a-1 \choose |x_2-x_1|} {x_1+k-1 \choose x_1} {x_2 + k -1 \choose x_2}
+    {}_3F_2(\mbox{\rm max}(x_1,x_2)+1,a,|x_2-x_1|+a; |x_2-x_1|+1, x_2+a+k; 1-p)
+}{
+  {\mbox{\rm max}(x_1,x_2) + a + k -1 \choose \mbox{\rm max}(x_1,x_2)}
+  {a+x_2-1 \choose x_2} (1-p)^{x_2} 
+}
+\]
+%unchecked @@@
+
+\subsubsection*{More than two correlated negative binomial variables}
+Suppose I want three negative binomials with probability 0.28 and shape 5.1, and I want each of them to
+have correlation $r=0.3$ with each other.  Then $k^*$ is going to have to be $5.1/0.3=17$.  
+<<>>=
+xstarz <- rnbinom(66536,prob=0.28,size=17)
+x1z <- nbthin(xstarz,pp=0.28,kk=17,kprime=5.1)
+x2z <- nbthin(xstarz,pp=0.28,kk=17,kprime=5.1)
+x3z <- nbthin(xstarz,pp=0.28,kk=17,kprime=5.1)
+cor(x1z,x2z)
+cor(x2z,x3z)
+cor(x1z,x3z)
+@
+The same thing will work for any number of variables that have to have the same correlation.  We have
+a single hidden variable for a maximally connected subgraph.
+
+This also works if we are given one of the variables.
+Let's do an experiment.  Let $X_1$ be negative binomial with $p$ and $k$.  
+<<>>=
+ex1 <- function(nsimz,pp,kk,rho) {
+  x1 <- rnbinom(nsimz,prob=pp,size=kk)
+  newk <- kk/rho
+  xhidden <- x1 + rnbinom(nsimz,prob=pp,size=newk-kk)
+  x2 <- nbthin(xhidden,pp=pp,kk=newk,kprime=kk)
+  x3 <- nbthin(xhidden,pp=pp,kk=newk,kprime=kk)
+  data.frame(x1=x1,x2=x2,x3=x3)
+}
+xz <- ex1(66536,pp=0.28,kk=5.1,rho=0.3)
+cor(xz$x2,xz$x3)
+cor(xz$x1,xz$x3)
+cor(xz$x1,xz$x2)
+@
+In other words, we can still produce three variables with the same correlation with each other, given one of the three. 
+
+Suppose now we still need three correlated negative binomial random variables, all with $p$ and $k$ (again for
+clarity: this means with probability $p$ and shape $k$).  Let them be $X_1$, $X_2$, and $X_3$.  Now: given $X_1$ and
+$X_2$, produce a variate from $X_3$.  Computationally, this might be done with the following algorithm.  Let $W$ be
+the hidden variable which, thinned, would have given $X_1$, $X_2$, and $X_3$.  We do not analytically know the
+distribution of $W$ conditional on $X_1$ and $X_2$ yet.  
+
+It might naively be thought that one possible way to simulate it would be to simply try extending
+$X_1$ and $X_2$ by addition of independent negative binomials until they produce the same value.   This turns out not to work:
+<<>>=
+nb.aug <- function(x1vec,x2vec,pp,kk,rho,maxit=65536) {
+  newk <- kk/rho
+  augk <- kk/rho-kk
+  print(c(newk,augk))
+  x3 <- rep(NA,length(x1vec))
+  wvec <- rep(NA,length(x1vec))
+  for (ii in 1:length(x1vec)) {
+    x1 <- x1vec[ii]
+    x2 <- x2vec[ii]
+    w1 <- x1 + rnbinom(1,prob=pp,size=augk)
+    w2 <- x2 + rnbinom(1,prob=pp,size=augk)
+    niter <- 0 
+    while (w1 != w2 && niter<maxit) {
+      w1 <- x1 + rnbinom(1,prob=pp,size=augk)
+      w2 <- x2 + rnbinom(1,prob=pp,size=augk)
+      niter <- niter + 1
+    }    
+    if (niter > maxit) {stop("runaway")}
+    wvec[ii] <- w1
+    x3[ii] <- nbthin(w1,pp=pp,kk=newk,kprime=kk)
+  }
+  ans <- data.frame(xhidden=wvec,x1=x1vec,x2=x2vec,x3=x3)
+  ans
+}
+@
+The distribution of the hidden variable in this algorithm turns out not to be negative binomial.  
+
+Let $Y$ be negative binomial with $p$ and $k'$, and let $X_1$, $X_2$, and $X_3$ be thinned from $Y$, each with shape $k$.  
+Marginally:
+\[
+P(Y=y) = {k'+y-1 \choose y} (1-p)^y p^{k'} .
+\]
+
+The joint distribution is
+\[
+P(X_1=x_1,X_2=x_2,X_3=x_3,Y=y) = P(Y=y)P(X_1=x_1|Y=y)P(X_2=x_2|Y=y)P(X_3=x_3|Y=y)
+\]
+
+\[
+\quad = {k'+y-1 \choose y} (1-p)^y p^{k'} 
+ \frac{ {k+x_1-1 \choose k-1} {k'-k+y-x_1-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+ \frac{ {k+x_2-1 \choose k-1} {k'-k+y-x_2-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+ \frac{ {k+x_3-1 \choose k-1} {k'-k+y-x_3-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+\]
+As a small mercy, we have cancellation of one of these binomial coefficients.
+\[
+\quad =  (1-p)^y p^{k'} 
+ {k+x_1-1 \choose k-1} {k'-k+y-x_1-1 \choose k'-k-1}
+ \frac{ {k+x_2-1 \choose k-1} {k'-k+y-x_2-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+ \frac{ {k+x_3-1 \choose k-1} {k'-k+y-x_3-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+\]
+
+%(1-p)^y p^(a+k) Binomial[k+x1-1 , k-1] Binomial[a+y-x1-1 ,a-1] ( Binomial[k+x2-1 , k-1] Binomial[a+y-x2-1 ,a-1])/(Binomial[a+k+y-1 , y]) ( Binomial[k+x3-1 , k-1] Binomial[a+y-x3-1 , a-1])/(Binomial[a+k+y-1 , y])
+
+
+The joint distribution of $Y$, $X_1$, and $X_2$ is
+\[
+P(X_1=x_1,X_2=x_2,Y=y) = P(Y=y)P(X_1=x_1|Y=y)P(X_2=x_2|Y=y)
+\]
+\[
+\quad = (1-p)^y p^{k'} 
+  {k+x_1-1 \choose k-1} {k'-k+y-x_1-1 \choose k'-k-1}
+ \frac{ {k+x_2-1 \choose k-1} {k'-k+y-x_2-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+\]
+%(1-p)^y p^(a+k) * Binomial[k+x1-1 , k-1] Binomial[a+y-x_1-1 , a-1]* ( Binomial[k+x2-1 , k-1] Binomial[a+y-x_2-1 , a-1])/(Binomial[a+k+y-1 , y])  
+Let's now sum over $Y$ and get the joint distribution of $X_1$ and $X_2$:
+\[
+P(X_1=x_1,X_2=x_2) = \sum_{y=0}^{\infty} (1-p)^y p^{k'} 
+  {k+x_1-1 \choose k-1} {k'-k+y-x_1-1 \choose k'-k-1}
+ \frac{ {k+x_2-1 \choose k-1} {k'-k+y-x_2-1 \choose k'-k-1}}{{k'+y-1 \choose y}} 
+\]
+We already have a formula for this above.  
+
+We wish to compute 
+\[
+P(X_3=x_3 | X_1=x_1, X_2=x_2) = \sum_{y} P(X_3=x_3|Y=y) P(Y=y|X_1=x_1,X_2=x_2) .
+\]
+[This is under construction]
+
+% @@@ you cannot get underdispersion from a compound poisson, and any infinitely
+% divisible discrete distribution is compound poisson. so we must give that up
+% what is the most natural generalization?
+
+\normalsize
+
+\subsection{The $p$-process}
+This will be a process that takes a negative binomial with a given $p$ and $k$, and produce a new
+(hidden) negative binomial with a different $p$ and the same $k$.  We then add an independent
+innovation $W$ to this hidden variable, to produce a new negative binomial with the same $p$
+and $k$.  The innovation $W$ will be independent, but in this case, it will not have the
+negative binomial distribution.
+
+Marginally, this is the same as we had for the $k$ process before.
+
+\subsubsection{The $W$-distribution}
+What would an innovation look like that operates on $p$, not $k$?  We know it is {\it not} based on
+adding an independent negative binomial.  Let's think about a sequence of Bernoulli trials, $Z_i$, 
+for $i=1,\ldots$.  We have the counting process for the number of successes, say $S_i$, and for the
+number of failures, which is $F_i=i-S_i$.  The negative binomial is telling you the value of $F_i$
+at the time $S_i$ reaches some set value $k$.  One simple model would be to assume a further sequence
+$U_i$ of uniform random variables at every trial.  Now, $Z_i = U_i < p$, where $p$ is the success
+probability.  If we consider a new success probability $q < p$, we get a new sequence $Z'_i$ with the
+property that $Z'_i \leq Z_i$ always.
+
+We are thinking about this in a different way than we thought about the binomial thinning we had before.  
+There, we looked at the number of failures
+it had taken to get a certain number of successes, and we threw out some of these failures.  This turned
+out to be equivalent to raising the success probability in a specific way.  But now we're accruing
+successes more slowly.  We have the original process $Z_i$ marching along, but in parallel, now there is
+a more difficult process $Z'_i$ marching alongside---more difficult because it is accumulating successes
+more slowly.  
+
+When you reach $k$ successes for the $S_i$ process, we must have fewer successes in the $S'_i$ process
+(or rather: we can have no more successes in the $S'_i$ process).
+The probability that an $S$-success is an $S'$-success is $0 \leq q/p \leq 1$.  Therefore,
+at this time, the conditional distribution of $S'$ given $S_i=k$ for whatever $i$ we're at is 
+binomial with $k$ trials and $q/p$ success probability.  More useful is the number $N$ of successes we still
+need, which is binomial with $k$ trials and $1-q/p$ success probability---that's how many of the
+$S$-process successes weren't successes in the $S'$-process.  So we're going to now have to
+add in an independent negative binomial waiting for these $N$ successes.  These are going to be
+successes in the $S'$-process, whose probability is $q$, not $p$ and not $q/p$.
+
+We also must not forget that we thought we had $k$ successes, and we decided that $N$ of them were
+actually failures.  So we still need $N$ more successes, but also, those $N$ are now ruled failures
+and we need to count them on that side of the ledger.
+
+Concretely, suppose we thought we had $k=5$ successes and we had accrued 11 failures in so doing.  Suppose for
+the moment $p=0.4$.  Now, let's imagine that instead of $p=0.4$, we had $q=0.25$.  Now, how many of the original 5
+successes are still successes?  Let's write a binomial with 5 trials and success probability 0.25/0.4, and maybe we get 3
+that will still be successes, and 2 now retconned as failures.  So now, we would have 11+2=13 failures and 3 successes after
+our 16 trials.  Now, we still need 2 more successes.  Let's now do a negative binomial with probability 0.25 and aggregation
+parameter 2, and perhaps we get 4 more failures on the way.  Our new variate is 11 + 2 + 4=17.
+
+We will on average have $k(1-p)/p = 5*0.6/0.4 = 7.5$ on the first variable.  Then, the hidden thinning (of the successes) happens, 
+and we expect to have a fraction $r=1-q/p=0.375$, or 1.875 reclassified as failures.  With that average number of failures, we
+expect to get a further 1.875 $\times 0.75/0.25 = 5.625$ failures.  The final random variable should have expectation 15, corresponding
+to a negative binomial with aggregation/shape of 5 and a probability of 0.25 (i.e. $5 \times 0.75/0.25$).
+
+So what do we do algorithmically?  Say we have a negative binomial value $X$, and we know $p$ and $k$.
+We have a new $0 \leq q \leq p$.
+\begin{enumerate}
+\item Write the random number of N as a binomial$(k,1-q/p)$.  Careful with the terminology---$1-q/p$ is the {\it success} rate of {\it this} binomial.
+\item Write a new $Y$ as negative binomial with aggregation parameter $N$ and probability $q$.
+\item Write the transformed $X'$ negative binomial as $X + N + Y$.  Necessarily, $X' \geq X$, and
+$X'$ must be negative binomial with aggregation parameter $k$ and probability $q$.
+\end{enumerate}
+
+Whenever we stop counting successes and declare $X$ failures, the same thing is going to happen, so we
+only need the distribution of $W=N+Y$.  Suppose $N=0$, and we have decided we need no more successes.  Then we
+have the needed number; $W=0$.  But if $N=1$, we not only need another success, but we have that extra failure.
+\[
+E[u^W] = E[E[u^W|N]] = P(N=0)u^0 + P(N=1)E[u^{Y+1}|N=1] + P(N=2)E[u^{Y+2}|N=2] + P(N=3)E[u^{Y+3}|N=3] + \cdots
+\]
+What is $E[u^Y|N=1]$?  If $N=1$, this must be a negative binomial with aggregation parameter 1 (geometric), so 
+we will have $q/(1-(1-q)u)$ for $Y$.  We will have to multiply by $u$ too.
+\[
+E[u^W] = E[E[u^W|N]] = P(N=0)u^0 + P(N=1)\frac{uq}{1-(1-q)u} + P(N=2)\left(\frac{uq}{1-(1-q)u}\right)^2 + \cdots
+\]
+Now the binomial generating function for $N$ is
+\[
+g_N(u) = \left(\frac{q}{p} + \left(1-\frac{q}{p}\right) u \right)^k 
+\]
+So 
+\[
+g_W(u) = g_N\left(\frac{uq}{1-(1-q)u}\right) 
+\]
+\[
+g_W(u) = \left(\frac{q}{p} + (1-\frac{q}{p}) \frac{uq}{1-(1-q)u}  \right)^k 
+\]
+% ((p - 1) q u + q)/(p (q - 1) u + p)
+This becomes
+\[
+g_W(u) = \left( \frac{q - uq(1-p)} {p(1-(1-q)u)} \right)^k 
+\]
+
+By contrast, $Y$, the number of new failures we will get seeking the remaining successes alone, is
+\[
+g_Y(u) = \left(1-\frac{q}{p} + \frac{q^2}{p(1-(1-q)u)}\right)^k = \left( \frac{ p - q(1-q) + u(-p(1-q) + q(1 - q))  }{p(1-(1-q)u)}\right)^k
+\]
+%  (  (p(1-(1-q)u)-q(1-(1-q)u) + uq^2) /  (  p(1-(1-q)u)  ) )^k 
+
+Let us rewrite these:
+\[
+g_W(u) = \left( \frac{q/p - uq(1-p)/p} {(1-(1-q)u)} \right)^k 
+\]
+% ( (q/p - u*q*(1-p)/p)/((1-(1-q)*u)) )^k
+
+Let $r=1-\frac{q}{p}$; $0 \leq r \leq 1$ since $q\leq p$ by assumption.
+For $Y$, we have
+\[
+g_Y(u) = \left( \frac{ 1 - (1-q)(1-r) - ur(1-q)  }{1 - (1-q)u}\right)^k
+\]
+
+Both of these take this form:
+\begin{equation}
+\label{eq:guef}
+g(u;e, f) = A \frac{(A+Bu)^e}{(1-\theta u)^f}
+\end{equation}
+where $\theta=1-q$ in both cases.  For $W$, we have $A=q/p$, $B=-q(1-p)/p$; for $Y$, we have $A=1-(1-q)(1-r)$ and $B=-r(1-q)$.  At the
+outset, $e=f=k$.
+In general $g(0;e,f)=A^e$, and $g(1;e,f)=(A+B)^e/(1-\theta)^f$.
+
+Let us do a quick check:
+\[
+g_W(1) = ((q/p - q(1-p)/p)/q)^k = \left(\frac{q}{pq}(1-(1-p))\right)^k = (p/p)^k = 1
+\]
+\[
+g_Y(1) = ((1-(1-q)(1-r)-r(1-q))/q)^k = (q/q)^k = 1
+\]
+This shows that normalization holds.
+
+What about $g_W(0)$, which is $P(W=0)$?
+\[
+g_W(0) = (q/p)^k
+\]
+At least this is not negative.
+
+Let us look closely at Equation~\ref{eq:guef}.
+Differentiate:
+\[
+g'(u;e, f) =  \frac{(1-\theta u)^f \frac{d}{du} (A+Bu)^e - (A+Bu)^e \frac{d}{du}(1-\theta u)^f} {(1-\theta u)^{2f}} .
+\]
+\[
+g'(u;e, f) =  \frac{(1-\theta u)^f e (A+Bu)^{e-1} B - (A+Bu)^e f(1-\theta u)^{f-1} (-\theta)} {(1-\theta u)^{2f}} .
+\]
+\[
+g'(u;e, f) =  (1-\theta u)^{-f} e (A+Bu)^{e-1} B + (A+Bu)^e f(1-\theta u)^{-1-f} (\theta)
+\]
+
+\[
+g'(u;e, f) = Be \frac{(A+Bu)^{e-1}}{(1-\theta u)^f} + f\theta \frac{(A+Bu)^e}{(1-\theta u)^{f+1}}
+\]
+which could be written
+\[
+g'(u;e, f) = Be g(u;e-1,f) + f\theta g(u;e,f+1) .
+\]
+
+Let us now look at the second:
+\[
+g''(u;e, f) = Be g'(u;e-1,f) + f\theta g'(u;e,f+1) .
+\]
+Now recur:
+\[
+g''(u;e, f) = Be ( B(e-1)g(u;e-2,f) + f\theta g(u;e-1,f+1) ) + f\theta (Be g(u;e-1,f+1) + (f+1)\theta g(u;e,f+2))
+\]
+\[
+g''(u;e, f) = B^2e(e-1)g(u;e-2,f) + 2 Bef\theta g(u;e-1,f+1)  +  f(f+1)\theta^2 g(u;e,f+2))
+\]
+
+Another:
+\[
+g'''(u;e, f) = B^3 e(e-1)(e-2) g(u;e-3,f) + 3 B^2 e(e-1)f\theta g(u;e-2,f+1) + 3 Be\theta^2 f(f+1) g(u;e-1,f+2) + \theta^3 f(f+1)(f+2) g(u;e,f+3)
+\]
+
+Generally:
+\[
+g^{(n)}(u;e,f) = \sum_{i=0}^n D_i
+\]
+with the general term being
+\[
+D_i = \theta^i B^{n-i} g(u;e-n+i,f+i) E_i F_i {n \choose i}
+\] 
+Now, the products of $e$:
+\[
+E_i = \prod_{j=0}^{n-i-1} (e-j)
+\]
+and
+\[
+F_i = \prod_{j=0}^{i-1} (f-j)
+\]
+
+Let us now specialize to $u=0$, $e=f=k$:
+\[
+g'''(0;k, k) = B^3 k(k-1)(k-2) A^{k-3} + 3 B^2 k(k-1)k\theta A^{k-2} + 3 Bk\theta^2 k(k+1) A^{k-1} + \theta^3 k(k+1)(k+2) A^k
+\]
+\[
+g'''(0;k, k) = A^{k-3} k \left( B^3 (k-1)(k-2) + 3 B^2 (k-1)k\theta A + 3 B\theta^2 k(k+1) A^2 + \theta^3 (k+1)(k+2) A^3 \right)
+\]
+The general term here is 
+\[
+g^{(n)}(0;k, k) = k A^{k-n}\sum_{i=0}^n {n \choose i} B^{n-i} \theta^i A^i \prod_{\ell=1}^{n-1}(k-\ell+i) .
+\]
+
+From here, we can get the general probability term for $Y$:
+\[
+P(Y=n) = \frac{k}{n!} (1-(1-q)(1-r))^{k-n} \sum_{i=0}^n {n \choose i} (-r(1-q))^{n-i} \theta^i (1-(1-q)(1-r))^i \prod_{\ell=1}^{n-1}(k-\ell+i) ,
+\]
+which we care a bit about, and for $W$:
+\[
+P(W=n) = \frac{k}{n!} \left(\frac{q}{p}\right)^{k-n} \sum_{i=0}^n{n \choose i} (-\frac{q(1-p)}{p})^{n-i} (1-q)^i \left(\frac{q}{p}\right)^i \prod_{\ell=1}^{n-1}(k-\ell+i) .
+\]
+%For $W$, we have $A=q/p$, $B=-q(1-p)/p$
+We merrily derived this from the binomial, where the $k$ had to be an integer, but it leads to a legitimate distribution
+for noninteger $k$.
+
+For $Y$, we get:
+\[
+g_Y(0) = (1-(1-r)\theta)^k .
+\]
+\[
+P(Y=1) = k\theta (1-(1-r)\theta)^{k-1} (1-r)(1-\theta)
+\]
+% wolfram: k*(theta*(1 - theta*(1 - r)) - theta*r)*(1 - theta*(1 - r))^(k - 1)
+%  k*(theta*(1 - theta*(1 - r)) - theta*r)*(1 - theta*(1 - r))^(k - 1) - (k*theta*(1-(1-r)*theta)^(k-1)* (1-r)*(1-theta)) = 0
+% formula verified
+\[
+P(Y=2) = \frac{1}{2} k\theta^2 (1-(1-r)\theta)^{k-2}\left(k(1-r)^2(1-\theta)^2+(1-r)(1-\theta)(1-(1-r)\theta+r) \right) .
+\]
+\[
+P(Y=3) = \frac{1}{3!} k\theta^3 (1-(1-r)\theta)^{k-3} (1-\theta)(1-r)
+\left( (k+1)(k+2) (1-\theta)^2(1-r)^2 + 6(k+1)(1-\theta)(1-r) r + 6 r^2 \right)
+\]
+
+For $W$, the mean:
+\[
+g'_W(1) = k\left(\frac{1}{q}-\frac{1}{p}\right) .
+\]
+If we add this mean of $W$ to the mean of an original negative binomial $k(1-p)/p$, we get the required $k(1-q)/q$.
+
+Here is a function to compute the probabilities for $Y$:
+<<>>=
+conjform.y <- function(dset,jj) {
+  if (jj>=2) {
+    kk <- dset$kk
+    rr <- dset$rr
+    qq <- dset$qq
+    theta <- dset$theta
+    pp <- dset$pp
+    bb <- (1-(1-rr)*theta)
+    cs <- 0
+    for (ii in 0:jj) {
+      sgn <- (-1)^(ii+jj)
+      ch <- exp(lchoose(jj,ii))
+      bx <- bb^ii
+      rji <- rr^{jj-ii}
+      p1 <- 1
+      for (ell in (-jj+ii+1):(ii-1)) {
+        p1 <- p1*(kk+ell)
+      }
+      cs <- cs + sgn*ch*bx*rji*p1
+    }
+    cs <- cs*kk*theta^jj*bb^(kk-jj)/exp(lgamma(jj+1))
+    cs
+  } else {
+    stop("don't use this for 0 or 1")
+  }
+}
+@
+
+Here is a function to compute the probabilities for $W$:
+<<>>=
+conjform.w <- function(dset,nn) {
+  if (nn>=1) {
+    kk <- dset$kk
+    rr <- dset$rr
+    qq <- dset$qq
+    theta <- dset$theta
+    pp <- dset$pp
+    biga <- qq/pp
+    bigb <- - qq*(1-pp)/pp
+    cs <- 0
+    for (ii in 0:nn) {
+      ch <- exp(lchoose(nn,ii))
+      bni <- (bigb)^(nn-ii)
+      thi <- theta^ii
+      ai <- biga^ii
+      p1 <- 1
+      if (nn>=2) {
+        for (ell in 1:(nn-1)) {
+          p1 <- p1*(kk-ell+ii)
+        }
+      }
+      cs <- cs + ch*bni*thi*ai*p1
+    }
+    cs <- cs*kk*biga^(kk-nn)/exp(lgamma(nn+1))
+    cs
+  } else {
+    stop("don't use this for 0")
+  }
+}
+@
+
+Numerically, let's check some of the values for $Y$ before we get any further down the river.  Let's suppose we have a
+negative binomial random variable with shape $k=6.8$ and success probability $p=0.28$.  We would like to
+recast it to make $q=0.18$.  This will make $r=1-q/p$ and $\theta=1-q$.
+<<>>=
+uv <- function(dset) {
+  dset$theta <- 1-dset$qq
+  dset$rr <- 1-dset$qq/dset$pp
+  dset
+}
+geny.f <- function(dset) {
+  function(u) {
+    nn <- 1-(1-dset$rr)*dset$theta-u*dset$rr*dset$theta
+    dd <- 1-dset$theta*u
+    (nn/dd)^dset$kk
+  }
+}
+genw.f <- function(dset) {
+  function(u) {
+    nn <- dset$rr + u*(dset$qq-dset$rr)
+    dd <- 1-(1-dset$qq)*u
+    (nn/dd)^dset$kk
+  }
+}
+sc1 <- uv(data.frame(kk=6.8,pp=0.28,qq=0.18))
+fsy1 <- geny.f(sc1)
+plot(fsy1)
+@
+
+For $W$:
+<<>>=
+fsw1 <- genw.f(sc1)
+plot(fsw1)
+@
+
+Now:
+<<>>=
+y1 <- expression( ((1-(1-rr)*theta - u*rr*theta)/(1-theta*u))^kk )
+mfn <- function(x,valframe) {
+  valframename <- deparse(substitute(valframe))
+  eval(parse(text=(paste("substitute(",x,",",valframename,")"))))
+}
+fy1 <- mfn(y1,sc1)
+df1 <- Deriv(fy1,"u")
+@
+
+<<>>=
+w1 <- expression( ((qq/pp - u*qq*(1-pp)/pp)/(1-(1-qq)*u))^kk )
+fw1 <- mfn(w1,sc1)
+@
+
+Let's use this for random number generation.  First---put in the PGF, get out the mean and variance for $Y$:
+<<>>=
+gmo <- function(fnex,gfvar="u") {
+  d1 <- Deriv(fnex,gfvar)
+  d2 <- Deriv(Deriv(fnex,gfvar),gfvar)
+  s1 <- data.frame(u=1)
+  if (gfvar != "u") {
+    names(s1) <- gfvar
+  }
+  mn <- eval(d1,s1)
+  fsm <- eval(d2,s1)
+  list(mean=mn,var=fsm+mn-mn*mn)
+}
+gmo(fy1)
+@
+
+What about for $W$?
+<<>>=
+gmo(fw1)
+@
+
+This is far too slow to use for any serious purpose other than checking the earlier formulas.  These don't look entirely compelling.
+<<>>=
+mk.ptbl.g <- function(fnex) {
+  trl <- gmo(fnex)
+  the.sd <- sqrt(trl$var)
+  trial.up <- floor(trl$mean + 5*the.sd)+1
+  valz <- rep(NA,trial.up+1)
+  idrv <- fnex
+  zrz <- data.frame(u=0)
+  for (ix in 1:7) {
+    ii <- ix - 1
+    if (ii==0) {
+      valz[ix] <- eval(fnex,zrz)
+    } else if (ii==1) { 
+      idrv <- Deriv(fnex,"u")
+      valz[ix] <- eval(idrv,zrz)
+    } else {
+      idrv <- Deriv(idrv,"u")
+      qtmp <- eval(idrv,zrz)
+      stmp <- lgamma(ii+1)
+      if (qtmp>0) {
+        vtmp <- log(qtmp)-stmp
+        valz[ix] <- exp(vtmp)
+      } else {
+        valz[ix] <- 0
+      }
+    }  
+  }
+  valz[!is.na(valz)]
+}
+theor.y <- mk.ptbl.g(fy1)
+theor.y
+@
+
+For $W$:
+<<>>=
+theor.w <- mk.ptbl.g(fw1)
+theor.w
+@
+
+<<>>=
+mk.ptbl.y <- function(parz,tsiz=128) {
+  kk <- parz$kk
+  rr <- parz$rr
+  qq <- parz$qq
+  theta <- parz$theta
+  pp <- parz$pp
+  bb <- (1-(1-rr)*theta)
+  valz <- rep(NA,tsiz+1)
+  valz[0+1] <- (1-(1-rr)*theta)^kk
+  valz[1+1] <- kk*theta*bb^(kk-1)*(1-rr)*(1-theta)
+  valz[2+1] <- (1/2) * kk * theta^2 * (1-(1-rr)*theta)^(kk-2)*(kk*(1-rr)^2 * (1-theta)^2+(1-rr)*(1-theta)*(1-(1-rr)*theta+rr) ) 
+  q3 <-  (kk+1)*(kk+2)*(1-theta)^2*(1-rr)^2 + 6*(kk+1)*(1-theta)*(1-rr)*rr + 6*rr^2
+  valz[3+1] <- (1/6) * kk * theta^3 * (1-(1-rr)*theta)^(kk-3)*(1-theta)*(1-rr)*q3
+  for (ii in 4:tsiz) {
+    valz[ii+1] <- conjform.y(parz,ii)
+  }
+  valz 
+}
+yptbl <- mk.ptbl.y(sc1)
+yptbl[1:10]
+@
+
+For $W$:
+<<>>=
+mk.ptbl.w <- function(parz,tsiz=196) {
+  kk <- parz$kk
+  rr <- parz$rr
+  qq <- parz$qq
+  theta <- parz$theta
+  pp <- parz$pp
+  valz <- rep(NA,tsiz+1)
+  valz[1] <- (qq/pp)^kk
+  for (ii in 1:tsiz) {
+    valz[ii+1] <- conjform.w(parz,ii)
+  }
+  valz[!is.na(valz) & !is.infinite(valz)]
+}
+wptbl <- mk.ptbl.w(sc1)
+wptbl[1:10]
+barplot(wptbl)
+@
+
+Let's check if these give the right mean:
+<<>>=
+sum( wptbl* (0:(length(wptbl)-1)) )
+@
+
+<<>>=
+6.8*(1/0.18 - 1/0.28)
+@
+
+<<>>=
+rdpit <- function(nsamp,ptbl) {
+  cml <- cumsum(ptbl)
+  uu <- runif(nsamp)
+  ans <- rep(NA,nsamp)
+  for (ii in 1:nsamp) {
+    ans[ii] <- sum(cml<uu[ii]) 
+  }
+  ans
+}
+@
+
+Our intent was to be able to take a negative binomial random variable $X$, with probability $p$ and aggregation parameter $k$, and
+then add a $W$.  The idea is that then $X+W$ is negative binomial with probability $q$ and aggregation parameter $k$.
+Let us test this.
+<<>>=
+x1z <- rnbinom(65536,prob=0.28,size=6.8)
+w1z <- rdpit(65536,wptbl)
+xw <- x1z + w1z
+n1z <- rnbinom(65536,prob=0.18,size=6.8)
+qqplot(xw,n1z)
+@
+Hard to say what is going on down in the tails.
+
+\subsubsection{Simulating the $p$-process}
+Before, we had a process which began with a negative binomial $X_i$ with $k$ and $p$, used negative hypergeometric thinning to create 
+a new negative binomial $X'_i$ with new $k'$ and old $p$.  Then we added in an independent negative binomial innovation with $k-k'$ and 
+$p$, restoring negative binomiality at $k$ and $p$.  This $k$-process generates correlated negative binomial sequences.
+
+Now, we have the $p$-process.  Here, we first take negative binomial $X_i$ with $k$ and $p$.  We use binomial thinning, creating 
+a new negative binomial $X'_i$ with old $k$ and new $p'=p/(s+(1-s)p)$.  Then, we add in innovations from the $W$-distribution above,
+with parameters $k$ and the original $p$.
+
+Let's try it.
+<<>>=
+p.nbser <- function(len,kk,pp,ss) {
+  pprime <- pp/(pp+ss-ss*pp)
+  sc1 <- uv(data.frame(kk=kk,pp=pprime,qq=pp))
+  wptbl <- mk.ptbl.w(sc1)
+  if (len<=1) {
+    stop("bad len")
+  }
+  ans <- rep(NA,len)
+  ans[1] <- rnbinom(1,prob=pp,size=kk)
+  for (ii in 2:len) {
+    xhid <- ans[ii-1]
+    tmp <- rbinom(1,size=xhid,prob=ss)
+    ww <- rdpit(1,wptbl)
+    ans[ii] <- tmp + ww
+  } 
+  ans
+}
+uq2 <- p.nbser(65536,kk=6.8,pp=0.28,ss=0.18/0.28)
+acf(uq2)
+plot(uq2[1:1024],type="l")
+barplot(mbar(uq2),main="p-process simulation")
+@
+
+\subsubsection{Autocorrelation}
+The process proceeds by writing first $Z$ as a binomial derived from a member of the sequence.  As before, we first need
+\[
+E[XZ] = E[ E[XZ|X] ] = E[ X E[Z|X] ] = s E[X^2] = \frac{sk(1-p)}{p^2}(1+k(1-p))
+\]
+Then we need
+\[
+\mbox{\rm cov}(X,Z) = \frac{sk(1-p)}{p^2}(1+k(1-p)) - \frac{k(1-p)}{p}\frac{k(1-p')}{p'}
+\]
+with $p'=p/(s+p-sp)$.  
+This reduces to
+\[
+\mbox{\rm cov}(X,Z) = \frac{sk(1-p)}{p^2} .
+\]
+As before, this is actually the covariance of successive terms in the sequence, because we add in an uncorrelated
+innovation.  So we can get the correlation
+\[
+r = \frac{ \frac{sk(1-p)}{p^2} }{ \frac{k(1-p)}{p^2} } = s .
+\]
+The correlation between successive terms of the sequence is the binomial thinning probability.
+
+\subsection{Negative autocorrelation}
+This section is under construction.  Please skip to the next section.
+
+Suppose we do the following.  Let $X$ be negative binomial with $k$ and $p$.  Suppose we innovate by adding 
+an random variable $Y$, and {\it then} thin somehow to obtain a new negative binomial $X'$.  We would
+like to have the same $k$ and $p$, but to have negative autocorrelation.  As before, we have this
+generating function for $X$:
+\[
+g_X(u) = \left( \frac{p}{1-u(1-p)} \right)^k .
+\]
+
+Let us first explore the idea of a state-dependent thinning.  Before, for binomial thinning, we had a
+new variable $Z$.
+\[
+g_Z(u) = E[u^Z] = E[E[u^Z|X]] = \sum_{n=0}^{\infty} E[u^Z|X=n] P(X=n) 
+\]
+Before, we had
+\[
+E[u^Z|X=n] = (1-s+su)^n  ,
+\]
+i.e. a binomial distribution of $Z$ given $X$; the success probability is $n$.  %(Double check: $g'(u) = n(1-s+su)^{n-1} s$, $g'(1) = ns$.)
+So the mean is $ns$.  What if we made $s=\rho/n$?  
+
+Then we would have
+\[
+g_Z(u) = \sum_{n=0}^{\infty} (1-\frac{\rho}{n}+\frac{u\rho}{n})^n P(X=n) 
+\]
+and then
+\[
+g_Z(u) = \sum_{n=0}^{\infty} (1-\frac{\rho}{n}+\frac{u\rho}{n})^n {k+n-1 \choose n} (1-p)^n p^k
+\]
+
+This section is under construction.
+
+\subsection{Multiple dependent variables}
+Suppose we need a collection of negative binomial variables with specified $p$ and $k$, and a given variance-covariance
+matrix $\Sigma$.  Is this possible?  Since all these variables have the same marginal distribution, we can write 
+$V=D^{-1}\Sigma D^{-1}$ where $D=\sigma^{-1}I$.  Here $\sigma$ is the common standard deviation.
+
+Suppose we write the Cholesky decomposition $V=LL^T$ of $V$.  Example:
+<<>>=
+vv <- rbind( c(1,0.2,0.2), c(0.2,1,0.2), c(0.2,0.2,1) )
+vv
+ell <- t(chol(vv))
+ell
+ell %*% t(ell)
+@
+
+Let $\ell_{ij}$ be the row $i$, column $j$ element of $L$.  
+
+Conjecture: if we use $L$, we can transform the independent negative binomials to dependent ones.  Try a numerical 
+example:
+<<>>=
+ltransform <- function(nbvariates,cholmat,pp,kk) {
+  n <- length(nbvariates)
+  ans <- rep(NA,n)
+  for (ii in 1:n) {
+    lz <- cholmat[ii,]
+    cur <- 0
+    for (jj in 1:length(lz)) {
+      if (abs(lz[jj]-1)<1e-7) {
+        cur <- cur + nbvariates[jj]
+      } else if (abs(lz[jj])<1e-7) {
+        cur <- cur + 0
+      } else if (lz[jj]< -1e-8) {
+        stop("negative")
+      } else {
+        newk <- kk*lz[jj]
+        cur <- cur + nbthin(nbvariates[jj],pp,kk,newk) 
+      }
+    }
+    ans[ii] <- cur
+  }
+  ans
+}
+dep.nb.sim <- function(rr,nsimz=16384,pp=0.28,kk=5) {
+  n <- dim(rr)[1]
+  ans <- matrix(n*nsimz,nrow=nsimz,ncol=n)
+  ell <- t(chol(rr))
+  for (ii in 1:nsimz) {
+    sv <- rnbinom(n,size=kk,prob=pp) 
+    cur <- ltransform(sv,ell,pp,kk)
+    ans[ii,] <- cur
+  }
+  ans
+}
+xmpd <- dep.nb.sim(vv)
+@
+This section under construction.
+
+\subsection{Nonstationary $k$- and $p$-processes}
+\subsubsection{Introduction}
+Before, we constructed correlated negative binomial sequences in two ways.  Those were stationary sequences, with
+the marginal distributions the same at each time.  Now, we wish to have $p$ vary, in particular.
+It is not possible to have perfectly correlated negative binomial random variables from different marginal distributions, however.
+
+The above processes will not be general enough.  Consider a negative binomial with aggregation $k=6.8$ and $p=0.28$, corresponding
+to a mean count of 17.49 or thereabout.  Suppose we're doing a regression and the mean count goes down to 5.3 or so.  Now we should get
+a negative binomial probability of around 0.56.  If we binomially thin with success rate of approximately 0.31, we would get our
+negative binomial with $k=6.8$ and $p=0.56$.  But the two negative binomials, the second derived from the first by binomial thinning,
+could only have a modest correlation with the first.
+
+It is not necessarily illegitimate to use the $k$- and $p$-processes for time series regression, despite this autocorrelation problem.
+
+Nevertheless, it is worth asking
+how to maintain high autocorrelation between successive terms of the sequence even when we are changing the mean.
+The Pearson correlation is in general not going to be 1, but what about other measures, such as Spearman?  
+
+\subsubsection{Order-preserving transform}
+Suppose $X$ and $Y$ are negative binomial, with probabilities $p$ and $q$, and aggregations $k$ and $c$ (respectively).  The
+cumulative distribution function of $X$ is denoted $F(z)$, and similarly for $Y$.  Let $U$ be a uniform random variable on $[0,1]$.
+
+We wish to write the joint distribution of $F^{-1}(U)$ and $G^{-1}(U)$.  Marginally each is negative binomial.  We want two things:
+to show that $Y$ is an order preserving random transform of $X$ in some sense, and to show that it is the order preserving transform with maximum
+correlation.
+
+By {\it order-preserving transform}, I mean that if I transform a value that is larger than another, the transform cannot get smaller:
+then $P(Y_1 > Y_2|X_1<X_2) = 0$.  
+
+<<>>=
+osim <- function(nn,kk1,pp1,kk2,pp2) { 
+  uz <- runif(nn)
+  xz <- qnbinom(uz,size=kk1,prob=pp1)
+  yz <- qnbinom(uz,size=kk2,prob=pp2)
+  cbind(x=xz,y=yz) 
+}
+ot <- osim(65536,kk1=6.8,pp1=0.28,kk2=1.8,pp2=0.38)
+plot(ot[,1],ot[,2])
+@
+
+Here is an informal discussion of why this process yields an order preserving transform.
+Note that $P(U|X=x)$ is {\cmss Uniform}$(F(x-1), F(x))$.  The conditional distribution of $Y$ given $X=x$ is going to be
+$G^{-1}$ of this interval.  This interval is going to correspond to one or more values of $Y$, whose probability is going to be
+the fraction of the interval.  Each value of $X$ corresponds to non-overlapping regions of $U$, and then to regions of $Y$.  At most
+one value of $Y$ can be common to two different values of $X$.  It is possible for a single $X$ value to correspond to several $Y$s.
+It is possible for two neighboring $X$ values to map to the same $Y$.  Let $x_1<x_2$.  Then by monotonicity of the cumulative
+distribution, all members of $u_1$, the set of values in $F(x_1-1),F(x_1)$ are less than $F(x_2-1),F(x_2)$.  Then all the Ys
+corresponding to the first set are less than or equal to all the Ys for the second.
+
+Basically, a value of $X$ gets mapped to an interval $I$ in $[0,1)$ monotonically; then the interval gets mapped to $Y$s in
+an order preserving way.
+
+Of course, this procedure can also yield a maximally negatively autocorrelated negative binomial, by just reversing
+the polarity of the $U$ (take one minus the lower and upper of the interval $F^{-1}(x)$ to give a new upper and lower).
+<<>>=
+rsim <- function(nn,kk,pp) {
+  uu <- runif(nn)
+  cu <- 1-uu
+  xz <- qnbinom(uu,size=kk,prob=pp)
+  yz <- qnbinom(cu,size=kk,prob=pp)
+  cbind(x=xz,y=yz)
+}
+rt <- rsim(65536,kk=6.8,pp=0.28)
+plot(rt[,1],rt[,2])
+@
+
+% side note: divide the pgf by 1-u and you get a generating function for the cdf!
+
+The multiplicative model, where you take values of $X$, write $aX$, $0\leq a \leq 1$ say, and then stochastically round, 
+does not yield an order preserving transformation.  By stochastic rounding: given real $x$, write $\floor*{ax} + Z$, where
+$Z$ is a Bernoulli trial with success probability $x - \floor*{ax}$.
+<<>>=
+randround <- function(xx) {
+  nz <- floor(xx)
+  uu <- xx-nz
+  binz <- rbinom(length(nz),prob=uu,size=1)
+  nz+binz 
+}
+msim <- function(nn,kk,pp,rr) {
+  yz <- randround((xz <- rnbinom(nn,size=kk,prob=pp))*rr)
+  cbind(x=xz,y=yz)
+}
+mt <- msim(65536,kk=3.1,pp=0.28,rr=0.3)
+plot(mt[,1],mt[,2])
+@
+
+% have a bivariate distribution on the square
+% have uniform marginals
+% vary between uniform and concentration on the x=y line
+% generate pairs u_1 and u_2 and prob int transform them
+% switch the polarity and get anticorrelated ones
+% use the diffusion equation with all the particles on the line
+% reflecting boundary
+% maybe since the marginals start uniform and the final 
+% state is uniform, it will stay uniform in transit
+
+
+\section*{References}
+\begin{description}
+\item[1] Khan RA. A Note on the Generating Function of a Negative Hypergeometric Distribution. {\it Sankhya B} {\bf 6}(3), 309--313, 1994.
+\end{description}
+
+\vfill
+
+\end{document}

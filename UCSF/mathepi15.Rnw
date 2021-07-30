@@ -1,0 +1,586 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\setlength{\parindent}{0.6cm}
+
+\begin{document}
+
+\section*{Mathematical modeling of infectious diseases, lecture 15}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section*{More on continuous variables}
+
+\subsection*{Review; higher moments}
+We will briefly cover a few additional topics regarding continuous variables.  Before beginning, here
+are some additional review problems.\newline
+{\bf Exercise.~~}What is the cumulative distribution function of the standard uniform?  {\it Ans.  For the uniform
+distribution on the unit interval, the cumulative distribution 
+function is zero for values of $x$ below zero, $x$ for values of
+$x$ between 0 and 1, and $1$ for values of $x$ above 1.}\newline
+{\bf Exercise.~~}Derive the expected value of the standard uniform.\newline
+{\bf Exercise.~~}Show that if $T$ is a nonnegative random variable with survival function $S(t)$, then
+$ET=\int_0^{\infty}S(t)\,dt$.  {\it Hint: integrate by parts.}
+
+The second moment of a continuous random variable $X$ in general is $E(X^2)=\int_{-\infty}^{\infty}x^2 f(x)\,dx$, if 
+$f(x)$ is the probability density.  For a nonnegative random variable, $E(T^2)=\int_0^{\infty}t^2 f(t)\,dt$, with
+$f(t)$ now the density.  The variance is defined to be $\mbox{\rm var}(T)=E((T-ET)^2)$, which is 
+$\mbox{\rm var}(T)=E(T^2)-(ET)^2$.  \newline
+{\bf Exercise.~~}Find the variance of the standard uniform.\newline
+{\bf Exercise.~~}Find the variance of the exponential distribution.\newline
+{\bf Exercise.~~}Find the variance of the Weibull distribution.\newline
+
+\subsection*{Quantiles}
+For a continuous distribution, the quantiles can be found from the
+cumulative distribution function $F(x)$.  The $q$ quantile is the value of the random variable for which
+$F(x)=q$.  For instance, the 0.5 quantile (the population median) is
+the point at which the cdf equals 0.5.\
+
+{\bf Exercise.~~}Let $U$ be a standard uniform random variable.  Find
+the population lower quartile of $U$ (the 0.25 quantile).
+
+Just as we distinguish the population mean and median from sample
+means and medians, we can also compute sample quantiles as you all 
+have seen in your foundational statistics course.  In R, sample quantiles can be computed using the function \verb+quantile+, using the 
+\verb+probs+ argument to specify the probabilities.
+
+For instance, let us generate 1000 standard uniform random variates
+and determine the median and quartiles:
+<<>>=
+us <- runif(1000)
+quantile(us,probs=c(0.25,0.5,0.75))
+@
+
+We could also determine the percentiles:
+<<>>=
+pct.us<-quantile(us,probs=c(0,1,by=0.01))
+@
+
+{\bf Exercise.~~}Find the median of the exponential distribution (also known as the {\it half-life}).  \newline
+
+\subsection*{Transformations}
+As an example, suppose $U$ is a standard uniform random variable.
+We wish to determine the distribution of $Y=a+bU$, where $b>0$.  To
+determine the cdf of $Y$, which we denote $F_Y(x)$, we must compute
+$F_Y(x)=P(Y \leq x)$.  However, $P(Y \leq x)=P(a+bU \leq x)$.  Since
+$a+bU \leq x$ is the exact same condition as $bU \leq x - a$, we know
+that $P(Y \leq x) = P(a + bU \leq x) = P(bU \leq x - a)$.  Similarly,
+we have $P(Y \leq x) = P(U \leq (x-a)/b)$.  We know what this is, 
+since $P(U \leq x)=F_U(x)$ is the cdf of the standard uniform.  So
+$F_Y(x) = F_U((x-a)/b)$.  Thus, $F_Y(x)=0$ whenever $(x-a)/b<0$, 
+$F_Y(x)=\frac{x-a}{b}$ whenever $0\leq (x-a)/b \leq 1$, and 
+$F_Y(x)=1$ whenever $(x-a)/b>1$.  The variable $Y$ is said to have
+a uniform distribution on $[a,a+b]$.  
+
+{\bf Exercise.~~}Let $Y$ have a uniform distribution on $[-2,3]$.  
+What are the values of $a$ and $b$?
+Use \verb+runif+ to create 10000 standard uniform random variates (to
+be called $u.orig$), and
+transform them to yield values of $Y$, and plot their histogram.
+Save these 10000 values for the next exercises, under the name $y.trans$.
+
+{\bf Exercise.~~}Use the online help for \verb+runif+ to determine how
+to sample from an arbitrary uniform distribution (without transforming).
+Sample 5000 values from the uniform distribution on $[-2,3]$, plot a
+histogram, and save these values under the name $y.direct$.
+
+More generally, suppose that $h(x)$ is a {\it strictly increasing} function, which is
+to say, $x_1>x_2$ implies that $h(x_1)>h(x_2)$.  Suppose that $Y$ is
+some continuous random variable.  What can we say about the distribution
+of $W=h(Y)$?  To find $F_W(x)$, the cdf of $W$, observe 
+$F_W(x)=P(W\leq x)=P(h(Y)\leq x)$.  
+Here, $h^{-1}(x)$ is the inverse function of $h$
+on whatever interval we are interested in (that is---whereever the
+density of $Y$ does not vanish).
+Now, in general, the inverse function $h^{-1}(x)$ is defined to take the
+value $y$ when and only when $h(x)=y$.  It is intuitively reasonable
+that a continuous strictly increasing function always has a
+strictly increasing inverse,
+(and we will simply take this for granted).  This simply means that
+if a bigger function argument always gives you a bigger function value,
+if you want bigger function values you need to apply the function to
+bigger values of the argument.  So
+$P(h(Y)\leq x)=P(h^{-1}(h(Y)) \leq h^{-1}(x))=P(Y \leq h^{-1}(x))=F_Y(h^{-1}(x))$.  
+
+{\bf Exercise.~~}Find the density of $U^2$, where $U$ is standard
+uniform.
+
+What if $h(x)$ is a strictly decreasing function, and we are
+interested in $W=h(Y)$?  Here, we need to know that the inverse of
+a strictly decreasing function is strictly increasing.  Then
+$F_W(x)=P(W\leq x)=P(h(Y)\leq x)=P(h^{-1}(h(Y)) \geq h^{-1}(x))=P(Y \geq h^{-1}(x))=1-F_Y(h^{-1}(x))$, where we have taken for granted that $Y$ is
+continuous and $P(Y \geq y) = P(Y=y) + P(Y > y) = 0 + 1-P(Y \leq y)=1-F(y)$.
+
+{\bf Exercise.~~}Show that if $U$ is standard uniform, $1-U$ is also
+standard uniform.
+
+{\bf Example.~~}Let $U$ be standard uniform, and let $X$ be some
+other random variable such that $\mbox{\rm cov}(U,X)=s$.  What is
+$\mbox{\rm cov}(1-U,X)$?\newline
+{\it Solution.}~~By definition, $\mbox{\rm cov}(W,X)=E((W-EW)(X-EX))$.
+Note $E(1-U)=E(1)-E(U)=1-EU$, and then
+$\mbox{\rm cov}(1-U,X)=E((1-U-(1-EU))(X-EX))=E(-(U-EU)(X-EX))=
+-E((U-EU)(X-EX))=-s$.  So although $U$ and $1-U$ have the same
+distribution, in simulation they cannot always be substituted for
+each other.
+
+\subsection*{The probability-integral transform}
+The probability integral transform allows you to generate random
+variables with arbitrary distributions by transforming uniform
+random variables.  The method is not always the most efficient, but
+it is in principle always available.  This method also works with
+discrete random variables, although we will consider only continuous
+random variables here.
+
+Let $W$ have some distribution, and let $F(x)$ be the cdf of $W$.
+For simplicity, let's assume that $F$ is strictly increasing on the
+interval of interest.  Let $U$ have the standard uniform distribution.
+We wish to show that $F^{-1}(U)$ has the same distribution as $W$,
+so we will find out what the cdf of $F^{-1}(U)$ is.  Here,
+$P(F^{-1}(U)\leq x)=P(F(F^{-1}(U)) \leq F(x)$, since $F$ must be
+strictly increasing.  So we have then 
+$P(F^{-1}(U)\leq x)=P(U \leq F(x))$.  This last expression is the
+chance that a uniform random variable is less than something (the
+something happens to be $F(x)$), but we know $P(U\leq x)=x$ for any
+$0\leq x \leq 1$.  Since $F$ is a cdf, we don't have any values outside
+the range 0 to 1 anyway.  So 
+$P(F^{-1}(U)\leq x)=P(U \leq F(x))=F(x)$.  This shows that $F^{-1}(U)$
+and $W$ have the same distribution, and the cdf is $F(x)$. 
+
+{\bf Exercise.}~~What is the inverse of the cdf of an exponential
+random variable?  Write a simple R function to implement it.  Use it
+to create 10000 independent random exponential variables with a hazard of 2 by
+transforming 10000 standard uniform random variates.  Then use the online
+help for \verb+rexp+ to create another 10000 exponential variates 
+with the same hazard.  Plot the quantiles of these two samples.
+
+\section*{The Poisson Process}
+\subsection*{Analysis}
+We will take a very quick look at the Poisson process.  Let $N(t)$ be
+the count of times that an event has happened at time $t$.  We suppose
+that the event has a rate $\lambda$ of occurrence, by which we mean that
+the chance the event will occur in some small time $dt$ is $\lambda dt$.
+
+If we want to wait until the next time the event happens, we have an
+exponential waiting time with rate $\lambda$, so the mean time to the
+event is $1/\lambda$.
+
+What is the chance that $N(t)$ is zero, which is to say, that the event
+has not happened yet?  What is the chance that $N(t)$ is one, or two,
+etc.?  Let $p_i(t)=P(N(t)=i)$.
+We can take a look at the chance the event has not happened yet
+by writing an equation for how it changes:
+\[
+P(N(t+dt)=0) = P(N(t+dt)=0|N(t)=0)P(N(t)=0) + P(N(t+dt)=0|N(t) \neq 0) P(N(t) \neq 0) .
+\]
+\[
+P(N(t+dt)=0) = P(N(t+dt)=0|N(t)=0)P(N(t)=0) + 0 \cdot P(N(t) \neq 0) .
+\]
+\[
+P(N(t+dt)=0) = (1-\lambda dt)P(N(t)=0) .
+\]
+We can rewrite this as
+\[
+p_0(t+dt) = (1-\lambda dt)p_0(t) .
+\]
+Thus, 
+\[
+p_0(t+dt) = p_0(t) - \lambda p_0(t) dt .
+\]
+We rearrange:
+\[
+p_0(t+dt) - p_0(t) = - \lambda p_0(t) dt .
+\]
+\[
+\frac{p_0(t+dt) - p_0(t)}{dt} = - \lambda p_0(t) .
+\]
+In the limit as $dt \rightarrow 0$, we have
+\[
+\frac{dp_0(t)}{dt} = - \lambda p_0(t) .
+\]
+We have seen this already; we simply have the solution
+\[
+p_0(t) = e^{- \lambda t} ,
+\]
+where we assumed that $p_0(0)=1$.  This is simply the survival 
+function for the exponential distribution; so far we have not done
+anything really new.
+
+Now, what is the chance that $N(t)$ is one, i.e. $p_1(t)$?  
+\begin{eqnarray*}
+P(N(t+dt)=1) & = & P(N(t+dt)=1|N(t)=0)P(N(t)=0) + \\
+ & & \quad P(N(t+dt)=1|N(t)=1)P(N(t)=1) + \\
+ & & \quad P(N(t+dt)=1|N(t)>1)P(N(t)>1) .
+\end{eqnarray*}
+Next, we use the fact that the chance the event happens in any small
+time interval is $\lambda dt$.
+\[
+P(N(t+dt)=1) = \lambda dt P(N(t)=0) + (1-\lambda dt) P(N(t)=1) + 0 \cdot P(N(t)>1) .
+\]
+Simplifying the notation gives us
+\[
+p_1(t+dt) = \lambda dt p_0(t) + (1-\lambda dt) p_1(t) .
+\]
+Rearranging:
+\[
+\frac{p_1(t+dt)-p_1(t)}{dt} = \lambda p_0(t)  -\lambda p_1(t) .
+\]
+Then
+\[
+\frac{dp_1}{dt} = \lambda p_0(t)  -\lambda p_1(t) ,
+\]
+\[
+\frac{dp_1}{dt} + \lambda p_1(t) = \lambda p_0(t) .
+\]
+There is a standard trick to solve equations like this; here, we
+multiply both sides by $e^{\lambda t}$:
+\[
+\frac{dp_1}{dt}e^{\lambda t} + \lambda p_1(t)e^{\lambda t} = \lambda p_0(t)e^{\lambda t} .
+\]
+\[
+\frac{d}{dt}\Big(p_1(t) e^{\lambda t}\Big) = \lambda p_0(t)e^{\lambda t} .
+\]
+We could rewrite this:
+\[
+d\Big(p_1(t) e^{\lambda t}\Big) = \lambda p_0(t)e^{\lambda t} dt ,
+\]
+and integrate both sides:
+\[
+\Big(p_1(t) e^{\lambda t}\Big) |^{t=T}_{t=0} = \int_{t=0}^{t=T}\lambda p_0(t)e^{\lambda t} dt .
+\]
+\[
+p_1(T) e^{\lambda T} - p_1(0)e^{\lambda 0} = \int_{t=0}^{t=T}\lambda p_0(t)e^{\lambda t} dt .
+\]
+Since $p_1(0)=0$,
+\[
+p_1(T) e^{\lambda T}  = \int_{t=0}^{t=T}\lambda p_0(t)e^{\lambda t} dt .
+\]
+Now we must substitute $p_0(t)=e^{-\lambda t}$ and do the integral:
+\[
+p_1(T) e^{\lambda T}  = \lambda T .
+\]
+Thus (then using $t$ for $T$ now):
+\[
+p_1(t) = \lambda t e^{-\lambda t} .
+\]
+
+Now, what is the chance that $N(t)$ is two, i.e. $p_2(t)$?  
+\begin{eqnarray*}
+P(N(t+dt)=2) &  = & P(N(t+dt)=2|N(t)=0)P(N(t)=0) + \\
+& & \quad P(N(t+dt)=2|N(t)=1)P(N(t)=1) + \\
+& & \quad P(N(t+dt)=2|N(t)=2)P(N(t)=2) + \\
+& & \quad P(N(t+dt)=2|N(t)>2)P(N(t)>2) . 
+\end{eqnarray*}
+For a really small $dt$, the chance of two events within $dt$ is
+negligible.  This equation gives us (using the same logic as before)
+\[
+\frac{dp_2}{dt} + \lambda p_2(t) = \lambda p_1(t) .
+\]
+We could use the same logic to solve this equation in terms of an
+integral, but there is a better way.
+Note that really we have, for $i>0$,
+\[
+\frac{dp_i}{dt} + \lambda p_i(t) = \lambda p_{i-1}(t) ,
+\]
+and
+\[
+\frac{dp_0(t)}{dt} + \lambda p_0(t) = 0 .
+\]
+Remember that  the generating function 
+$g(u)=\sum_{i=0}^{\infty}u^ip_i$.  Let's use this:
+\[
+\frac{dp_i}{dt} u^i + \lambda p_i(t) u^i = \lambda p_{i-1}(t) u^i ,
+\]
+and
+\[
+\frac{dp_0(t)}{dt}u^0 + \lambda p_0(t)u^0 = 0 .
+\]
+Summing all this up, we have
+\[
+\sum_{i=0}^{\infty} \frac{dp_i}{dt} u^i + \lambda g(u,t) = \lambda \sum_{i=1}^{\infty}p_{i-1}(t) u^i .
+\]
+Taking for granted that we can just move the derivative with respect
+to time outside the sum, and changing the index on the second summation,
+\[
+\frac{d}{dt}\sum_{i=0}^{\infty} p_i u^i + \lambda g(u,t) = \lambda \sum_{j=0}^{\infty}p_{j}(t) u^{j+1} ,
+\]
+so that
+\[
+\frac{d}{dt}g(u,t) + \lambda g(u,t) = u \lambda g(u,t) 
+\]
+(where we are abusing the notation slightly).
+\[
+\frac{d}{dt}g(u,t) = (u-1) \lambda g(u,t) .
+\]
+This should give us
+\[
+g(u,t) = g(u,0)e^{(u-1)\lambda t} .
+\] 
+At time 0, the generating function is just the generating function of
+a random variable which is certain to be zero.  This gives us 
+$g(u,0)=p_0(t)+up_1(t)+u^2p_2(t)+\cdots=1$.
+So,
+\[
+g(u,t) = e^{(u-1)\lambda t} .
+\]
+This is the generating function of a Poisson random variable with
+mean $\lambda t$.  So the mean number of events that have happened
+by time $t$ is given by the rate per unit time, $\lambda$, times the
+time.  The probability distribution of the number of events by 
+time $t$ is the Poisson distribution.
+
+There is a great deal more to be said about the Poisson process, but
+they are beyond the scope of our course.  One thing that we won't
+discuss in any detail is that the counts in different time periods
+are independent.  You should know that when there is a constant
+rate $\lambda$ for an event to happen, the event counts for fixed
+periods of length $T$ are Poisson with mean $\lambda T$, and the
+interarrival times are exponential.
+
+{\bf Exercise.}~~Suppose that patients arrive randomly at a patient
+service center at a rate of two per hour from 8 to 5.  
+What is the chance that there will be no patients between 8 and 9
+in the morning?  What is the chance there will be no patients between
+9 and 10 in the morning?  What is the chance there will be exactly
+four patients between 4 and 5 in the afternoon?  What is the chance 
+there will be more than four patients between 4 and 5 in the afternoon?
+What is the chance that there will be more than four patients 
+between 3 and 5 in the afternoon?  What is the chance there will be
+no patients between 4:30 and 5 in the afternoon?
+
+{\bf Exercise.}~~Suppose that the incidence rate of a rare accident
+is two per year in a certain state, on average.  What is the chance
+that there will be three consecutive years with no cases?  What
+is the chance there will be two consecutive years with four or more
+cases?
+
+{\bf Exercise.}~~Suppose that the incidence of tuberculosis is
+8.2 per $100\,000$ person-years, and that a jurisdiction has a population
+of 18 thousand.  What is the probability that there will be no cases
+of tuberculosis in one year?
+
+\subsection*{Simulating a Poisson process}
+The simplest way to simulate a Poisson process is to use the fact
+that the interarrival times are exponentially distributed.  Let's
+simulate the arrival of patients at a service center, assuming a
+mean arrival rate of, say, three per hour.  Then the interarrival
+times are exponential with rate three per hour; we will generate some
+exponentially distributed random variables with this mean and then
+add them up:
+<<>>=
+wtimes <- rexp(50,rate=3)
+artimes0 <- cumsum(wtimes)
+artimes <- artimes0[artimes0<=9]
+@
+Here we selected out those that landed in the first nine hours to
+simulate a 8 to 5 day.  Note that we threw a lot of random values away;
+how could we be more efficient?
+
+{\bf Exercise.}~~Suppose that sputum-smear tuberculosis patients 
+infect people at a rate of 8 per year.  Assume that each patient is
+infectious for exactly 74 days.  Use a Poisson process to simulate
+infection times.
+
+{\bf Exercise.}~~Continue to suppose that sputum-smear tuberculosis 
+patients infect people at a rate of 8 per year.  Now assume that each 
+patient is infectious for an exponentially distributed time whose
+mean is 74 days.  Use a Poisson process to simulate
+infection times for such a patient.
+
+It turns out that the total number of infections in this latter case
+will be given by the negative binomial distribution, but we won't have
+time to go into this in detail.
+
+\subsection*{Numerically computing the probabilities}
+We can numerically compute the probabilities $p_0$ directly from
+the differential equations using R.  This technique can help us
+gain insight into problems whose differential equations cannot be
+solved analytically.
+
+We are going to use an add-on package for R, called the \verb+odesolve+ package.  You can install it for your home system as well.
+
+To use it, we must let the system know we will need it:
+<<>>=
+require(odesolve)
+@
+
+I'd like to simulate the first, say, four Poisson process probabilities.  
+Now, using a statistics package to simulate ordinary differential
+equations is just not going to be as easy as using a domain-specific
+visual language, but on the other hand we have access to the full
+power of R.
+
+The way this will work is that we will write a function to compute the
+derivatives.  In other words, given the values of the state variables
+(here the probabilities), we need to know the derivatives at that time.
+For \verb+odesolve+, this function must be written in a specific 
+format, which will be illustrated.  We will define a function,
+called \verb+ode+, to compute the right-hand sides for the first
+four probabilities.  The name \verb+ode+ is our choice; the function
+can be named anything.  But the first argument is meant to be the
+time.  The second argument is a vector of state variables (unknown
+variables whose derivatives we have equations for), and the final
+argument is a vector of parameters.  It is often helpful to use named
+elements in this vector.  The return value should be a list whose first
+element is a vector of corresponding derivatives for the state
+variables; the second element can be set to NULL for now.
+<<>>=
+ode <- function(t,V,ps) {
+  p0 <- V[1]
+  p1 <- V[2]
+  p2 <- V[3]
+  p3 <- V[4]
+  lambda <- ps["lambda"]
+  dp0dt <- - lambda * p0
+  dp1dt <- lambda*p0 - lambda*p1
+  dp2dt <- lambda*p1 - lambda*p2
+  dp3dt <- lambda*p2 - lambda*p3
+  derivs <- c(dp0dt,dp1dt,dp2dt,dp3dt)
+  list(derivs,NULL)
+}
+@
+To actually use the numerical solver for differential equations, we
+will call the function \verb+lsoda+, provided in the \verb+odesolve+
+package.  If you have not activated the package by typing
+\verb+require(odesolve)+, it won't be recognized.  I find it helpful
+to write a {\it wrapper} for \verb+lsoda+, but this is not required:
+<<>>=
+dosim <- function(vinit,ps,endtime,record.step=1/16,sys=ode) {
+  lsoda(vinit,seq(0,endtime,record.step),sys,ps)
+}
+@
+What is required by \verb+lsoda+ is a vector of initial conditions, 
+a vector of times for which the values of the variables are desired,
+the function that computes the derivatives, and the parameter vector
+needed by the function that computes the derivatives (simplifying
+things a bit).  Our function \verb+dosim+ accepts the vector of
+initial conditions, the parameter vector, an ending time, a recording
+step which defaults to 1/16, and the system of equations themselves
+which defaults to \verb+ode+ here.
+
+Let's actually try this, and see how to use the output of the 
+\verb+lsoda+ function.  The first column of the output is always the
+value of the time; the second and succeeding columns represent the
+state variables in order.  Here, column two of the answer will
+represent $p_0(t)$, and so forth.
+<<>>=
+ps <- c(lambda=0.2)
+ans <- dosim(c(1,0,0,0),ps,40)
+@
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(ans[,1],ans[,2],type="l")
+points(ans[,1],ans[,3],type="l",col="blue")
+points(ans[,1],ans[,4],type="l",col="green")
+points(ans[,1],ans[,5],type="l",col="red")
+@
+\end{figure}
+
+\section*{The gamma distribution}
+We know that for a Poisson process, the interarrival times are
+exponentially distributed.  When we simulated the Poisson process,
+we added up independent exponential random variables to determine the
+arrival times.  What is the distribution of the sum of independent
+exponential variables with identical rates?
+
+The analysis of the Poisson process itself points the way to the
+answer.  Suppose that we want to know at what time the Poisson
+process first reaches the value 3.  We could look at the value of
+$1-p_0(t)-p_1(t)-p_2(t)$; this is the chance that the count is three
+or more.  For the value $\lambda=0.2$, we can plot this based on
+the computation we just did:
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(ans[,1],1-ans[,2]-ans[,3]-ans[,4],type="l")
+@
+\end{figure}
+This is actually the cumulative distribution function for the
+first time the count hit the value 3.
+
+What does the density actually look like?  Remember we would need
+to take the derivative of this, but here we have no formula (yet)
+for the cumulative distribution function.  Fortunately, we can use
+our \verb+ode+ function together with the values of the state
+variables to compute the derivative.  We want the negative of the
+sum of the first three derivatives (though we could actually 
+simplify the computation, since some terms cancel).  What we need
+to do is to apply \verb+ode+ to the output, and then add up the
+derivatives we need:
+<<>>=
+len <- length(ans[,1])
+pdf <- rep(0,len)
+for (ii in 1:len) {
+  dps<-ode(ans[ii,1],ans[ii,2:5],ps)[[1]]
+  pdf[ii] <- -(dps[1]+dps[2]+dps[3])
+}
+@
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(ans[,1],pdf,type="l")
+@
+\end{figure}
+
+This distribution is an example of the gamma distribution.  The
+gamma distribution has two parameters, a {\it shape} factor and a
+rate.  The distribution of the sum of $N$ independent
+exponential distributions with rate $\lambda$ is a gamma
+distribution with shape factor $N$ and rate $\lambda$; an
+exponential distribution is a gamma distribution with shape factor 1.
+We will use the \verb+dgamma+ function in R to explore the density
+function of a gamma random variable with shape factor 3 and rate 0.2:
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(ans[,1],dgamma(ans[,1],shape=3,rate=ps["lambda"]),type="l",col="red")
+@
+\end{figure}
+Is this really the same as what we computed with the differential
+equations?
+\begin{figure}
+  \centering
+<<fig=true>>=
+plot(pdf,dgamma(ans[,1],shape=3,rate=ps["lambda"]),type="l")
+@
+\end{figure}
+The plot lies perfectly on the 45-degree line.
+
+The formula for the gamma density with shape factor $\alpha$ and
+rate $\lambda$ can be shown to be
+\[
+f(t) = \frac{\lambda^{\alpha}}{\Gamma(\alpha)} t^{\alpha-1} e^{-\lambda t} ,
+\]
+where $\Gamma(u)$ is the gamma function.  The gamma function is
+defined to be
+\[
+\Gamma(u) = \int_{0}^{\infty} x^{u-1}e^{-x} dx ,
+\]
+and generalizes the factorial to real numbers other than negative
+integers.  For positive integers, it can be shown that 
+$\Gamma(n)=(n-1)!$.
+
+The mean of a gamma distribution with shape factor $\alpha$ and
+rate $\lambda$ is $\alpha/\lambda$; the standard deviation of a
+gamma random variable with shape $\alpha$ and rate $\lambda$ is
+$\sqrt{\alpha}/\lambda$.
+
+{\bf Exercise.}~~Consider five different gamma random variables,
+each with the same mean, say 5.  Suppose that the shape factors are
+1, 10, 100, 1000, and 10000.  What do the rates have to be?  Plot the
+density functions, and comment.
+
+Remember: the sum of $k$ independent exponential random variables, each with 
+rate $\lambda$, is a gamma random variable, with shape parameter $k$ and
+``scale parameter'' $\lambda$.  A gamma random variable with shape
+parameter 1 is the same thing as an exponential.  (Note: some books call
+a gamma distribution with a positive integer shape parameter an {\it Erlang}
+distribution.)
+
+\vfill
+\end{document}

@@ -1,0 +1,540 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\setlength{\parindent}{0.6cm}
+
+\begin{document}
+
+\section*{Mathematical modeling of infectious diseases, lecture 18}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section*{Deterministic compartmental models for epidemics}
+
+\section*{Exponential waiting}
+Let's start with another review of the exponential waiting process.  This time, let $X$ be the number
+of people who have not gotten a certain disease, and let $Y$ be the number of people with the disease.
+We're going to consider a closed cohort, we're going to ignore all sources of mortality, and we're
+going to assume you do not recover.  Finally, we'll assume each individual behaves independently of
+every other, and we assume a {\it constant} hazard of becoming sick.  This is a model of a 
+noncommunicable process.  We might consider this a model of accident-related injury, for instance, or
+a very simple model of a degenerative disease such as the onset of coronary artery disease.  We might use 
+this as a very simple model of an infectious disease, only if the infected humans were not part of
+the transmission chain and the risk were constant.
+
+Mathematically, we can write $\lambda$ for the hazard of disease, and so $\lambda X$ is the number per
+unit time who flow from the susceptible state $X$ to the diseased state $Y$.  Since every person who
+becomes infected leaves the susceptible state and enters the diseased state, we can write two
+differential equations for the system:
+\[
+\frac{dX}{dt} = - \lambda X
+\]
+and
+\[
+\frac{dY}{dt} = \lambda X .
+\]
+We've seen the solution to the first equation many times---it's just exponential decay:
+\[
+X(t) = X(0) e^{-\lambda t} .
+\]
+So we could obtain the solution to $Y(t)$ by actually integrating:
+\[
+Y(t) = \lambda X(0) \int_0^t e^{-\lambda t'} dt' .
+\]
+The simpler way to do this is to note that $dX/dt + dY/dt=0$, so the total number of individuals
+$X+Y=N$ does not change.  So $Y(t)=N-X(t)$.  It's not hard to see that this solution in fact
+obeys the equation $dY/dt = \lambda X$.
+
+\section*{Exponential waiting time to disease, plus mortality}
+Let's stay with a closed cohort, only now adding mortality due to some cause other than the disease.  Our
+model now reads
+\[
+\frac{dX}{dt} = - (\mu + \lambda) X
+\]
+and
+\[
+\frac{dY}{dt} = \lambda X - \mu Y .
+\]
+Here, we have $X(t) = X(0)e^{-(\mu + \lambda)t}$ from the first equation.  Just as before, since
+$dN/dt = - \mu N$, $N(t) = N(0) e^{- \mu t}$.  So we actually know that $Y=N-X$ must be
+\[
+Y(t) = X(0) e^{- \mu t} - X(0) e^{-(\mu + \lambda) t} .
+\]
+assuming $Y(0)=0$.
+{\bf Exercise.~~}What is $\lim_{t \rightarrow \infty}Y(t)$?\newline
+{\bf Exercise.~~}What is the probability that a person dies without having ever developed the disease?
+{\it Ans.~~}$\mu/(\lambda + \mu)$.\newline
+{\bf Exercise.~~}What is the expected waiting time until death, for susceptibles? For diseased 
+individuals? {\it Ans.~~}$\mu^{-1}$ for both.\newline
+{\bf Exercise.~~}In this model, let $M$ be the number of individuals who have died with the disease. 
+(a) Show $dM/dt = \mu Y$. (b) Show 
+\[
+M(t) = X(0) \left( \frac{\lambda}{\mu + \lambda} + \frac{\mu}{\mu + \lambda} e^{-(\mu + \lambda)t} - e^{-\mu t}\right) .
+\]
+(c) What is $\lim_{t \rightarrow \infty} M(t)$? (d) Show that the probability density of the time of
+death, conditional on having had the disease, is 
+\[
+f(t) = \frac{\mu(\mu+\lambda)\big(1-e^{-\lambda t}\big) e^{-\mu t}}{\lambda} .
+\]
+(d) Show that the expected time of death, conditional on having had the disease, is 
+\[
+\frac{1}{\mu} + \frac{1}{\lambda+\mu} .
+\]
+{\bf Exercise.~~}Show that the expected person-time with disease is $\int_0^{\infty}Y(t)dt$, which is
+$\frac{\lambda}{\mu(\lambda+\mu)}$.  Interpret this as the probability of developing disease times the
+expected duration of disease.
+
+\section*{Exponential waiting time to disease, plus simple demography}
+Let's now see what happens if we add a birth rate (inflow) $\Lambda$ and a per-capita death rate $\mu$.
+To start with, let's assume that there is no excess death rate due to disease.  We now have
+\begin{equation}
+\label{eq:m2x}
+\frac{dX}{dt} = \Lambda - \lambda X - \mu X 
+\end{equation}
+and
+\begin{equation}
+\label{eq:m2y}
+\frac{dY}{dt} = \lambda X - \mu Y .
+\end{equation}
+From last lecture, we know the solution to Equation~\ref{eq:m2x} is 
+\[
+X(t) = \frac{\Lambda}{\lambda + \mu}  + \left(X(0) - \frac{\Lambda}{\lambda + \mu}\right)e^{-(\lambda + \mu)t} .
+\]
+Once again, notice that if we add the equations, we
+get 
+\[
+\frac{dX}{dt} + \frac{dY}{dt} = \Lambda - \lambda X + \lambda X - \mu (X+Y) .
+\]
+We can just put $N=X+Y$ and get
+\[
+\frac{dN}{dt} = \Lambda - \mu N .
+\]
+
+{\bf Exercise.~~}Use the previous result and $Y=N-X$ to find the solution for $Y$.\newline
+{\bf Exercise.~~}Show that the fraction of individuals entering the population who ultimately become
+diseased is the competing risk result $\lambda/(\lambda + \mu)$.\newline
+{\bf Exercise.~~}Show the average waiting time to death is $\mu^{-1}$, for individuals just entering
+the population.\newline
+{\bf Exercise.~~}Show that the average waiting time to death for diseased individuals is also $\mu^{-1}$.\newline
+{\bf Exercise.~~}Show that the equilibrium value of $X$ is $\Lambda/(\lambda+\mu)$.\newline
+{\bf Exercise.~~}Show that the flow rate at equilibrium (individuals per unit time) moving from $X$ to 
+$Y$, which is the equilibrium incidence of disease, is ${\cal I} = \Lambda \lambda/(\lambda + \mu)$ (the flow rate
+into the population times the chance a person will become infected).\newline
+{\bf Exercise.~~}Show that the equilibrium prevalence of disease ($Y$) is ${\cal I}/\mu$.\newline
+{\bf Exercise.~~}Let $Y_c$ be the cumulative incidence of disease.  Show that the cumulative incidence
+satisfies $dY_c/dt = \lambda X$, and solve this for $Y_c(t)$.
+
+\section*{Simple disease model with latency}
+Let's continue our study of nontransmissible diseases by assuming that individuals first enter a 
+period of latency prior to overt disease.  Let $E$ be the number of latent individuals, and $Y$ the
+number of diseased individuals.  We will let $\lambda$ be the per capita rate at which individuals develop
+latency, and $\gamma$ be the rate of progression from latency to disease.  Let's ignore mortality and
+birth for the moment.  We have the simple model
+\[
+\frac{dX}{dt} = - \lambda X
+\]
+\[
+\frac{dE}{dt} = \lambda X - \gamma E
+\]
+and
+\[
+\frac{dY}{dt} = \gamma E .
+\]
+{\bf Exercise.~~}Assume $E(0)=0$, and show 
+\[
+E(t) = \frac{ \lambda X(0) (e^{-\lambda t}-e^{-\gamma t})  }{\gamma-\lambda} .
+\]
+provided $\gamma \neq \lambda$.  Use L'H{\^o}pital's Rule to show that when $\gamma \rightarrow \lambda$,
+this formula reduces to $X_0 t \lambda e^{-\lambda t}$.  Divide this by $X_0$ and think of the result as 
+the cumulative distribution function of the arrival time; show the arrival time when $\gamma = \lambda$
+is a gamma distribution with shape parameter 2.  What is the mean arrival time when $\gamma \neq \lambda$?
+When $\gamma = \lambda$?\newline
+{\bf Exercise.~~}Consider the model below, where $E_i$ denotes latency group $i$:
+\[
+\frac{dX}{dt} = - \lambda X ,
+\]
+\[
+\frac{dE_1}{dt} = \lambda X - \lambda E_1 ,
+\]
+\[
+\frac{dE_i}{dt} = \lambda E_{i-1} - \lambda E_i
+\]
+for $i=2,\ldots,n$, and 
+\[
+\frac{dY}{dt} = \lambda E_n .
+\]
+Show that the arrival time in $Y$ is gamma distributed; what is the shape parameter? the mean?
+
+\section*{Exponential models of disease, featuring recovery}
+We can look at a simple model of disease in which individuals may recover.  Let's assume that once
+you recover, you cannot become infected again.  We, however, are still looking at diseases in which
+humans are not part of the chain of transmission.  We let $\rho$ be the hazard rate for recovery; 
+$\rho \Delta t$ is the chance a person will recover in a small unit of time $\Delta t$.  Because we
+assume $\rho$ is constant, the expected time to recovery is always $\rho^{-1}$, and the waiting time
+distribution is exponential.  Here,
+\[
+\frac{dX}{dt} = - \lambda X
+\]
+and
+\[
+\frac{dY}{dt} = \lambda X - \rho Y
+\]
+We can let $Z$ be the number who have recovered, so
+\[
+\frac{dZ}{dt} = \rho Y .
+\]
+In fact, this model is mathematically very similar to the model of latency we did earlier.  Here,
+\[
+X(t) = X(0) e^{-\lambda t} 
+\]
+and assuming $Y(0)=0$, 
+\[
+Y(t) = \frac{X(0)\lambda}{\lambda - \rho}\left(e^{-\rho t}-e^{-\lambda t}\right) 
+\]
+whenever $\lambda \neq \rho$.  Note that in the long run, $Y(t)=0$, but also $X(t)=0$.
+
+\section*{Simple model of transmissible disease}
+We next consider a simple model of transmissible disease, due to Kermack and McKendrick.  Here, we will
+continue to let $X$ be the number of susceptibles, and $Y$ the number of people with disease.  We assume
+that individuals with disease are infectious, so we will call $Y$ the number of infectives.  The only
+difference between this model and the first will be in how we model the risk of developing
+disease (or here, infection).  We are going to assume that the risk of infection $\lambda$ is no
+longer constant, but instead is proportional to the number of infectives in the population.  Thus, if
+there are no infectives at all, your risk is zero.  Above that we assume that each additional infective
+generates the same additional level of risk, and $\lambda = \beta Y$.  This is far from being the
+only reasonable model; many modelers have studied equations of the form $\lambda = \beta Y/N$, so that
+the risk is proportional to the {\it prevalence rate}, rather than just the prevalence.  More general
+forms have been studied as well.  Using the form $\lambda = \beta Y$, where $\beta$ is called a
+{\it transmission parameter}, gives us the simple Kermack-McKendrick model:
+\[
+\frac{dX}{dt} = - \beta X Y
+\]
+\[
+\frac{dY}{dt} = \beta X Y - \rho Y
+\]
+and
+\[
+\frac{dZ}{dt} = \rho Y .
+\]
+As we shall see, this model behaves differently than the model with constant $\lambda$.  Notice first
+of all that if $Y=0$, $\frac{dX}{dt}=0$, very different than we saw in the constant risk model.  
+
+If $\beta N-\rho>0$, the rate of change of $Y$ is initially positive,
+which means the initial group of infectives will be getting larger.  On the other hand, if 
+$\beta N-\rho<0$, the small group of initial infectives has to be getting smaller (and eventually
+smaller and smaller).  
+
+Let's look more closely at what happens to a single infective in a very large population.  Suppose that
+$N$ is much larger than the number of people that can ever get infected before an infective dies or
+recovers.  In effect, the number of susceptibles is constant at the value $N$ for the infectious lifetime
+of the first person.  We can then just replace the dynamic $X(t)$ by the constant $N$, leading to the
+approximation
+\[
+\frac{dY}{dt} = Y(\beta N-\rho)
+\]
+This is just a linear equation $\frac{dY}{dt} = kY$, with $k=(\beta N-\rho)$.  If $k<0$, the value of $Y$
+must decay to zero; if $k>0$, $Y$ will grow exponentially.  Before long, of course, $Y$ will no longer
+be small compared to $N$, and we will have to abandon the approximation.  
+
+Let's look at this another way.  Let's look at only a single round of transmission, again with the
+number of susceptibles approximately equal to $N$, and fixed.  Let's now let $Y_0$ be the initial
+group of infectives.  We know they recover at rate $\rho$, so we can follow this {\it closed cohort} of
+infectives:
+\[
+\frac{dY_0}{dt} = - \rho Y_0 .
+\]
+Then $Y_0(t) = Y_0(0) e^{-\rho t}$.  Let's then look at the cumulative incidence $W$ of new infection
+resulting from these infectives:
+\[
+\frac{dW}{dt} = \beta N Y_0(t) .
+\]
+Really, these second generation cases go on to spread further and further disease, but we are not 
+modeling that.  We only want to know about the first round of transmission.  We find that
+\[
+W(t) = \frac{\beta (1-e^{-\rho*t})NY_0(0)}{\rho} .
+\]
+As $t \rightarrow \infty$, we get 
+\[
+W(\infty) = \frac{\beta N Y_0(0)}{\rho} .
+\]
+So the number of second-generation infections {\it per} first generation infective is
+\[
+\frac{W(\infty)}{Y_0(0)} = \frac{\beta N}{\rho} .
+\]
+Notice that when $k=\beta N-\rho>0$, $\beta N/\rho>1$, and when $k<0$, $\beta N/\rho<1$.  
+
+Now, let's look at 
+\[
+\frac{dX}{dt} = - \beta X Y
+\]
+again, and suppose that $Y \ll X$ and assume $X \approx N$ again.  Let's also imagine that we have a 
+fixed number of infectives $Y^*$ from time 0 to time $T$.  In other words, let's actually forget about
+the distribution of the waiting time until recovery and just fix $Y$ at some constant value for a while.
+What happens?  With $X$ approximately constant at $N$, we just have a cumulative incidence ${\cal I}$
+which obeys
+\[
+\frac{{\cal I}}{dt} = \beta N Y^* .
+\]
+But these are all constant.  So
+\[
+{\cal I}(T) = \beta N Y^* T .
+\]
+The cumulative incidence {\it per infective} over this time period is
+\[
+{\cal I}(T) = \beta N T.
+\]
+In other words, a single infective produces $\beta N$ new cases per unit time, when the number of susceptibles is fixed at $N$.  This gives us the clues we need to interpret the condition $\beta N/\rho>1$.  
+We can think of this as the number of new infections per unit time at the beginning of the epidemic
+($\beta N$) times the mean duration before recovery (the mean duration of infectiousness), $1/\rho$.
+The quantity $\beta N/\rho$ is called the basic reproduction number (or ratio), and has been discussed
+by many authors (Anderson and May, 1991).  Thus, if $\beta N/\rho>1$, the level of disease can increase
+from an initially small level.  If $\beta N/\rho<1$, it cannot do so, and no epidemic will occur.
+
+It turns out that the simple Kermack-McKendrick model is hard to solve analytically, for a formula for
+the values over time.  Let's numerically examine its behavior, however.  We will use the 
+\verb+odesolve+ package of R:
+<<>>=
+require(odesolve)
+km <- function(t,y,pars) {
+  list(c(-pars[1]*y[1]*y[2],pars[1]*y[1]*y[2]-pars[2]*y[2],pars[2]*y[2]),NULL)
+}
+ans1 <- lsoda(c(999,1,0),seq(0,50,by=1/8),km,c(0.01,0.1))
+@
+This code is not all that clear; notice that it does not say that $\beta$ is \verb+pars[1]+ and
+$\rho$ is \verb+pars[2]+.  We also have an initial population size of 1000.  Our value of the
+basic reproduction number is $\beta*N/\rho = 0.01*1000/0.1=100$, a very large number.  Let's plot
+the epidemic:
+\begin{figure}
+\caption{\label{fig:ans1}Kermack-McKendrick epidemic with $\beta=0.01$, $\rho=0.1$, and $N=1000$.}
+\centering
+<<fig=true>>=
+plot(ans1[,1],ans1[,3],type="l",xlab="Time",ylab="Number of infectives",col="red",ylim=c(0,1000))
+@
+\end{figure}
+Here, we see a very rapid rise, during which very many individuals are infected, followed by kinetics
+which are dominated by the slow recovery of those infected early.  Because we assumed an exponential
+waiting time to recovery, we see a very exponential looking prevalence during this phase.
+
+Let's now try a smaller basic reproduction number; let's make $\beta=0.0005$, so now the basic reproduction
+number is only 5.  This is still considerably larger than 1, so we expect a robust epidemic, and we
+get it.
+\begin{figure}
+\caption{\label{fig:ans3}Kermack-McKendrick epidemic with $\beta=0.0005$, $\rho=0.1$, and $N=1000$.}
+\centering
+<<fig=true>>=
+ans1 <- lsoda(c(999,1,0),seq(0,100,by=1/8),km,c(0.0005,0.1))
+plot(ans1[,1],ans1[,3],type="l",xlab="Time",ylab="Number of infectives",col="red",ylim=c(0,1000))
+@
+\end{figure}
+Notice we don't see quite as rapid an initial peak this time, but we get quite a classic epidemic
+curve.
+
+Let's go even closer to the threshold, using a basic reproduction number of say 2.  And this time
+we'll plot the number of susceptibles in black and the number of infectives in red, and go out to time
+400.  
+\begin{figure}
+\caption{\label{fig:ans2}Kermack-McKendrick epidemic with $\beta=0.0002$, $\rho=0.1$, and $N=1000$.}
+\centering
+<<fig=true>>=
+ans1 <- lsoda(c(999,1,0),seq(0,400,by=1/8),km,c(0.0002,0.1))
+plot(ans1[,1],ans1[,3],type="l",xlab="Time",ylab="Number",col="red",ylim=c(0,1000))
+points(ans1[,1],ans1[,2],type="l")
+@
+\end{figure}
+We still get a more or less usual epidemic curve, but now we see the epidemic die out before everyone
+is infected.  This was one of the classic findings of the Kermack-McKendrick paper.  If you look at the
+equation $dY/dt = \beta X Y-\rho Y$, eventually $X$ falls so low that $\beta X/\rho<1$, and there just
+aren't enough susceptibles to sustain epidemic transmission.
+
+{\bf Exercise.~~}Plot a graph of the long-term number of susceptibles as a function of $\beta$.  What
+pattern emerges?
+
+\subsection*{Simple epidemic models with demography}
+Now, let's add birth and death to this simple model.  Suppose again a constant inflow rate $\Lambda$
+and a constant per-capita death rate $\mu$.  We now have
+\[
+\frac{dX}{dt} = \Lambda - \beta X Y - \mu X ,
+\]
+\[
+\frac{dY}{dt} = \beta X Y - (\mu + \rho) Y ,
+\]
+and 
+\[
+\frac{dZ}{dt} = \rho Y - \mu Z .
+\]
+Models of this form were extensively analyzed by Anderson, May, Hethcote, and others.  As before, we
+won't try to analytically solve these equations.  Instead, we'll examine equilibria and hope for 
+insight into the qualitative behavior of the solutions.
+
+What are the equilibria?  First, notice that if $Y=0$, we just have $Z=0$ for all time, and
+$dX/dt = \Lambda - \mu X$.  The equilibrium of this equation is $X = \Lambda/\mu$.  So we've found our
+first equilibrium, the no-disease equilibrium: $X=\Lambda/\mu$, $Y=0$, and $Z=0$.  In particular, let's
+study it; what happens if we deviate from it a tiny bit?  Suppose in particular that we introduce a
+small group of infectives---what happens? Do we get an epidemic, or does it just fizzle out?
+We're now going to examine the question using a method known as local stability analysis; this method
+is due to Liapunov, and is discussed in
+many books, such as May 1973, Hirsch and Smale, and so forth. 
+
+What we're going to do is assume we are very {\it near} the no-disease equilibrium.  This means taking
+$Y$ and $Z$ to be small, and letting $X=\Lambda/\mu+x$, where $x$ is very small.  Writing $Y=y$ 
+and $Z=z$ to remind ourselves we're dealing with the deviation from the equilibrium (which happens to be 0 for these variables), we have 
+\[
+\beta X Y = \beta (\Lambda/\mu + x) y \approx \frac{\beta \Lambda y}{\mu} ,
+\]
+where we just neglected the product of the two tiny terms $xy$.  Now, $dX/dt=dx/dt$, so using this approximation, we have
+\[
+\frac{dx}{dt} \approx \Lambda - \frac{\beta \Lambda y}{\mu} - \mu (\Lambda/\mu + x) .
+\]
+Some terms cancel, so this becomes
+\[
+\frac{dx}{dt} \approx - \frac{\beta \Lambda y}{\mu} - \mu  x)
+\]
+For the $Y$-equation, 
+\[
+\frac{dy}{dt} = \frac{\beta \Lambda y}{\mu} - (\mu+\rho) y
+\]
+and the $z$-equation is unchanged.  Since $z$ does not feed back into the other two equations, we'll leave it aside for the time being.  
+
+What we have now is a set of two simultaneous linear differential equations with constant 
+coefficients.  We can write
+\[
+\left[ \begin{array}{r}
+\frac{dx}{dt} \\
+\frac{dy}{dt} \\
+\end{array}
+\right] = 
+\left[ \begin{array}{rr}
+- \mu & \frac{\beta \Lambda}{\mu} \\
+0 & \frac{\beta \Lambda}{\mu} - (\mu+\rho) \\
+\end{array}
+\right] \, 
+\left[ \begin{array}{r}
+x \\
+y \\
+\end{array}
+\right] .
+\]
+If we write $\mbox{\rm v}=[x,y]^T$ (the ${}^T$ indicates the transpose of the matrix, so we
+are talking about a column vector), and let $\mbox{\bf J}$ be the two by two matrix, we can 
+write this equation in the form 
+\[
+\frac{d\mbox{\bf v}}{dt} = \mbox{\bf Jv} .
+\]
+We have a matrix version of the equation $dx/dt = kx$.  Remember the solution of this
+equation represents exponential decay to zero if $k<0$ and exponential growth if $k>0$.  
+We can formally write
+\[
+\mbox{\bf v}(t) = \mbox{v}(0)e^{\mbox{\bf J}t} .
+\]
+The matrix $\mbox{\bf J}t$ is
+a matrix whose $i,j$-th entry is the $i,j$-th entry of $\mbox{\bf J}$ times $t$, but  what on earth could it mean to take the exponential of a matrix? 
+The mathematicians defined
+this for us using the power series:
+\[
+e^{\mbox{\bf J}t} = \mbox{\bf I} + \mbox{\bf J}t + \mbox{\bf J}^2 t^2 + \cdots 
+\]
+provided this converges for each entry.  (Here, $\mbox{\bf I}$ is the identity matrix of the
+same dimension as the square matrix $\mbox{\bf J}$.)  This doesn't seem to help, until we 
+suppose we can diagonalize $\mbox{\bf J}$.  (We're coming to a notational problem; we've been
+using $\lambda$ and $\Lambda$ for other things in this section, so we'll switch notation and
+call the eigenvalues of $\bf J$ by $\xi_i$, and the diagonal matrix of eigenvalues $\Xi$.)  So
+diagonalizing $\bf J$ gives us $\mbox{\bf J}=\mbox{\bf E} \Xi \mbox{\bf E}^{-1}$, where $\bf E$ was
+a matrix whose columns were the eigenvectors of $\bf J$ in the same order the corresponding
+eigenvalue appeared on the diagonal.  Since $\mbox{\bf J}^k = \mbox{\bf E}\Xi^k\mbox{\bf E}^{-1}$, we have the matrix exponential
+\[
+e^{\mbox{\bf J}t} = \mbox{\bf I} +\mbox{\bf E}\Xi\mbox{\bf E}^{-1} t +\mbox{\bf E} \Xi^2\mbox{\bf E}^{-1}  t^2 + \cdots
+\]
+This whole thing becomes
+\[
+e^{\mbox{\bf J}t} = \mbox{\bf E}\left[\mbox{\bf I}+\Xi t+ \Xi^2t^2 + \cdots\right]
+\mbox{\bf E}^{-1}
+\]
+The expression between the brackets is really a diagonal matrix, each of whose entries must be 
+$e^{\xi_i t}$ (for each $i$) because of the way diagonal matrices multiply.  In other words, the
+$1,1$ element of the matrix sum in brackets must be 1 (from the identity matrix), plus $\xi_1 t$
+from the second term, plus $\xi_1^2 t^2$ from the third, and so on, and this is the power series
+for $e^{\xi_1 t}$.  
+
+We can see that if $\xi_1<0$, this exponential will die away to zero.  But if $\xi_1>0$, this
+exponential will increase, well, exponentially.  It will correspond to a solution that grows
+larger and larger, indicating that a small perturbation from the equilibrium will grow
+larger and larger and larger.  The only way for the equilibrium to be {\it locally asymptotically
+stable} is if all the eigenvalues are negative---or more generally, for all the {\it real parts}
+to be negative.
+
+Suppose that one of the eigenvalues is complex, and has the form $a+bi$ (of course, there would
+have to be another eigenvalue which was the complex conjugate, $a-bi$).  Then we would have
+$e^{(a+bi)t}=e^at e^{bit}$.  It will turn out (we will see in more detail later) that the term
+$e^{bit}$ would be part of an oscillatory (trigonometric) term.  But if $a<0$ (the real part of
+the eigenvalue) is negative, the multiplication by $e^{at}$ would guarantee that the whole
+thing converged to zero.  On the other hand, if $a>0$, the exponential term would be growing
+in magnitude, and we would have an unstable equilibrium.
+
+So for continuous models, the question of local asymptotic stability becomes one of examining
+the real parts of the eigenvalues of the system linearized around the equilibrium.  
+
+In this case, what do we have?  The matrix is
+\[
+\left[ \begin{array}{rr}
+- \mu & \frac{\beta \Lambda}{\mu} \\
+0 & \frac{\beta \Lambda}{\mu} - (\mu+\rho) \\
+\end{array}
+\right]
+\]
+It is not hard to see that the eigenvalues are $-\mu$ and $\beta \Lambda/\mu - (\mu+\rho)$.  
+
+To improve our understanding of this eigenvalue, let's determine the basic reproduction number.
+Intuitively, we can see that the no-disease equilibrium is $\Lambda/\mu$, and we will assume
+that this is the number of susceptibles when we introduce the disease.  Just as before, each
+infective will then produce new infectives at a certain rate per unit time, and this rate must
+be $\beta$ times the number of suscepbibles, i.e. $\beta \Lambda/\mu$.  The mean duration of
+infectivity is $1/(\mu+\rho)$, so the basic reproduction number $R_0$ should be
+\[
+R_0 = \frac{\beta \Lambda}{\mu (\mu+\rho)} .
+\]
+We could repeat the formal derivation in the same way we did in the previous model, but it would
+be almost identical (now with $\Lambda/\mu$ for $N$, and $\mu+\rho$ instead of $\rho$).  Requiring
+$R_0>1$ is the same as requiring the eigenvalue $\beta \Lambda/\mu - (\mu+\rho)>0$; similarly, 
+whenever $R_0<1$, we have $\beta \Lambda/\mu - (\mu+\rho)<0$.  Whenever the basic reproduction
+number exceeds one, the no-disease equilibrium is unstable, and the disease can invade.  Whenever
+the basic reproduction number is less than one, the no-disease equilibrium is stable, and the
+disease cannot invade.
+
+We will now turn our attention to the endemic equilibrium.  It turns out that there is indeed
+another equilibrium where the levels of disease are not zero.  We have
+\[
+\bar{X} = \frac{\mu+\rho}{\beta} ,
+\]
+\[
+\bar{Y} = \frac{\Lambda - \frac{\mu(\mu+\rho)}{\beta}}{\mu+\rho} ,
+\]
+and 
+\[
+\bar{Z} = \frac{\beta \Lambda \rho - \mu \rho(\mu+\rho)}{\beta \mu (\mu+\rho)} .
+\]
+Notice that if $R_0<1$, the expression for $Y$ is negative.  In this model (though not for all 
+models), if $R_0<1$, there is no endemic stable level of disease.  Disease cannot persist in a 
+steady way if it cannot even invade.
+
+Notice that the total population size at the endemic equilibrium in this model is still $\Lambda/\mu$,
+since there is no excess death rate assumed for the disease.  So the equilibrium {\it fraction}
+of susceptibles is
+\[
+\bar{x}  = \frac{\bar{X}}{\Lambda/\mu} = \frac{(\mu+\rho)\mu}{\beta \Lambda} = \frac{1}{R_0} .
+\]
+In other words, $R_0 \bar{x}=1$ (see Anderson and May, 1991).  At the beginning of the epidemic, 
+when everyone is susceptible, each infective can produce $R_0$ new cases.  But at the steady state,
+there are fewer susceptibles, few enough that each infective on average exactly replaces itself.  If
+$R_0$ was three for instance, at the equilibrium we will have one-third of the population 
+susceptible.  Each infective can produce only 1/3 of the number of cases, because there is only
+1/3 as many susceptibles.  So on average each case exactly replaces itself.
+
+For this model, it is possible to show that this endemic equilibrium is locally asymptotically
+stable, but this leads to remarkably cumbersome results, which we will omit.
+
+\vfill
+\end{document}

@@ -1,0 +1,259 @@
+\documentclass[fleqn]{article}
+\usepackage{psfig}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.9} \small\normalsize
+\section*{Mathematical epidemiology, Part 11}
+
+\section*{Chain binomial epidemic models}
+We began with a review of the binomial distribution, and now turn to
+application of the binomial distribution to epidemic modeling
+developed by Lowell J. Reed and Wade Hampton Frost in the middle of
+the last century.
+
+As a simple example, we suppose that there are $N$ individuals
+at the beginning, and that at each time $i$ ($i=0,1,\ldots$), 
+there are $C_i$ cases and $S_i$ susceptibles.  Each time
+period, the case exposes the susceptibles to risk of infection, and
+we assume that the case recovers with immunity at the end of the
+time period.  Thus, each time unit, the cases are the result of 
+the new infections that occurred the last time period.
+We suppose that the chance that each susceptible
+will be infected by any given infective is given by $p$.  
+
+Thinking about each susceptible, what is the chance of infection? As
+we have seen, it is simpler to determine the chance of escaping
+infection, and subtract from one.  Thus, if the chance that one of
+the infectives will cause sufficient exposure is $p$, then the chance
+of escaping infection from that infective is $1-p$.  The chance of
+escaping infection by all the infectives is $(1-p)^{C_i}$
+under an assumption of independence.  Thus, 
+each of the $S_i$ susceptibles has an infection risk of 
+$r=1-(1-p)^{C_i}$, and if we assume independence of the infection risk
+between susceptibles, we can compute the distribution of the number
+of susceptibles infected using a binomial distribution with $S_i$
+trials, each with success probability $r=1-(1-p)^{C_i}$.  This is
+the Reed-Frost model.
+
+A simple example will help clarify how the Reed-Frost model works.
+Consider a simple household with $N=4$ individuals, beginning with
+one single case at the beginning ($C_0=1$), with everyone else
+susceptible ($S_0=3$).  Assume the infection risk is $p$ for
+one susceptible and one infective; the risk that a susceptible will
+be infected in the first time period is $1-(1-p)^{C_0}=1-(1-p)^1=p$.
+There are four possible outcomes, and the binomial distribution 
+reveals that the chance of zero infections is $P(C_1=0)=(1-p)^3$,
+$P(C_1=1)={3 \choose 1}p^1(1-p)^2=3p(1-p)^2$, $P(C_1=2)={3 \choose 2}
+p^2(1-p)^1=3p^2(1-p)$, and of all being infected $P(C_1=3)=p^3$.
+If all the individuals are infected, or none are infected, then
+the epidemic ends because there are no more susceptibles or because
+there are no more infectives, and in either case, $C_2=0$.  
+
+Let us
+consider now what happens if we had $C_1=1$.  At time 1, we have
+$C_1=1$ and $S_1=N-C_0-C_1=2$.  The risk for each susceptible is
+$1-(1-p)^{C_1}=1-(1-p)^1=p$, and so the binomial distribution (with
+$S_1=2$ trials) reveals that $P(C_2=0|C_1=1)=(1-p)^2$, 
+$P(C_2=1|C_1=1)=2p(1-p)$, and $P(C_2=2|C_1=1)=p^2$.  In the case that
+none or both of the susceptibles are infected, the epidemic ends; when
+only one is infected, we have $C_2=1$ and $S_2=1$.  The risk of infection
+is $p$ for the one susceptible, so $P(C_3=1|C_2=1,C_1=1)=p$ and
+$P(C_3=0|C_2=1,C_1=1)=1-p$.  In either case, the epidemic ends.  
+
+Finally, to finish the analysis, we must look at what happens when
+$C_1=2$.  Here, we have two infectives and one susceptible, and the
+risk for the susceptible is $r=1-(1-p)^2$.  With only one susceptible,
+the binomial distribution for the number of new infections just
+reduces to a single Bernoulli trial with success probability $1-(1-p)^2$.  The probability of an infection is $P(C_2=1|C_1=2)=1-(1-p)^2$, and
+$P(C_2=0|C_1=2)=(1-p)^2$; in either case, the epidemic ends, either
+because we run out of susceptibles, or because there are no more cases.
+
+We can compute the unconditional probability of a particular
+epidemic pathway just using the definition of conditional 
+independence.  For instance, what is the chance that there will
+be one new infective at time 1 and then two at time 2 (after which
+the epidemic must go extinct)?  We found the chance of one 
+new case at time 1 to be $3p(1-p)^2$, and the chance of two new
+cases at time 2 given one new case at time 1 (and thus the
+presence of two susceptibles at time 1) to be $p^2$.  Thus,
+the unconditional probability is $3p(1-p)^2 \times p^2$; we will
+denote the unconditional probability of an entire epidemic pathway
+by $q$.
+
+We may summarize the entire analysis in a Table.  We let $K=\sum_{i=1}C_i$
+be the cumulative number of secondary cases, and $T$ be the time of the last
+case, i.e. one less than the minimum value of $i$ such that $C_j=0$ for all $j \geq i$.
+Finally, we denote the probability of the entire pathway by $q$.
+\begin{table}[hb]
+\begin{tabular}{cc|cc|cc|c|c|c}
+$C_1$ & $S_1$ & $C_2$ & $S_2$ & $C_3$ & $S_3$ & $K$ & $T$ & $q$ \\ \hline
+0 & 3 & 0 & 3 & 0 & 3 & 0 & 0 & $(1-p)^3$ \\
+1 & 2 & 0 & 2 & 0 & 2 &  1 & 1 & $3p(1-p)^4$ \\
+1 & 2 & 1 & 3 & 0 & 1 &  2 & 2 & $6p^2(1-p)^4$ \\
+1 & 2 & 1 & 1 & 1 & 0 &  3 & 3 & $6p^3(1-p)^3$ \\
+1 & 2 & 2 & 0 & 0 & 0 &  3 & 2 & $3p^3(1-p)^2$ \\
+2 & 1 & 0 & 1 & 0 & 0 &  2 & 1 & $3p^2(1-p)^3$ \\
+2 & 1 & 1 & 0 & 0 & 0 &  3 & 2 & $3p^2(1-p)(1-(1-p)^2)$ \\
+3 & 0 & 0 & 0 & 0 & 0 &  3 & 1 & $p^3$ \\
+\end{tabular}
+\end{table}
+
+Then, we can compute the probability distribution of the number of
+secondary cases, yielding $P(K=0)=(1-p)^3$,
+$P(K=1)=3p(1-p)^4$, 
+$P(K=2)=6p^2(1-p)^4+3p^2(1-p)^3$, and
+$P(K=3)=9p^3(1-p)^3+3p^2(1-p)(1-(1-p)^2)+p^3$.
+Plotted using R, these look like:
+<<>>=
+ps <- seq(0,1,by=0.001)
+pk0 <- function(pp){(1-pp)^3}
+pk1 <- function(pp){3*pp*(1-pp)^4}
+pk2 <- function(pp){6*pp^2*(1-pp)^4+3*pp^2*(1-pp)^3}
+pk3 <- function(pp){6*pp^3*(1-pp)^3+3*pp^3*(1-pp)^2+3*pp^2*(1-pp)*(1-(1-pp)^2)+pp^3}
+pk3a <- function(pp){1-pk0(pp)-pk1(pp)-pk2(pp)}
+check <- max(abs(pk3(ps)-pk3a(ps)))
+check
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,pk0(ps),xlab="p",ylab="P(K=x)",type="l",ylim=c(0,1))
+points(ps,pk1(ps),type="l",col="blue")
+points(ps,pk2(ps),type="l",col="green")
+points(ps,pk3(ps),type="l",col="red")
+@
+\end{figure}
+
+What is the expected number of secondary infections?  We can 
+compute $\sum_{k=0}^3 P(K=k)$ numerically.
+<<>>=
+ek <- function(pp) {pk1(pp)+2*pk2(pp)+3*pk3(pp)}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,ek(ps),xlab="p",ylab="E(K)",type="l",ylim=c(0,3))
+@
+\end{figure}
+
+{\bf Exercise.}~~Plot the expectation of the extinction time $T$
+using R.  Use the following as a starting point.  The functions
+\verb+et0+, \verb+et1+, \verb+et2+, and \verb+et3+ give the
+probability of extinction at time 0, 1, 2, and 3 respectively;
+the function \verb+eet+ gives the expected extinction time.
+<<>>=
+et0 <- function(pp) {(1-pp)^3}
+et1 <- function(pp) {(3*pp*(1-pp)^4+3*pp^2*(1-pp)^3+pp^3)}
+et2 <- function(pp) {6*pp^2*(1-pp)^4+3*pp^3*(1-pp)^2+3*pp^2*(1-pp)*(1-(1-pp)^2)}
+et3 <- function(pp) {6*pp^3*(1-pp)^3}
+et3a <- function(pp){1-et0(pp)-et1(pp)-et2(pp)}
+check <- max(abs(et3(ps)-et3a(ps)))
+check
+eet <- function(pp){et1(ps)+2*et2(ps)+3*et3(ps)}
+@
+\begin{figure}
+  \centering
+<<fig=true,echo=FALSE>>=
+plot(ps,et0(ps),xlab="p",ylab="P(T=x)",type="l",ylim=c(0,1))
+points(ps,et1(ps),type="l",col="blue")
+points(ps,et2(ps),type="l",col="green")
+points(ps,et3(ps),type="l",col="red")
+@
+\end{figure}
+You should find that the maximum extinction time occurs for 
+intermediate values of the transmission probability $p$; interpret
+this result.
+
+\subsection*{Digression on functions}
+Earlier we discussed the concept of the maximum likelihood
+estimate, the value of an unknown parameter that makes the data most 
+probable.
+
+For the case of the binomial distribution, suppose there were $N$
+trials with $x$ observed successes.  Then
+\[
+P(X=x)={N \choose x} p^x (1-p)^{N-x} .
+\]
+What value makes this the largest?  To begin with, note that $x$
+is a fixed constant; $p$ is the variable of interest.  Since
+${N \choose x}$ is a constant, we can ignore it when looking for
+the value of $p$ that maximizes the likelihood.  So we wish to
+find $p$ to maximize $p^x (1-p)^{N-x}$.  
+
+In mathematical statistics and numerical statistics, it is much more 
+common to work with the logarithm of the likelihood.  Since the
+logarithm is an increasing function, i.e. $x<y$ implies $log(x)<log(y)$,
+we can find the value of $p$ that maximizes the logarithm of the
+likelihood.
+\[
+L(p) = \log\big( p^x (1-p)^{N-x} \big) = x \log (p) + (N-x) \log (1-p)
+\]
+
+If $x=0$, this just becomes $L(p)=N \log(1-p)$.  The largest value of
+$N \log (1-p)$ occurs at the largest value of $\log(1-p)$, which occurs
+at the largest value of $1-p$, which occurs at the smallest value of
+$p$, or zero.  If you observe no successes, your best estimate of 
+the success probability is zero.  Of course, if there are few trials,
+this estimate may have little precision (and thus be unconvincing),
+which we will discuss later.  Similarly, if the number of successes is
+$N$, every trial being a success, then the maximum likelihood estimate
+for $p$ is one.  
+
+Let us suppose that $x$ is not 0 or $N$ in what follows.  A famous
+optimization method is based on the fact that for a smooth function,
+the slope becomes zero at a maximum.  For instance, consider the
+function $f(x)=-x^2$.  The maximum value occurs at $x=0$, at which
+point the slope $f'(x)=-2x$ equals zero as well.  In this particular
+case, the slope vanishes nowhere else.  In general, however, since
+the slope can vanish at a minimum (as with $x=0$ for $f(x)=x^2$), 
+as well as other places ($x=0$ for $f(x)=x^3$), it is not sufficient
+to simply find where the derivative vanishes.  Finally, as we have
+seen, sometimes the maximum occurs on the boundary, and the slope does
+not have to vanish there.  
+
+Nevertheless, we will look for places where the slope vanishes for
+the function $f(p)=x \log(p) + (N-x)\log(1-p)$.  The derivative may
+be computed, first using the addition rule:
+\[
+f'(p) = x \frac{d}{dp} \log(p) + (N-x) \frac{d}{dp}\log(1-p) .
+\]
+Remember that $x$ is constant here, and $p$ is the variable of 
+interest.  Then, we need the fact that 
+\[
+\frac{d}{du}\log(u) = \frac{1}{u} .
+\]
+Using this, and the chain rule, gives us
+\[
+f'(p) = \frac{x}{p}  - \frac{N-x}{1-p} .
+\]
+Setting this to zero gives the solution $\hat{p}$ in terms of the odds:
+\[
+\frac{\hat{p}}{1-\hat{p}} = \frac{x}{N-x} .
+\]
+Solving this gives $\hat{p}=x/N$, the observed relative frequency.
+
+To show that this occurs at a maximum, and not a minimum or saddle
+point, we could look at the second derivative and verify that the
+second derivative is negative, indicating that the function is
+concave down at this point.  We omit this important consideration
+for brevity.
+
+\vfill
+
+\end{document}
+

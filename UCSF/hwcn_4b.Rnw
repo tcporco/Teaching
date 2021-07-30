@@ -1,0 +1,95 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand*{\cmss}{\fontfamily{\sfdefault}\selectfont}
+
+\usepackage{amsthm,pifont}
+
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{trees,shapes,snakes}
+\definecolor {processblue}{cmyk}{0.96,0,0,0}
+
+\renewcommand\qedsymbol{\ding{120}}
+\def\var{\ensuremath{\mbox{\rm var}}}
+\def\cov{\ensuremath{\mbox{\rm cov}}}
+\def\omit#1{}
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\newcounter{exno}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142} \small\normalsize
+\section*{Mathematical Modeling of Infectious Diseases, UCSF}
+<<>>=
+library(tolerance)
+library(Matrix)
+library(gtools)
+library(Deriv)
+library(hypergeo)
+@
+
+\section{Lecture 4B}
+I'd like to consider an additional interesting class of processes, that generate autocorrelated 
+sequences.  Now, instead of counts, we will look at gamma distributions.
+
+\subsection{The gamma distribution}
+\subsubsection{Definition}
+Recall that the gamma distribution has support on $[0,\infty)$.  A gamma random variable $Y$ has density
+\[
+f(y) = \frac{\beta^{\alpha}}{\Gamma(\alpha)} y^{\alpha-1} e^{-\beta y} .
+\]
+Here, $\beta$ is the rate parameter, and $\alpha$ is the shape parameter.
+
+\subsubsection{Characteristic function}
+Let us compute the characteristic function of the gamma-distributed random variable $Y$.
+\[
+F_Y(s) = E[ e^{i s Y} ] = \int_{-\infty}^{\infty} e^{i s y} f(y) dy .
+\]
+For the gamma, 
+\[
+F_Y(s) = \int_{-\infty}^{\infty} e^{i s y} \frac{\beta^{\alpha}}{\Gamma(\alpha)} y^{\alpha-1} e^{-\beta y} dy .
+\]
+This is a complex integral and we will be a little informal.
+\[
+F_Y(s) = \frac{\beta^{\alpha}}{\Gamma(\alpha)} \int_{0}^{\infty} y^{\alpha-1} e^{(i s -\beta) y} dy .
+\]
+If it were just like real integration, we could just use ($\theta = is-\beta$):
+\[
+\int_{0}^{\infty} y^{\alpha-1} e^{-\theta y} dy = \frac {\Gamma(\alpha)} {\theta^{\alpha}}
+\]
+We would then get
+\[
+F_Y(s) = \beta^{\alpha} \left( is - \beta \right)^{\alpha}
+\]
+or
+\[
+F_Y(s) = \left(\frac{\beta}{ is - \beta } \right)^{\alpha}
+\]
+which is the answer usually given.  Let's cheerfully ignore the complex variables issues then for a while.
+
+\subsubsection{Addition}
+Since we can find the distribution of the sum of independent random variables $W$ and $V$ by the theorem that
+the characteristic function of the independent sum is the product of the two characteristic functions,
+\[
+\]
+\vfill
+
+\end{document}

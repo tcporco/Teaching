@@ -1,0 +1,253 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\section*{Simple stochastic epidemics in continuous time}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+In these notes, we'll derive equations for the probabilities of a
+simple stochastic epidemic in continuous time.  We'll use methods
+similar to those we used for the Poisson process to derive differential
+equations for how the probabilities change over time.  The are known as
+{\it Kolmogorov} equations.
+
+We'll assume a particularly simple type of disease process.  In particular,
+we will assume that an individual may be either susceptible or
+infectious, and that infectious individuals become susceptible again
+upon recovery.  This is known as an {\it SIS} epidemic.
+
+To derive the Kolmogorov equations for the trachoma process,
+let $Y(t)$ denote the number of individuals who are infected at
+time $t$;  $Y$ ranges through the integers $0, 1, 2, \ldots, N$.
+The total population $N$ is assumed fixed.  We wish to 
+determine equations for $P(Y(t)=i)$, for $i=0,1,2, \ldots, N$; 
+necessarily $P(Y(t)=-1)=0$ and it will be notationally convenient
+to allow $i=-1$ with this assumption.
+In general, the law of total probability implies that
+\begin{eqnarray}
+\label{eq:totprob}
+P(Y(t+\Delta t)=i) & = &
+ P(Y(t+\Delta t)=i|Y(t)=i-1) P(Y(t)=i-1) +\\ 
+ & & P(Y(t+\Delta t)=i|Y(t)=i) P(Y(t)=i) + \\
+ & & P(Y(t+\Delta t)=i|Y(t)=i+1) P(Y(t)=i+1) .\\
+\end{eqnarray}
+where we have neglected terms of order $(\Delta t)^2$ or higher.
+
+To determine the transition probabilities, we use the rate $\gamma$
+per individual of recovering, as well as the rate $\beta i/N$ of
+becoming infected when there are $i$ individuals in the population
+who are infected (the expression $\beta i/N$ is a conditional
+hazard for infection of each uninfected person, {\it given} $i$
+infected individuals at a given time).  
+
+The expression $P(Y(t+\Delta t)=i|Y(t)=i+1)$, to first order, is the
+probability that a recovery will occur given $i+1$ infected individuals.
+Since the individuals are assumed to behave independently (the
+recovery waiting times are independent random variables), and there
+are assumed to be $i+1$ individuals in the population who are
+infected at time $t$, the overall rate of recovery must be
+$(i+1)\gamma$.  Thus, the probability that a recovery will occur is
+\begin{equation}
+\label{eq:down}
+P(Y(t+\Delta t)=i|Y(t)=i+1) = (i+1)\gamma \, \Delta t.
+\end{equation}
+
+Similarly, the expression $P(Y(t+\Delta t)=i|Y(t)=i-1$) is to first
+order the probability of a new infection occurring somewhere in
+the population, given $i-1$ infected individuals.  (When $i=0$, this
+expression is meaningless, but it will be multiplied by 
+$P(Y(t)=i-1)=0$, and it simplifies the notation to simply assume
+by convention that $P(Y(t+\Delta t)=i|Y(t)=i-1$)=0 when $i=0$).
+Denoting the hazard of infection experienced by each susceptible
+when there are $i$ infectives by $\lambda_i$, we may write
+\[
+P(Y(t+\Delta t)=i|Y(t)=i-1) = (N-(i-1))\lambda_{i-1} \, \Delta t.
+\]
+But $\lambda_{i-1}=\beta (i-1)/N$, so
+\begin{equation}
+\label{eq:up}
+P(Y(t+\Delta t)=i|Y(t)=i-1) = \frac{\beta (i-1)(N-i+1)}{N}  \, \Delta t.
+\end{equation}
+
+Finally, to compute $P(Y(t+\Delta t)=i|Y(t)=i$), we will proceed
+as follows:
+\[
+P(Y(t+\Delta t)=i|Y(t)=i) = 1-P(Y(t+\Delta t=i+1|Y(t)=i))-P(Y(t+\Delta t=i-1|Y(t)=i)) ,
+\]
+again ignoring terms of order 2 in $\Delta t$ or higher.
+Substituting $i$ for $i-1$ in Equation~(\ref{eq:up}) and
+$i$ for $i-1$ in Equation~(\ref{eq:down}) gives
+\[
+P(Y(t+\Delta t)=i+1|Y(t)=i) = \frac{\beta i(N-i)}{N} \, \Delta t
+\]
+and
+\[
+P(Y(t+\Delta t)=i-1|Y(t)=i) = i\gamma \, \Delta t.
+\]
+Thus,
+\[
+P(Y(t+\Delta t)=i|Y(t)=i) = 1- \frac{\beta i (N-i)}{N} \, \Delta t - i\gamma \, \Delta t.
+\]
+
+We may substitute this into Equation~\ref{eq:totprob}, obtaining
+\begin{eqnarray*}
+P(Y(t+\Delta t)=i) & = &
+\frac{\beta (i-1)(N-i+1)}{N} P(Y(t)=i-1) \, \Delta t + \\
+& & \quad \Big(1- \frac{\beta i(N-i)}{N} \Delta t - i\gamma \, \Delta t \Big) P(Y(t)=i) + \\
+& & \quad (i+1)\gamma P(Y(t)=i+1) \, \Delta t ,\\
+\end{eqnarray*}
+where $i$ runs through $0,1,\ldots,N$.  
+Still further simplifications show that
+\begin{eqnarray*}
+P(Y(t+\Delta t)=i) - P(Y(t)=i) & = &
+\frac{\beta (i-1) (N-i+1)}{N} P(Y(t)=i-1) \, \Delta t  + \\
+& & \quad \big(-\frac{i(N-i)\beta}{N} \Delta t - i\gamma\, \Delta t \big) P(Y(t)=i) + \\
+& & \quad (i+1)\gamma P(Y(t)=i+1)\, \Delta t  . \\
+\end{eqnarray*}
+Factoring out $\Delta t$, 
+\begin{eqnarray*}
+\frac{P(Y(t+\Delta t)=i) - P(Y(t)=i)}{\Delta t} & = & \frac{\beta (i-1) (N-i+1)}{N} P(Y(t)=i-1) +  \\
+& & \quad \big(-\frac{\beta i(N-i)}{N} - i\gamma  \big) P(Y(t)=i) + \\
+& & \quad (i+1)\gamma P(Y(t)=i+1) ,  \\
+\end{eqnarray*}
+yielding
+\begin{eqnarray*}
+& & \frac{dP(Y(t)=i)}{dt} = \frac{\beta (i-1) (N-i+1)}{N} P(Y(t)=i-1) +  \\
+& & \quad \quad \quad \big(-\frac{i(N-i)\beta}{N} - i\gamma  \big) P(Y(t)=i) + (i+1)\gamma P(Y(t)=i+1) ,
+\end{eqnarray*}
+for $i=0,1,\ldots,N$.
+Observe that when $i=0$, our conventions reduce this to
+\begin{eqnarray*}
+\frac{dP(Y(t)=0)}{dt} & = & 
+\frac{\beta (-1) (N+1)}{N} P(Y(t)=-1) +
+\big(-\frac{\beta \times 0 \times N}{N} - 0\times \gamma  \big) P(Y(t)=i) +
+\gamma P(Y(t)=1) \\
+ & = & \gamma P(Y(t)=1) . \\
+\end{eqnarray*}
+When $i=N$, this equation reduces to
+\begin{eqnarray*}
+\frac{dP(Y(t)=N)}{dt} & = &
+\frac{\beta N (N-(N-1))}{N}  P(Y(t)=N-1) + \\
+& & \quad \quad \quad \big(-\frac{1}{N}N(N-N)\beta  - N\gamma  \big) P(Y(t)=N) +
+(N+1)\gamma P(Y(t)=N+1)  \\
+& = &
+\frac{1}{N}\beta N  P(Y(t)=N-1) - N\gamma  P(Y(t)=N) \\
+\end{eqnarray*}
+since $P(Y(t)=N+1)=0$ at all times.
+
+If, for simplicity, we let $p_i=P(Y(t)=i)$, we may write the 
+equations in the form
+\[
+\frac{dp_i}{dt} = 
+\frac{\beta (i-1) (N-i+1)}{N}  p_{i-1} +
+\Big(-\frac{\beta i(N-i)}{N}  - i\gamma  \Big) p_i +
+(i+1)\gamma p_{i+1} .
+\]
+Finally, we may choose to remind the readers of our conventions
+that $p_j=0$ whenever $j<0$ or $j>N$ by explicitly using the
+notation $\delta_{ij}$ which equals 1 whenever $i=j$ and 0 otherwise;
+thus we may write the equations in compact form
+\begin{equation}
+\label{eq:proc}
+\frac{dp_i}{dt} = 
+\frac{\beta (i-1) (N-i+1)}{N} p_{i-1} (1-\delta_{0i}) +
+\big(-\frac{\beta i (N-i)}{N} - i\gamma  \big) p_i +
+(i+1)\gamma p_{i+1} (1-\delta_{Ni}) .
+\end{equation}
+Some books use the expression {\it Kolmogorov equations} to refer to a slightly different
+formulation of the same thing, so it is safer to refer to 
+the model as a continuous time Markov process defined by 
+Equation~(\ref{eq:proc}).
+
+For a numerical exploration of these equations, 
+we use the \verb+odesolve+ package of \verb+R+:
+<<>>=
+require("odesolve")
+pars <- c(gamma=1,beta=2)
+sysode <- function(t,y,pars) {
+  gamma <- pars["gamma"]
+  beta <- pars["beta"]
+  y0 <- y[1] 
+  y1 <- y[2] 
+  y2 <- y[3] 
+  y3 <- y[4] 
+  y4 <- y[5] 
+  nn <- 4 
+  dy0 <- gamma*y1
+  dy1 <- 2*gamma*y2 - gamma*y1 - beta*((nn-1)/nn)*y1
+  dy2 <- beta*((nn-1)*1/nn)*y1 + 3*gamma*y3 - 2*gamma*y2 - 2*beta*(nn-2)/nn * y2  
+  dy3 <- beta*((nn-2)*2/nn)*y2 + 4*gamma*y4 - 3*gamma*y3 - 3*beta*(nn-3)/nn * y3  
+  dy4 <- beta*((nn-3)*3/nn)*y3  - 4*gamma*y4 - 4*beta*(nn-4)/nn * y4
+  list(c(dy0,dy1,dy2,dy3,dy4),NULL)
+}
+@
+We also use the following utility for plotting the five probabilities
+over time:
+<<>>=
+gsim <- function(simo) {
+  plot(simo[,1],simo[,2],type="l",ylim=c(0,1))
+  points(simo[,1],simo[,3],type="l",col="blue")
+  points(simo[,1],simo[,4],type="l",col="green")
+  points(simo[,1],simo[,5],type="l",col="orange")
+  points(simo[,1],simo[,6],type="l",col="red")
+  points(simo[,1],simo[,2]+simo[,3]+simo[,4]+simo[,5]+simo[,6],type="l",lty=2)
+}
+@
+Each probability is plotted in a different color, and the sum as
+a dashed line.
+@
+\begin{figure}
+\caption{\label{fig:sim1}
+Plot of the probabilities that the population has different numbers
+of infectives, assuming $N=4$, $\gamma=1$, and $\beta=2$.}
+  \centering
+<<fig=true,echo=FALSE>>=
+gsim(lsoda(c(0,1,0,0,0),seq(0,20,by=1/8),sysode,pars))
+@
+\end{figure}
+
+We can also choose a smaller $\beta$.  Here we choose $\beta=1$,
+so that the criticality parameter is 1:
+\begin{figure}
+\caption{\label{fig:sim2}
+Plot of the probabilities that the population has different numbers
+of infectives, assuming $N=4$ and $\gamma=1$ as in Figure~\ref{fig:sim1}, but that $\beta=1$.}
+  \centering
+<<fig=true,echo=FALSE>>=
+gsim(lsoda(c(0,1,0,0,0),seq(0,20,by=1/8),sysode,c(gamma=1,beta=1)))
+@
+\end{figure}
+
+Finally, we conduct a simulation in which the criticality parameter
+is less than one:
+\begin{figure}
+\caption{\label{fig:sim3}
+Plot of the probabilities that the population has different numbers
+of infectives, again assuming $N=4$ and $\gamma=1$ as in Figure~\ref{fig:sim1}, but that $\beta=0.5$.}
+  \centering
+<<fig=true,echo=FALSE>>=
+gsim(lsoda(c(0,1,0,0,0),seq(0,20,by=1/8),sysode,c(gamma=1,beta=0.5)))
+@
+\end{figure}
+
+
+
+\vfill
+
+\end{document}
+

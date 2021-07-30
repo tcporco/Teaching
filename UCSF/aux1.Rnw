@@ -1,0 +1,97 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.6cm}
+
+\newcommand{\refn}[1]{\raisebox{1ex}{\footnotesize{#1}}}
+
+\begin{document}
+
+\newpage
+
+\setcounter{page}{1}
+\renewcommand{\baselinestretch}{1.4142136} \small\normalsize
+\section*{Notes on the Scan statistic}
+
+\subsection*{Goals}
+The specific goals for this review segment are:
+\begin{enumerate}
+\item Implement a version of the spatial scan statistic
+\end{enumerate}
+
+\newcounter{exercount}
+\setcounter{exercount}{1}
+
+\section*{The Spatial Scan Statistic}
+The spatial scan statistic was introduced in Kulldorff (1997) as a method for both identifying
+spatial clusters and testing the statistical significance of the clusters identified.
+Kulldorff introduced both a Bernoulli and a Poisson model.  
+
+The original paper used SIDS data from North Carolina.  These data were made available as a part of
+the R package \verb+spdep+ and are given here.
+<<>>=
+nc.sids <- read.csv("ncsids.csv",header=TRUE)
+@
+
+\section*{Bernoulli model}
+\subsection*{Review}
+We will review a special case of Kulldorff's Bernoulli model.
+
+We're going to assume that we have data (such as the SIDS data) aggregated into geographic regions, such as counties or some other
+administrative district.  
+
+All the cases in a given geographic region will be taken to be at the spatial centroid of the region.
+
+We consider a family ${\cal Z}$ of zones $Z$.  We will assume that this family consists of circles of any radius and center.  However,
+it is possible that there is more than one circle which could split a given set of points the same way, and we want to consider only
+one such circle.
+
+We assume an underlying distribution of individuals, each of which could be a case or not.
+We assume that the individuals are independent.
+
+Suppose that the probability of a person in the zone being a case is $p$, and that the probability of a person outside the zone
+being a case is $q$.  The null hypothesis is $H_0:\,p=q$.  The alternative hypothesis is that there is a region $Z \in {\cal Z}$
+such that $p > q$.  If $\#(A)$ is the number of people in region $A$, under the null hypothesis, the number of cases in any region $A$ is 
+Binomial($\#(A)$, $p$) for every region $A$.  (We're using \# for a counting measure).
+
+The likelihood function is given by Kulldorff as follows.  Let $n_Z$ be the number of cases in region $Z$ and let $\#(Z)$ be the number
+of people in region $Z$.  Let $n_G$ be the number of cases in the whole study; let $\#(G)$ be the number of people in the whole study.
+The likelihood function is
+\[
+L(Z,p,q) = p^{n_Z} (1-p)^{\#(Z)-n_Z} q^{\#(G)-\#(Z)} (1-q)^{(\#(G)-\#(Z))-(n_G-n_Z)} .
+\]
+
+Kulldorff suggests that we first choose $p=n_Z/\#(Z)$ and $q=(n_G-n_Z)/(\#(G)-\#(Z))$.  This gives us
+\[
+L(Z) = \left(\frac{n_Z}{\#(Z)}\right)^{n_Z} \left(1-\frac{n_Z}{\#(Z)}\right)^{\#(Z)-n_Z}
+\left(\frac{n_G-n_Z}{\#(G)-\#(Z)}\right)^{n_G-n_Z} 
+\left(1-\frac{n_G-n_Z}{\#(G)-\#(Z)}\right)^{\#(G)-\#(Z)-n_G+n_Z} 
+\]
+when $\frac{n_Z}{\#(Z)} > \frac{n_G-n_Z}{\#(G)-\#(Z)}$, and
+\[
+L(Z) = \left(\frac{n_G}{\#(G)}\right)^{n_G} \left(\frac{\#(G)-n_G}{\#(G)}\right)^{\#(G)-n_G}
+\]
+otherwise.
+Kulldorff suggests we find $\hat{Z}$ as that $Z$ that maximizes $L(Z)$.  For inference,
+\[
+L_0 = \left(\frac{n_G}{\#(G)}\right)^{n_G} \left(\frac{\#(G)-n_G}{\#(G)}\right)^{\#(G)-n_G}
+\]
+The likelihood ratio is $L(\hat{Z})/L_0$.
+
+\subsection*{Questions}
+Why shouldn't the likelihood be as follows:
+\[
+\]
+
+\section*{References}
+Kulldorff M. 1997. A spatial scan statistic. Communications in Statistics---Theory and Methods
+{\bf 26}(6):1481--1496.
+
+\vfill
+\end{document}

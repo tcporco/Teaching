@@ -1,0 +1,344 @@
+\documentclass[fleqn]{article}
+
+\topmargin=-0.3in
+\textheight=8in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+\setlength{\parindent}{0.6cm}
+
+\begin{document}
+
+\section*{Mathematical modeling of infectious diseases, lecture 17}
+
+\renewcommand{\baselinestretch}{1.2} \small\normalsize
+
+\section*{Simple deterministic compartmental models}
+
+In this lecture, we'll begin to move away from stochastic models and on to deterministic models.  When
+the populations are large, deterministic models may provide insight into the behavior of a system, and
+are, as a rule, much easier to understand than an ``equivalent'' stochastic model.
+
+Let's return to the simple exponential death process.  Recall that we assumed that the chance that
+any particular individual would die in any small interval of time was simply $\mu\,\Delta t$, where
+$\Delta t$ is the length of the interval.  Let's suppose we have $N$ individuals in the population
+at the beginning, at time $t=0$, and let $N(t)$ be the number at time $t$.
+
+We can use the law of total probability once again to write
+\begin{eqnarray*}
+P(N(t+\Delta t)=i) & = & P(N(t+\Delta t)=i|N(t)=i)P(N(t)=i) + \\
+& & \quad P(N(t)+\Delta t)=i|N(t)=i+1)P(N(t)=i+1) \\
+\end{eqnarray*}
+for small $\Delta t$.  Of course, this equation only holds for $i \geq 0$.
+
+Now, $P(N(t+\Delta t)=i|N(t)=i)$ is the chance nobody dies.  Since there are $N(t)=i$ individuals,
+and each has hazard $\mu$ of death, if we assume independence, the chance that nobody dies has to
+be $1-i\mu \Delta t$.  Similarly, the chance that one person dies in $\Delta t$, starting with $i+1$
+people, is $(i+1)\mu \Delta t$.  If $\Delta t$ is small enough, the chance of two or more people dying
+in the same tiny interval is negligible.  Substituting these results gives us
+\[
+P(N(t+\Delta t)=i)  =  (1-i \mu \Delta t) P(N(t)=i)  +  (i+1) \mu P(N(t)=i+1) \Delta t .
+\]
+We can rearrange this to give us
+\[
+\frac{P(N(t+\Delta t)=i)-P(N(t)=i)}{\Delta t} = - i \mu P(N(t)=i) + (i+1) \mu P(N(t)=i+1) .
+\]
+Now, we'll take the $lim_{\Delta t \rightarrow 0}$ of both sides.  Then we'll write $p_i$ for 
+$P(N(t)=i)$ and find
+\[
+\frac{dp_i}{dt} = (i+1) \mu p_{i+1} - i \mu p_i .
+\]
+With the initial condition $p_0=p_1= \cdots = p_{N(0)-1}=0$ and $p_{N(0)}=1$, these equations give the
+probabilities that the system is in every possible state, as time goes forward.  The only equilibrium
+for this system is $p_0=1$ and $p_i=0$ for every $i>0$, and in fact the system converges to this
+equilibrium as time passes (although we won't show this explicitly).  
+
+Notice that these probabilities bear a close relation to the gamma distribution!  For instance, 
+$p_0(t)$ is simply the cumulative distribution function of a gamma distribution with shape parameter
+$N$ and rate parameter $\mu$.\newline
+{\bf Exercise.~~}What is the expected value of the extinction time?
+
+Let's take a look at some realizations of this process; we'll simulate this using several different methods.
+To begin with, let's take an individual-based perspective.  We'll just generate a death time for each
+individual based on the exponential distribution.  Our first function, which we'll just call 
+\verb+exp.death.process.1+, first generates a sorted list of \verb+nn+ (the population size)
+exponential mortality times.  At each of these times, the population declines by one.  One way to represent this {\it jump process} is to simply associate with each jump the new population value at that jump
+time, together with the initial population size $N(0)$ at time 0.  Of course, once the list of times has been
+sorted, we automatically have $N(0)-1$ individuals associated with the first death time, $N(0)-2$ with the
+second death time, all the way down to 0 at the last death time.  We don't need to actually have an explicit
+vector of the values $N(0)-1, N(0)-2, \ldots, 0$, to associate with the death times.
+<<>>=
+exp.death.process.1 <- function(nn,mu) {
+  sort(rexp(nn,rate=mu))
+}
+@
+Let's see what this looks like for a dozen individuals with a mean lifetime of 10 years:
+<<>>=
+mtimes <- exp.death.process.1(12,mu=1/10)
+mtimes
+@
+Of course, R on modern workstations can handle far more individuals than a dozen.
+
+What does the actual graph of the number of individuals look like over time?  As an {\it integer jump
+process}, it is constant except at specific times at which it discontinuously drops by one unit.  Let's
+write a function to plot this jump function based on the vector of jump times.  Remember that we start
+at $(0,N(0))$, move to $(t_1,N(0))$, then down to $(t_1,N(1))$, across to $(t_2,N(1))$, and so forth.
+Note that the horizontal coordinates form the sequence $0,t_1,t_1,t_2,t_2,\ldots,t_n,t_n$, with $n=N(0)$,
+and the successive vertical coordinates are $N(0),N(0),N(1),N(1),N(2),N(2),\ldots,1,1,0$ (with $N(1)=N(0)-1$, etc.)  So a useful utility for this is an interlacing duplication, so to speak: we want a function
+that takes a vector of items $c(v_1,v_2,\ldots,v_n)$ and returns $c(v_1,v_1,v_2,v_2,\ldots,v_n,v_n)$.  
+Here is one simple such function:
+<<>>=
+dup <- function(vv) {
+  vv[ floor(1/2 + (1:(2*length(vv)))/2) ]
+}
+@
+Here is another:
+<<>>=
+dup2 <- function(vv) {
+  as.vector(t(cbind(vv,vv)))
+}
+@
+{\bf Exercise.~~}Which, if either, of these two implementations is most efficient?  What error checks
+should you include?
+
+Here is the function to plot our jump process, based on the times at which the process drops by one.  
+Inside the function, we first create a blank plot using the call to \verb+plot+ with the option
+\verb+type="n"+, and then use \verb+lines+ to add the lines to the plot.  When we set the option
+\verb+new=FALSE+, this doesn't get called---so we can just add lines to an existing plot.  Finally, a
+color option \verb+col+ will allow us to color-code different realizations.
+<<>>=
+jplot <- function(jtimes,jstart,new=TRUE,col="black") {
+  ntimes <- length(jtimes)
+  if (new) {
+    plot(jtimes,rep(1,ntimes),xlim=c(0,round(max(jtimes))),ylim=c(0,jstart),
+         xlab="Time",ylab="Population",type="n")
+  }
+  nns <- jstart:1
+  lines(c(0,dup(jtimes)),
+        c(dup(nns),0),
+        col=col)
+}
+@
+Let's put all this in a wrapper called \verb+sim1+, say:
+<<>>=
+sim1 <- function(nn,mu,nreps,cols = c("black","red","blue","green","orange","violet","gray")) {
+  if (nreps<=0 || nreps>1000) {
+    print(nreps)
+    stop("nreps too small or too large")
+  }
+  ncolors <- length(cols)
+  for (ii in 1:nreps) {
+    jplot(exp.death.process.1(nn,mu),nn,new=(ii==1),col=cols[ ((ii-1) %% ncolors)+1 ])
+  }
+}
+@
+Note that we actually check whether or not there are zero repetitions \verb+nreps+. We can't just
+count on the loop repeating zero times, since the loop actually runs over the values \verb+1:0+ in this
+case---twice!  Note that we used \verb+((ii-1)%%ncolors)+1+ to make sure we got a sequence that
+ran $1, 2, 3, 4, 5, 6, 7, 1, 2,\ldots$, with no zeros in it.  And \verb+new=(ii==1)+ makes sure that
+we start a new plot only on the first run through the loop.  We could also have done a separate
+call at the beginning with \verb+new=TRUE+ (the default), and looped from \verb+2:nreps+ calling
+\verb+jplot+ with \verb+new=FALSE+.  But then, we would have had to wrap the loop in \verb+if (nreps>=2)+,
+since otherwise we would use \verb+2:1+, which is the vector \verb+c(2,1)+, to loop over---thus 
+executing the loop twice instead of never.
+\begin{figure}
+\caption{\label{fig:sim1} Plot of the population size over time in seven realizations of the exponential
+death process, with an initial population of 25.}
+ \centering
+<<fig=true>>=
+  sim1(25,0.1,7)
+@
+\end{figure}
+\begin{figure}
+\caption{\label{fig:sim1a} Plot of the population size over time in seven realizations of the exponential
+death process, with an initial population of 100.}
+ \centering
+<<fig=true>>=
+  sim1(100,0.1,7)
+@
+\end{figure}
+\begin{figure}
+\caption{\label{fig:sim1b} Plot of the population size over time in seven realizations of the exponential
+death process, with an initial population of 1000.}
+ \centering
+<<fig=true>>=
+  sim1(1000,0.1,7)
+@
+\end{figure}
+Notice that the more individuals there are, the more this just looks like the graph of the survival 
+function of the exponential.  (The jump paths are actually converging to this function.)
+
+{\bf Exercise.~~}How would you modify the function \verb+sim1+ to make sure that the horizontal 
+range does not stop before the last population has reached zero?
+
+{\bf Exercise.~~}Consider some time $t>0$.  What is the expected value and variance of $N(t)$, assuming
+independent individuals and an exponential waiting time with rate $\mu$ for each?
+
+Another way to model this process is to fix in advance some time step $\Delta t$, small enough so that
+$\mu \Delta t$ is a good estimate of the risk of death in each interval.  Remember that for the
+exponential distribution, the probability of dying between time 0 and $t$ must be
+\[
+1-e{-\mu t} .
+\]
+If $-\mu t \ll 1$, then we can approximate the exponential by 
+\[
+e^{-\mu t} \approx 1 - \mu t .
+\]
+So $1-e{-\mu t} \approx 1-(1-\mu t) = \mu t$.  We can set $t=\Delta t$, so
+the risk is approximately the hazard times the time at risk, for small $\Delta t$ (a fact that is true
+in general, when the hazard is continuously varying with time).  So, if each individual has a probability
+$\mu \Delta t$ of dying in an interval of width $\Delta t$, and there are $N(0)$ individuals at risk at
+the beginning, we can actually model the number of individuals dying as a Binomial distribution with
+$N(0)$ individuals each with ``success'' probability $\mu \Delta t$.  This leads to a completely 
+different algorithm for simulation:
+<<>>=
+sim2 <- function(nn,mu,deltat,endtime) {
+  if (deltat < 0 || endtime < 0 || nn<0) {
+    stop("bad deltat, endtime, or nn")
+  }
+  simtimes <- seq(0,endtime,by=deltat)
+  ns <- length(simtimes)
+  ans <- matrix(NA,ncol=2,nrow=ns)
+  colnames(ans) <- c("time","population")
+  ans[,"time"] <- simtimes
+  ans[1,"population"] <- nn
+  risk <- mu*deltat
+  if (ns>2) {
+    for (ii in 2:ns) {
+      ans[ii,"population"] <- rbinom(1,size=ans[ii-1,"population"],prob=1-risk)
+    }
+  } 
+  ans
+}
+@
+Observe that since we're modeling survival, we use \verb+1-risk+ in the call to \verb+rbinom+.
+
+{\bf Exercise.~~}Plot the results of \verb+sim2+, and compare to \verb+sim1+.  Which is faster for
+a very large population?
+
+{\bf Exercise.~~}Average the results of many runs of \verb+sim2+ (or \verb+sim1+), and compare to the
+survival function of the exponential.  
+
+The two functions \verb+sim1+ and \verb+sim2+ illustrate two different approaches to simulation, 
+the individual based, and the clock driven.  We will see both these in the future.
+
+In the second of these, we directly used \verb+rbinom+ to get a random number for each tiny interval.
+In other words, we modeled $N(t) - N(t+\Delta t)$ as a binomial random variable with $N(t)$ trials and
+$\mu \Delta t$ success probability per trial.  What would happen if we decided that $N(t)$ was large
+enough to just take the average of this binomial?  In other words, eliminate the random component by
+averaging over it at this early stage.  Of course, the average is just the number of trials times the
+success probability per trial, which is just $N(t) \times \mu \Delta t$:
+\[
+N(t) - N(t+\Delta t) = N(t) \mu \Delta t .
+\]
+So we can actually convert this to
+\[
+\frac{N(t+\Delta t)}{\Delta t} = - \mu N(t) .
+\]
+After taking the limit as $\Delta t$ goes to zero, we are back with the differential equation
+\begin{equation}
+\label{eq:edecay}
+\frac{dN}{dt} = - \mu N(t) .
+\end{equation}
+This is very much like the equation we used for the survival function for the exponential.  But there
+is actually a difference---before, we looked at the {\it chance} an individual was still alive, but this
+is a differential equation for the number still alive.  In this model, $N$ is actually a continuous
+variable, the idea being that if $N$ is large, the fractional part basically doesn't matter much.  
+Equation~(\ref{eq:edecay}) is a deterministic model for the population size.
+
+The solution for this equation, of course, is $N(t) = N(0) e^{- \mu t}$.  We can think of this in
+a simple way.  Since the chance of living to time $t$ is $e^{-\mu t}$, the expected number living is
+in fact $N(0) e^{- \mu t}$, which happens to agree with the new differential equation.  It is too
+much to hope for that a general result of this sort would hold, and in fact it does not; in general,
+the average over realizations of a stochastic model will not equal the result of a deterministic
+model derived from it in this way.
+
+{\bf Exercise.~~}What, if anything, is the relationship between, say, the time at which the deterministic
+model gives a population size of 1/2, and the expected time of extinction?
+
+We can now feel free to construct more complex deterministic models.  For instance, consider a model of
+competing exponential risks, where each individual suffers a hazard $\lambda$ of dying due to one disease and a
+hazard $\mu$ for a second.  If we assume that the risks are independent, then the hazard for experiencing
+the first of these is the sum of the hazards.  We can write $N$ for the number which have gotten neither
+disease, $C_1$ for the cumulative incidence of the first disease, and $C_2$ for the cumulative 
+incidence of the second.  We can write
+\[
+\frac{dN}{dt} = -(\lambda + \mu) N ,
+\] 
+\[
+\frac{dC_1}{dt} = \lambda N ,
+\]
+and
+\[
+\frac{dC_2}{dt} = \mu N .
+\]
+{\bf Exercise.~~}Solve this system and show that the fraction dying of disease 1 is $\lambda/(\lambda + \mu)$, as we found before.
+
+We may also consider some simple demographic models.  Suppose that we have a rate of birth equal to 
+$\Lambda$.  Since this is independent of the population size, this is often called an {\it immigration} term
+in the mathematical demographic literature.  The expected number of births in a small $\Delta t$ is then
+$\Lambda \Delta t$, so we could actually write a deterministic model
+\[
+N(t+\Delta t) = N(t) + \Lambda\, \Delta t - N(t) \mu\,\Delta t .
+\]
+Rearranging and taking limits as usual gives
+\[
+\frac{dN}{dt} = \Lambda - \mu N(t) .
+\]
+In practice, it is not really necessary to derive equations of this sort by explicitly writing out
+a $\Delta t$ every time.  Instead, you may think of $\Lambda$ as a {\it flow rate}, a number of individuals
+entering the population per unit time.  Similarly, $N(t) \mu$ may be considered a total rate of 
+outflow from the state.  The total rate of change is the sum of all these inflows and outflows.
+
+This particular simple model is just a deterministic immigration-death process.  We can't really solve
+this equation using the same techniques we've used before.  It turns out that the same trick we used
+earlier can be recycled here: we multiply both sides by the {\it integrating factor} $e^{\mu t}$:
+\begin{equation}
+\label{eq:imde}
+\frac{dN}{dt} + \mu N = \Lambda
+\end{equation}
+leads to
+\[
+e^{\mu t}\frac{dN}{dt} + e^{\mu t}\mu N = \Lambda e^{\mu t} .
+\]
+Using the multiplication rule for derivatives in a {\it backward} way gives us
+\[
+\frac{d}{dt}\left(Ne^{\mu t}\right) = \Lambda e^{\mu t} .
+\]
+Now we can separate:
+\[
+d\left(Ne^{\mu t}\right) = \Lambda e^{\mu t} dt .
+\]
+and integrate:
+\[
+\int_{t=0}^{t=t} d\left(Ne^{\mu t}\right) = \int_0^t \Lambda e^{\mu t} dt .
+\]
+Now, $\int_0^t\Lambda e^{\mu t}dt = \Lambda(e^{\mu t}-1)/\mu$, so
+\[
+N(t)e^{\mu t} - N(0)e^{\mu \times 0} = \Lambda(e^{\mu t}-1)/\mu .
+\]
+This gives us the general solution
+\[
+N(t) = N(0)e^{-\mu t} + \frac{\Lambda}{\mu}(1-e^{-\mu t}) .
+\]
+As $t$ becomes large, this solution converges to the equilibrium value $\bar{N}=\Lambda/\mu$.  
+
+Frequently, much insight can be gained by examining the equilibria of a dynamical system.  Here, 
+we have only one equilibrium $\bar{N}=\Lambda/\mu$.  At this value, $dN/dt=0$, as can be seen by
+substituting the equilibrium value into the right hand side of Equation~(\ref{eq:imde}).  In this
+particular case, the analytic solution we just found shows that this equilibrium is a 
+{\bf global attractor}, which means that the solution approaches this value no matter where you
+start.  In other words, for all $N(0) \geq 0$, 
+\[
+\lim_{t \rightarrow \infty} N(t) = \frac{\Lambda}{\mu} .
+\]
+In general, we may be able to find the equilibria even though we can't find an analytic solution.  In 
+these cases, examining the equilibria can lead to a great deal of insight into the behavior of the
+model, even if the equilibrium is not all that interesting from a practical standpoint.  We'll see
+numerous examples of this.
+
+
+
+
+\vfill
+\end{document}
